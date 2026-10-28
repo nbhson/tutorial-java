@@ -1,142 +1,121 @@
-# Java - File Class
-
-## What Is File Class
-
-Java File class represents the files and directory pathnames in an abstract manner. This class is used for creation of files and directories, file searching, file deletion, etc.
-
-## File Class Constructors
-
-**File(File parent, String child)**    This constructor creates a new File instance from a parent abstract pathname and a child pathname string.
-
-**File(String pathname)**              This constructor creates a new File instance by converting the given pathname string into an abstract pathname.
-
-**File(String parent, String child)**  This constructor creates a new File instance from a parent pathname string and a child pathname string.
-
-**File(URI uri)**                      This constructor creates a new File instance by converting the given file: URI into an abstract pathname.
-
-## File Class Methods
-
-1**public String getName()**
-
-Returns the name of the file or directory denoted by this abstract pathname.
-
-2	**public String getParent()**
-
-Returns the pathname string of this abstract pathname's parent, or null if this pathname does not name a parent directory.
-
-3	**public File getParentFile()**
-
-Returns the abstract pathname of this abstract pathname's parent, or null if this pathname does not name a parent directory.
-
-4	**public String getPath()**
-
-Converts this abstract pathname into a pathname string.
-
-5	**public boolean isAbsolute()**
-
-Tests whether this abstract pathname is absolute. Returns true if this abstract pathname is absolute, false otherwise.
-
-6	**public String getAbsolutePath()**
-
-Returns the absolute pathname string of this abstract pathname.
-
-7	**public boolean canRead()**
-
-Tests whether the application can read the file denoted by this abstract pathname. Returns true if and only if the file specified by this abstract pathname exists and can be read by the application; false otherwise.
-
-8	**public boolean canWrite()**
-
-Tests whether the application can modify to the file denoted by this abstract pathname. Returns true if and only if the file system actually contains a file denoted by this abstract pathname and the application is allowed to write to the file; false otherwise.
-
-9	**public boolean exists()**
-
-Tests whether the file or directory denoted by this abstract pathname exists. Returns true if and only if the file or directory denoted by this abstract pathname exists; false otherwise.
-
-10	**public boolean isDirectory()**
-
-Tests whether the file denoted by this abstract pathname is a directory. Returns true if and only if the file denoted by this abstract pathname exists and is a directory; false otherwise.
-
-11	**public boolean isFile()**
-
-Tests whether the file denoted by this abstract pathname is a normal file. A file is normal if it is not a directory and, in addition, satisfies other system-dependent criteria. Any non-directory file created by a Java application is guaranteed to be a normal file. Returns true if and only if the file denoted by this abstract pathname exists and is a normal file; false otherwise.
-
-12	**public long lastModified()**
-
-Returns the time that the file denoted by this abstract pathname was last modified. Returns a long value representing the time the file was last modified, measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970), or 0L if the file does not exist or if an I/O error occurs.
-
-13	**public long length()**
-
-Returns the length of the file denoted by this abstract pathname. The return value is unspecified if this pathname denotes a directory.
-
-14	**public boolean createNewFile() throws IOException**
-
-Atomically creates a new, empty file named by this abstract pathname if and only if a file with this name does not yet exist. Returns true if the named file does not exist and was successfully created; false if the named file already exists.
-
-15	**public boolean delete()**
-
-Deletes the file or directory denoted by this abstract pathname. If this pathname denotes a directory, then the directory must be empty in order to be deleted. Returns true if and only if the file or directory is successfully deleted; false otherwise.
-
-16	**public void deleteOnExit()**
-
-Requests that the file or directory denoted by this abstract pathname be deleted when the virtual machine terminates.
-
-17	**public String[] list()**
-
-Returns an array of strings naming the files and directories in the directory denoted by this abstract pathname.
-
-18	**public String[] list(FilenameFilter filter)**
-
-Returns an array of strings naming the files and directories in the directory denoted by this abstract pathname that satisfy the specified filter.
-
-20	**public File[] listFiles()**
-
-Returns an array of abstract pathnames denoting the files in the directory denoted by this abstract pathname.
-
-21	**public File[] listFiles(FileFilter filter)**
-
-Returns an array of abstract pathnames denoting the files and directories in the directory denoted by this abstract pathname that satisfy the specified filter.
-
-22	**public boolean mkdir()**
-
-Creates the directory named by this abstract pathname. Returns true if and only if the directory was created; false otherwise.
-
-23	**public boolean mkdirs()**
-
-Creates the directory named by this abstract pathname, including any necessary but nonexistent parent directories. Returns true if and only if the directory was created, along with all necessary parent directories; false otherwise.
-
-24	**public boolean renameTo(File dest)**
-
-Renames the file denoted by this abstract pathname. Returns true if and only if the renaming succeeded; false otherwise.
-
-25	**public boolean setLastModified(long time)**
-
-Sets the last-modified time of the file or directory named by this abstract pathname. Returns true if and only if the operation succeeded; false otherwise.
-
-26	**public boolean setReadOnly()**
-
-Marks the file or directory named by this abstract pathname so that only read operations are allowed. Returns true if and only if the operation succeeded; false otherwise.
-
-27	**public static File createTempFile(String prefix, String suffix, File directory) throws IOException**
-
-Creates a new empty file in the specified directory, using the given prefix and suffix strings to generate its name. Returns an abstract pathname denoting a newly-created empty file.
-
-28	**public static File createTempFile(String prefix, String suffix) throws IOException**
-
-Creates an empty file in the default temporary-file directory, using the given prefix and suffix to generate its name. Invoking this method is equivalent to invoking createTempFile(prefix, suffix, null). Returns abstract pathname denoting a newly-created empty file.
-
-29	**public int compareTo(File pathname)**
-
-Compares two abstract pathnames lexicographically. Returns zero if the argument is equal to this abstract pathname, a value less than zero if this abstract pathname is lexicographically less than the argument, or a value greater than zero if this abstract pathname is lexicographically greater than the argument.
-
-30	**public int compareTo(Object o)**
-
-Compares this abstract pathname to another object. Returns zero if the argument is equal to this abstract pathname, a value less than zero if this abstract pathname is lexicographically less than the argument, or a value greater than zero if this abstract pathname is lexicographically greater than the argument.
-
-31	**public boolean equals(Object obj)**
-
-Tests this abstract pathname for equality with the given object. Returns true if and only if the argument is not null and is an abstract pathname that denotes the same file or directory as this abstract pathname.
-
-32	**public String toString()**
-
-Returns the pathname string of this abstract pathname. This is just the string returned by the getPath() method.
-
+# Java — Lớp File
+
+## Lớp File là gì?
+
+Lớp `File` trong Java (thuộc gói `java.io`) biểu diễn **đường dẫn** tới file hoặc thư mục một cách trừu tượng. Bạn dùng nó để tạo, tìm kiếm, xóa, đổi tên file/thư mục... Lưu ý: `File` chỉ làm việc với **siêu dữ liệu** (tên, kích thước, quyền), không đọc/ghi nội dung bên trong file — việc đó thuộc về các stream/reader.
+
+## Các constructor của lớp File
+
+| Constructor | Ý nghĩa |
+|-------------|---------|
+| `File(File parent, String child)` | Tạo đối tượng File từ thư mục cha và tên con |
+| `File(String pathname)` | Tạo đối tượng File từ một chuỗi đường dẫn |
+| `File(String parent, String child)` | Tạo đối tượng File từ đường dẫn cha (chuỗi) và tên con |
+| `File(URI uri)` | Tạo đối tượng File từ một URI dạng `file:` |
+
+```java
+File f1 = new File("data.txt");                       // đường dẫn tương đối
+File f2 = new File("/Users/you/docs", "report.pdf");  // thư mục cha + tên file
+```
+
+## Các phương thức quan trọng của lớp File
+
+### Thông tin cơ bản
+
+| # | Phương thức | Mô tả |
+|---|-------------|-------|
+| 1 | `public String getName()` | Trả về tên file hoặc thư mục của đường dẫn này |
+| 2 | `public String getParent()` | Trả về chuỗi đường dẫn thư mục cha, hoặc `null` nếu không có |
+| 3 | `public File getParentFile()` | Trả về đối tượng File của thư mục cha, hoặc `null` nếu không có |
+| 4 | `public String getPath()` | Chuyển đường dẫn trừu tượng thành chuỗi pathname |
+| 5 | `public boolean isAbsolute()` | Kiểm tra đường dẫn có phải tuyệt đối không |
+| 6 | `public String getAbsolutePath()` | Trả về chuỗi đường dẫn tuyệt đối |
+
+### Kiểm tra quyền và trạng thái
+
+| # | Phương thức | Mô tả |
+|---|-------------|-------|
+| 7 | `public boolean canRead()` | Kiểm tra ứng dụng có quyền đọc file này không |
+| 8 | `public boolean canWrite()` | Kiểm tra ứng dụng có quyền ghi/sửa file này không |
+| 9 | `public boolean exists()` | Kiểm tra file hoặc thư mục có tồn tại thật không |
+| 10 | `public boolean isDirectory()` | Kiểm tra đường dẫn này có phải là thư mục không |
+| 11 | `public boolean isFile()` | Kiểm tra đường dẫn này có phải là file thông thường không |
+
+### Thuộc tính thời gian và kích thước
+
+| # | Phương thức | Mô tả |
+|---|-------------|-------|
+| 12 | `public long lastModified()` | Trả về thời điểm sửa đổi lần cuối (mili giây từ epoch 01/01/1970), hoặc `0L` nếu file không tồn tại |
+| 13 | `public long length()` | Trả về kích thước file (byte); giá trị không xác định nếu là thư mục |
+| 25 | `public boolean setLastModified(long time)` | Đặt thời điểm sửa đổi lần cuối |
+| 26 | `public boolean setReadOnly()` | Đánh dấu file chỉ được đọc |
+
+### Tạo, xóa, đổi tên
+
+| # | Phương thức | Mô tả |
+|---|-------------|-------|
+| 14 | `public boolean createNewFile() throws IOException` | Tạo file rỗng mới nếu chưa tồn tại file cùng tên; trả về `true` nếu tạo thành công |
+| 15 | `public boolean delete()` | Xóa file hoặc thư mục (thư mục phải rỗng); trả về `true` nếu xóa thành công |
+| 16 | `public void deleteOnExit()` | Yêu cầu xóa file/thư mục khi JVM kết thúc |
+| 22 | `public boolean mkdir()` | Tạo thư mục; trả về `true` nếu thành công |
+| 23 | `public boolean mkdirs()` | Tạo thư mục cùng toàn bộ thư mục cha còn thiếu |
+| 24 | `public boolean renameTo(File dest)` | Đổi tên (di chuyển) file |
+
+### Liệt kê nội dung
+
+| # | Phương thức | Mô tả |
+|---|-------------|-------|
+| 17 | `public String[] list()` | Trả về mảng tên các file/thư mục con |
+| 18 | `public String[] list(FilenameFilter filter)` | Liệt kê theo bộ lọc `FilenameFilter` |
+| 20 | `public File[] listFiles()` | Trả về mảng đối tượng File của các file/thư mục con |
+| 21 | `public File[] listFiles(FileFilter filter)` | Liệt kê theo bộ lọc `FileFilter` |
+
+### Tạo file tạm và so sánh
+
+| # | Phương thức | Mô tả |
+|---|-------------|-------|
+| 27 | `public static File createTempFile(String prefix, String suffix, File directory) throws IOException` | Tạo file rỗng tạm thời trong thư mục chỉ định, tên sinh từ prefix/suffix |
+| 28 | `public static File createTempFile(String prefix, String suffix) throws IOException` | Như trên nhưng trong thư mục tạm mặc định của hệ thống |
+| 29 | `public int compareTo(File pathname)` | So sánh hai đường dẫn theo thứ tự từ điển |
+| 31 | `public boolean equals(Object obj)` | Hai đường dẫn bằng nhau nếu trỏ cùng một file/thư mục |
+| 32 | `public String toString()` | Trả về chuỗi pathname — giống hệt `getPath()` |
+
+## Ví dụ tổng hợp
+
+```java
+import java.io.File;
+import java.io.IOException;
+
+public class FileDemo {
+    public static void main(String[] args) throws IOException {
+        File file = new File("example.txt");
+
+        if (file.createNewFile()) {
+            System.out.println("Đã tạo: " + file.getName());
+        } else {
+            System.out.println("File đã tồn tại.");
+        }
+
+        System.out.println("Đường dẫn tuyệt đối: " + file.getAbsolutePath());
+        System.out.println("Kích thước: " + file.length() + " bytes");
+        System.out.println("Có thể ghi? " + file.canWrite());
+        System.out.println("Là thư mục? " + file.isDirectory());
+
+        // Đổi tên
+        File newName = new File("renamed.txt");
+        if (file.renameTo(newName)) {
+            System.out.println("Đã đổi tên thành " + newName.getName());
+        }
+
+        // Xóa
+        if (newName.delete()) {
+            System.out.println("Đã xóa file.");
+        }
+    }
+}
+```
+
+## Lưu ý
+
+- `File` tạo ra **đối tượng trong bộ nhớ**, không tạo file thật trên đĩa — phải gọi `createNewFile()` thì file mới xuất hiện.
+- Với các thao tác hiện đại (duyệt cây, copy, đọc toàn bộ file...), bạn nên ưu tiên `java.nio.file` (`Path`, `Files`) — xem bài `6_directory-operators` và `7_files-io`.

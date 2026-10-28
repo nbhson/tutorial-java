@@ -1,101 +1,102 @@
-# Date in Java
+# Date trong Java
 
-> Java provides the Date class available in java.util package, this class encapsulates the current date and time.
+> Java cung cấp lớp `Date` trong gói `java.util` — lớp này đóng gói thông tin **ngày và thời điểm hiện tại**.
 
+Lưu ý trước khi dùng: `java.util.Date` là lớp cũ (từ Java 1.0), nhiều phương thức của nó đã bị đánh dấu deprecated. Trong dự án thực tế hiện nay, bạn nên ưu tiên `java.time` (LocalDate, LocalDateTime, Instant...). Tuy nhiên, `Date` vẫn gặp rất nhiều trong code cũ, nên bạn cần biết cách dùng cơ bản sau đây.
 
-`Date( )`
-This constructor initializes the object with the current date and time
+## Các constructor
 
-`Date(long millisec)`
-his constructor accepts an argument that equals the number of milliseconds that have elapsed since midnight, January 1, 1970.
+`Date( )` — khởi tạo đối tượng với **ngày giờ hiện tại**.
 
+`Date(long millisec)` — nhận tham số là số mili giây đã trôi qua kể từ 00:00 ngày 01/01/1970 (GMT).
 
-*1	boolean after(Date when)*
-This method tests if this date is after the specified date.
+```java
+import java.util.Date;
 
-*2	boolean before(Date when)*
-This method tests if this date is before the specified date.
+public class DateDemo {
+   public static void main(String args[]) {
+      Date date = new Date();          // thời điểm hiện tại
+      System.out.println(date.toString());
 
-*3	Object clone()*
-This method return a copy of this object.
+      Date d2 = new Date(0L);          // 01/01/1970 00:00:00 GMT
+      System.out.println(d2);
+   }
+}
+```
 
-*4	int compareTo(Date anotherDate)*
-This method compares two Dates for ordering.
+## Các phương thức của lớp Date
 
-*5	boolean equals(Object obj)*
-This method compares two dates for equality.
+| # | Phương thức | Mô tả |
+|---|-------------|-------|
+| 1 | `boolean after(Date when)` | Kiểm tra thời điểm này có **sau** thời điểm chỉ định không |
+| 2 | `boolean before(Date when)` | Kiểm tra thời điểm này có **trước** thời điểm chỉ định không |
+| 3 | `Object clone()` | Trả về một bản sao của đối tượng này |
+| 4 | `int compareTo(Date anotherDate)` | So sánh hai đối tượng Date theo thứ tự |
+| 5 | `boolean equals(Object obj)` | So sánh hai ngày có bằng nhau không |
+| 6 | `static Date from(Instant instant)` | Tạo đối tượng `Date` từ một đối tượng `Instant` |
+| 7 | `long getTime()` | Trả về số mili giây kể từ 01/01/1970 00:00:00 GMT mà đối tượng này biểu diễn |
+| 8 | `int hashCode()` | Trả về mã băm (hash code) của đối tượng |
+| 9 | `void setTime(long time)` | Đặt thời điểm của đối tượng = `time` mili giây sau 01/01/1970 00:00:00 GMT |
+| 10 | `Instant toInstant()` | Chuyển đối tượng `Date` này thành `Instant` |
+| 11 | `String toString()` | Chuyển đối tượng `Date` này thành chuỗi |
 
-*6	static Date from​(Instant instant)*
-This method obtains an instance of Date from an Instant object.
+## Các ký tự định dạng của SimpleDateFormat
 
-*7	long getTime()*
-This method returns the number of milliseconds since January 1, 1970, 00:00:00 GMT represented by this Date object.
+| Ký tự | Ý nghĩa | Ví dụ |
+|-------|---------|-------|
+| `G` | Kỷ nguyên (Era designator) | AD |
+| `y` | Năm, 4 chữ số | 2001 |
+| `M` | Tháng trong năm | July hoặc 07 |
+| `d` | Ngày trong tháng | 10 |
+| `h` | Giờ theo A.M./P.M. (1~12) | 12 |
+| `H` | Giờ trong ngày (0~23) | 22 |
+| `m` | Phút trong giờ | 30 |
+| `s` | Giây trong phút | 55 |
+| `S` | Mili giây | 234 |
+| `E` | Ngày trong tuần | Tuesday |
+| `D` | Ngày trong năm | 360 |
+| `F` | Ngày trong tuần của tháng | 2 (thứ tư thứ hai của tháng 7) |
+| `w` | Tuần trong năm | 40 |
+| `W` | Tuần trong tháng | 1 |
+| `a` | Ký hiệu A.M./P.M. | PM |
+| `k` | Giờ trong ngày (1~24) | 24 |
+| `K` | Giờ theo A.M./P.M. (0~11) | 10 |
+| `z` | Múi giờ | Eastern Standard Time |
+| `'` | Escape cho văn bản | Delimiter |
+| `"` | Dấu nháy đơn | ` |
 
-*8	int hashCode()*
-This method returns a hash code value for this object.
+## Các ký tự chuyển đổi ngày và giờ (printf/Formatter)
 
-*9	void setTime(long time)*
-This method sets this Date object to represent a point in time that is time milliseconds after January 1, 1970 00:00:00 GMT.
-
-*10	Instant toInstant()*
-This method converts this Date object to an Instant.
-
-*11	String toString()*
-This method converts this Date object to a String of the form.
-
-## Simple DateFormat Format Codes
-
-G	Era designator	            AD
-y	Year in four digits	        2001
-M	Month in year	            July or 07
-d	Day in month	            10
-h	Hour in A.M./P.M. (1~12)	12
-H	Hour in day (0~23)	        22
-m	Minute in hour	            30
-s	Second in minute	        55
-S	Millisecond	                234
-E	Day in week	                Tuesday
-D	Day in year	                360
-F	Day of week in month	    2 (second Wed. in July)
-w	Week in year	            40
-W	Week in month	            1
-a	A.M./P.M. marker	        PM
-k	Hour in day (1~24)	        24
-K	Hour in A.M./P.M. (0~11)	10
-z	Time zone	                Eastern Standard Time
-'	Escape for text	            Delimiter
-"	Single quote	            `
-
-## Date and Time Conversion Characters
-
-c	Complete date and time	                            Mon May 04 09:51:52 CDT 2009
-F	ISO 8601 date	                                    2004-02-09
-D	U.S. formatted date (month/day/year)	            02/09/2004
-T	24-hour time	                                    18:05:19
-r	12-hour time	                                    06:05:19 pm
-R	24-hour time, no seconds	                        18:05
-Y	Four-digit year (with leading zeroes)	            2004
-y	Last two digits of the year (with leading zeroes)	04
-C	First two digits of the year (with leading zeroes)	20
-B	Full month name	                                    February
-b	Abbreviated month name	                            Feb
-m	Two-digit month (with leading zeroes)	            02
-d	Two-digit day (with leading zeroes)	                03
-e	Two-digit day (without leading zeroes)	            9
-A	Full weekday name	                                Monday
-a	Abbreviated weekday name	                        Mon
-j	Three-digit day of year (with leading zeroes)	    069
-H	Two-digit hour (with leading zeroes), between 00 and 23	    18
-k	Two-digit hour (without leading zeroes), between 0 and 23	18
-I	Two-digit hour (with leading zeroes), between 01 and 12	    06
-l	Two-digit hour (without leading zeroes), between 1 and 12	6
-M	Two-digit minutes (with leading zeroes)	                    05
-S	Two-digit seconds (with leading zeroes)	                    19
-L	Three-digit milliseconds (with leading zeroes)	            047
-N	Nine-digit nanoseconds (with leading zeroes)	            047000000
-P	Uppercase morning or afternoon marker	                    PM
-p	Lowercase morning or afternoon marker	                    pm
-z	RFC 822 numeric offset from GMT	                            -0800
-Z	Time zone	                                                PST
-s	Seconds since 1970-01-01 00:00:00 GMT	                    1078884319
-Q	Milliseconds since 1970-01-01 00:00:00 GMT	                1078884319047
+| Ký tự | Ý nghĩa | Ví dụ |
+|-------|---------|-------|
+| `c` | Ngày và giờ đầy đủ | Mon May 04 09:51:52 CDT 2009 |
+| `F` | Ngày chuẩn ISO 8601 | 2004-02-09 |
+| `D` | Ngày kiểu Mỹ (tháng/ngày/năm) | 02/09/2004 |
+| `T` | Giờ 24 số | 18:05:19 |
+| `r` | Giờ 12 số | 06:05:19 pm |
+| `R` | Giờ 24 số, không giây | 18:05 |
+| `Y` | Năm 4 chữ số (có số 0 đệm) | 2004 |
+| `y` | Hai chữ số cuối của năm | 04 |
+| `C` | Hai chữ số đầu của năm | 20 |
+| `B` | Tên tháng đầy đủ | February |
+| `b` | Tên tháng viết tắt | Feb |
+| `m` | Tháng 2 chữ số (có số 0 đệm) | 02 |
+| `d` | Ngày 2 chữ số (có số 0 đệm) | 03 |
+| `e` | Ngày 2 chữ số (không số 0 đệm) | 9 |
+| `A` | Tên ngày trong tuần đầy đủ | Monday |
+| `a` | Tên ngày trong tuần viết tắt | Mon |
+| `j` | Ngày trong năm, 3 chữ số | 069 |
+| `H` | Giờ 2 chữ số, 00–23 | 18 |
+| `k` | Giờ 2 chữ số, 0–23 | 18 |
+| `I` | Giờ 2 chữ số, 01–12 | 06 |
+| `l` | Giờ 2 chữ số, 1–12 | 6 |
+| `M` | Phút 2 chữ số (có số 0 đệm) | 05 |
+| `S` | Giây 2 chữ số (có số 0 đệm) | 19 |
+| `L` | Mili giây 3 chữ số | 047 |
+| `N` | Nanosecond 9 chữ số | 047000000 |
+| `P` | Ký hiệu sáng/chiều viết hoa | PM |
+| `p` | Ký hiệu sáng/chiều viết thường | pm |
+| `z` | Chênh lệch múi giờ theo RFC 822 | -0800 |
+| `Z` | Múi giờ | PST |
+| `s` | Số giây kể từ 1970-01-01 00:00:00 GMT | 1078884319 |
+| `Q` | Số mili giây kể từ 1970-01-01 00:00:00 GMT | 1078884319047 |

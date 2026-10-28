@@ -1,23 +1,23 @@
-# Access Modifiers
+# Access Modifiers (Phạm vi truy cập)
 
-> Java access modifiers are used to specify the scope of the variables, data members, methods, classes, or constructors. These help to restrict and secure the access (or, level of access) of the data.
+> Access modifiers trong Java dùng để chỉ định **phạm vi truy cập** của biến, thành viên dữ liệu, phương thức, lớp hoặc constructor. Chúng giúp hạn chế và bảo vệ việc truy cập dữ liệu.
 
-There are four different types of access modifiers in Java, we have listed them as follows:
+Java có 4 loại access modifier, liệt kê theo phạm vi từ hẹp đến rộng:
 
-- Default (No keyword required)
-- Private
-- Protected
-- Public
+- `default` (không cần từ khóa)
+- `private`
+- `protected`
+- `public`
 
 ![alt text](image.png)
 
 ## Default Access Modifier
 
-`Default access modifier` means we do not explicitly declare an access modifier for a class, field, method, etc.
+`Default access modifier` nghĩa là bạn **không khai báo tường minh** modifier nào cho lớp, field, phương thức...
 
-> A variable or method declared without any access control modifier is available to any other class in the same package. The fields in an interface are `implicitly public` static final and the methods in an interface are by default public.
+> Biến hoặc phương thức không có modifier chỉ có thể được truy cập bởi **các lớp trong cùng package**. Lưu ý: field trong interface mặc định là `public static final` và phương thức trong interface mặc định là `public`.
 
-Example of Default Access Modifiers
+Ví dụ:
 
 ```java
 String version = "1.5.1";
@@ -29,14 +29,14 @@ boolean processOrder() {
 
 ## Private Access Modifier
 
-> Methods, variables, and constructors that are declared private can only be accessed within the declared class itself.
+> Các phương thức, biến, constructor khai báo `private` **chỉ có thể được truy cập bên trong chính lớp khai báo chúng**.
 
-- Private access modifier is the most restrictive access level (mức truy cập hạn chế nhất.). Class and interfaces cannot be private.
-- Variables that are declared private can be accessed outside the class, if public getter methods are present in the class.
-- Using the private modifier is the main way that an object encapsulates itself (đóng gói) and hides data from the outside world.
+- `private` là mức truy cập **hạn chế nhất**. Class và interface không thể là `private`.
+- Biến `private` vẫn có thể truy cập từ ngoài lớp **thông qua các phương thức getter/setter public**.
+- Dùng `private` là cách chính để một đối tượng **đóng gói (encapsulate)** và ẩn dữ liệu khỏi thế giới bên ngoài.
 
+Ví dụ 1:
 
-Example 1:
 ```java
 public class Logger {
     // Here, the format variable of the Logger class is private, so there's no way for other classes to retrieve or set its value directly.
@@ -54,7 +54,8 @@ public class Logger {
 }
 ```
 
-Example 2:
+Ví dụ 2 — khi getter/setter cũng là `private`, lớp ngoài không gọi được nữa:
+
 ```java
 class Logger {
   private String format;
@@ -87,10 +88,10 @@ public class Main {
 
 ## Protected Access Modifier
 
-> Variables, methods, and constructors, which are declared protected in a superclass can be accessed only by the subclasses in other package or any class within the package of the protected members' class.
+> Các biến, phương thức, constructor khai báo `protected` trong superclass **chỉ được truy cập bởi các lớp con (kể cả ở package khác)** hoặc **bất kỳ lớp nào trong cùng package** với lớp chứa thành phần đó.
 
-- The protected access modifier cannot be applied to class and interfaces. Methods, fields can be declared protected,` however methods and fields in a interface cannot be declared protected.`
-- Protected access gives the subclass a chance to use the helper method or variable, while preventing a nonrelated class from trying to use it.
+- `protected` không áp dụng được cho class và interface. Với interface, các phương thức và field **không thể** khai báo `protected`.
+- `protected` cho lớp con cơ hội dùng lại các phương thức/biến hỗ trợ, đồng thời ngăn các lớp không liên quan dùng chúng.
 
 ```java
 class AudioPlayer {
@@ -108,9 +109,9 @@ class StreamingAudioPlayer extends AudioPlayer {
 
 ## Public Access Modifier
 
-A class, method, constructor, interface, etc. declared public can be accessed from any other class. Therefore, fields, methods, blocks declared inside a public class can be accessed from any class belonging to the Java Universe.
+Lớp, phương thức, constructor, interface... khai báo `public` có thể được truy cập từ **bất kỳ lớp nào**. Vì vậy các field, phương thức, khối lệnh bên trong một lớp public đều có thể được truy cập từ bất kỳ đâu trong chương trình Java.
 
-Syntax
+Cú pháp:
 
 ```java
 public static void main(String[] arguments) {
@@ -118,7 +119,7 @@ public static void main(String[] arguments) {
 }
 ```
 
-Example of Public Access Modifiers
+Ví dụ:
 
 ```java
 // Class One
@@ -139,12 +140,21 @@ public class Main {
 }
 ```
 
-## Access Modifiers and Inheritance
+## Access Modifiers và kế thừa
 
-The following rules for inherited methods are enforced −
+Với các phương thức được **kế thừa**, Java áp dụng các quy tắc sau:
 
-> Methods declared public in a superclass also must be public in all subclasses.
-> Methods declared protected in a superclass must either be protected or public in subclasses; they cannot be private.
-> Methods declared private are not inherited at all, so there is no rule for them.
+> - Phương thức khai báo `public` trong superclass **phải** vẫn là `public` trong mọi lớp con.
+> - Phương thức khai báo `protected` trong superclass phải là `protected` hoặc `public` trong lớp con; **không thể** là `private`.
+> - Phương thức `private` không được kế thừa, nên không có quy tắc nào cho chúng.
 
 ![alt text](image-1.png)
+
+## Tổng kết
+
+| Modifier | Cùng class | Cùng package | Lớp con (khác package) | Mọi nơi |
+|----------|:---:|:---:|:---:|:---:|
+| `private` | ✅ | ❌ | ❌ | ❌ |
+| `default` | ✅ | ✅ | ❌ | ❌ |
+| `protected` | ✅ | ✅ | ✅ | ❌ |
+| `public` | ✅ | ✅ | ✅ | ✅ |

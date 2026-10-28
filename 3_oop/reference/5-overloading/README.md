@@ -1,17 +1,17 @@
-# Overloading
+# Overloading (Nạp chồng phương thức)
 
-## Java Method Overloading
+## Method Overloading trong Java
 
-Khi một lớp có hai hoặc nhiều phương thức cùng tên nhưng tham số khác nhau (kiểu dữ liệu khác nhau), tại thời điểm gọi dựa trên các tham số được truyền, phương thức tương ứng sẽ được gọi. Cơ chế này gọi là Overloading method
+Khi một lớp có **hai hoặc nhiều phương thức cùng tên nhưng tham số khác nhau** (khác số lượng hoặc kiểu dữ liệu), tại thời điểm gọi, dựa trên tham số được truyền vào, phương thức tương ứng sẽ được gọi. Cơ chế này gọi là **method overloading** (nạp chồng phương thức).
 
-## Advantage of Method Overloading
+## Lợi ích của method overloading
 
-- Method Overloading cải thiện khả năng đọc mã và giảm sự dư thừa mã. 
-- Method Overloading cũng giúp đạt được đa hình thời gian biên dịch.
+- Nạp chồng cải thiện **khả năng đọc mã** và giảm sự trùng lặp mã.
+- Nạp chồng cũng giúp đạt được **đa hình thời gian biên dịch (compile-time polymorphism)**.
 
-## Example of Method Overloading
+## Ví dụ
 
-Here we have created a class named Tester this class has two methods with same name (add) and return type, the only difference is the parameters they accept (one method accepts two integer variables and other accepts three integer variables).
+Ở đây ta tạo một lớp `Tester` có hai phương thức cùng tên (`add`) và cùng kiểu trả về, điểm khác biệt duy nhất là tham số nhận vào (một phương thức nhận hai biến `int`, phương thức kia nhận ba biến `int`):
 
 ```java
 class Calculator{
@@ -24,25 +24,25 @@ class Calculator{
 }
 ```
 
-When you invoke the add() method based on the parameters you pass respective method body gets executed.
+Khi bạn gọi `add()`, dựa trên tham số truyền vào, phần thân phương thức tương ứng sẽ được thực thi:
 
 ```java
 int result = Calculator.add(1,2);  // returns 3;
 result = Calculator.add(1,2,3);    // returns 6;
 ```
 
-## Different Ways of Java Method Overloading
+## Các cách nạp chồng hợp lệ
 
-Method overloading can be achieved using following ways while having same name methods in a class.
+Trong cùng một lớp, với các phương thức cùng tên, bạn có thể nạp chồng bằng cách:
 
-> Use different number of arguments
-> Use different type of arguments
+> - **Khác số lượng tham số**
+> - **Khác kiểu dữ liệu tham số**
 
-## Invalid Ways of Java Method Overloading
+## Các cách nạp chồng KHÔNG hợp lệ
 
-Method overloading cannot be achieved using following ways while having same name methods in a class. Compiler will complain of duplicate method presence.
+Những cách sau **không** tạo ra overloading — compiler sẽ báo lỗi trùng phương thức:
 
-> Using different return type
+> - **Khác kiểu trả về** (tham số vẫn giống nhau)
 
 ```java
 public static int add(int a, int b) {
@@ -55,7 +55,7 @@ public static double add(int a, int b) {
 }
 ```
 
-> Using static and non-static methods (return void)
+> - **Khác static/non-static** (tham số vẫn giống nhau)
 
 ```java
 class Example {
@@ -72,14 +72,14 @@ class Example {
 }
 ```
 
-## Example
+## Ví dụ đầy đủ
 
-### Method Overloading: Different Number of Arguments
+### Overloading: khác số lượng tham số
 
-You can implement method overloading based on the different number of arguments.
+Bạn có thể nạp chồng dựa trên số lượng tham số khác nhau.
 
-#### Different Number of Arguments (Static Methods)
- 
+#### Số lượng tham số khác nhau (phương thức static)
+
 ```java
 package com.tutorialspoint;
 
@@ -100,7 +100,8 @@ public class Tester {
 }
 ```
 
-#### Different Number of Arguments (Non Static Methods)
+#### Số lượng tham số khác nhau (phương thức non-static)
+
 ```java
 package com.tutorialspoint;
 
@@ -122,9 +123,7 @@ public class Tester {
 }
 ```
 
-### Method Overloading: Different Type of Arguments
-
-#### Different Type of Arguments
+### Overloading: khác kiểu tham số
 
 ```java
 package com.tutorialspoint;

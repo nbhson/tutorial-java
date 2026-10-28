@@ -1,25 +1,18 @@
-# Exceptions
+# Try-with-resources
 
-## What Is an Exception in Java?
+## Exception trong Java là gì?
 
-`An exception` is a problem that arises during the execution of a program. When an Exception occurs the normal flow of the program is disrupted and the program/Application terminates abnormally, which is not recommended, therefore, these exceptions are to be handled.
+`Exception` (ngoại lệ) là một sự cố phát sinh trong quá trình chạy chương trình. Khi exception xảy ra, luồng thực thi bình thường bị gián đoạn, chương trình có thể kết thúc bất thường — vì vậy bạn cần xử lý chúng.
 
-## Why Exception Occurs?
+Lý do exception xảy ra có thể là: người dùng nhập dữ liệu không hợp lệ, file cần mở không tồn tại, kết nối mạng bị mất giữa chừng, hoặc JVM hết bộ nhớ. Chi tiết các nhóm exception (checked/unchecked/error) bạn xem ở bài `1_exceptions-introduce`.
 
-An exception can occur for many different reasons. Following are some scenarios where an exception occurs.
-- A user has entered an invalid data.
-- A file that needs to be opened cannot be found.
-- A network connection has been lost in the middle of communications or the JVM has run out of memory.
+## Try-with-resources
 
-> Some of these exceptions are caused by user error, others by programmer error, and others by physical resources that have failed in some manner.
+> Câu lệnh try-with-resources trong Java là câu lệnh try được sử dụng để khai báo một hoặc nhiều **tài nguyên** như streams, sockets, database connections... Các tài nguyên này **phải được đóng** khi chương trình hoàn tất. Câu lệnh try-with-resources sẽ đóng các tài nguyên ở cuối khối try **một cách tự động**.
 
-## Try with Resources
+Tính năng try-with-resources được giới thiệu từ **Java 7**. Nó có thể thay thế cho mô hình try-catch-finally khi làm việc với các đối tượng tài nguyên.
 
-> Câu lệnh try-with-resources trong Java là câu lệnh try được sử dụng để khai báo một hoặc nhiều tài nguyên như streams, sockets, databases, connections, etc. v.v. Các tài nguyên này **phải được đóng** trong khi chương trình đang được hoàn tất. Câu lệnh try-with-resources sẽ đóng các tài nguyên ở cuối câu lệnh **một cách tự động.**
-
-The try-with-resources feature was introduced in Java7. The try-with-resources can also be a replacement for try-catch-finally with resources objects.
-
-## Syntax of Try with Resources
+## Cú pháp
 
 ```java
 try(resources declarations) {
@@ -30,7 +23,7 @@ catch(Exception e) {
 }
 ```
 
-## Example
+## Ví dụ
 
 ```java
 try(FileReader fr = new FileReader("E://file.txt")) {
@@ -43,7 +36,9 @@ try(FileReader fr = new FileReader("E://file.txt")) {
 }
 ```
 
-## Try with Resources having Multiple Resources
+Khi ra khỏi khối `try` (bình thường hoặc do exception), `fr.close()` được gọi **tự động** — bạn không cần viết `finally` để đóng tài nguyên.
+
+## Try-with-resources với nhiều tài nguyên
 
 ```java
 // This example is to use Try with Resources 
@@ -77,9 +72,9 @@ public class Main {
 }
 ```
 
-Sau khi kết thúc khối try, BufferedReader sẽ tự động được đóng mà không cần phải gọi phương thức close() một cách rõ ràng. Nếu có lỗi xảy ra trong quá trình đọc file, nó sẽ được bắt và xử lý trong khối catch.
+Sau khi kết thúc khối try, các tài nguyên sẽ tự động được đóng mà không cần gọi `close()` rõ ràng. Nếu có lỗi xảy ra trong quá trình đọc file, nó sẽ được bắt và xử lý trong khối catch.
 
-###  Without Try with Resources
+### Không dùng try-with-resources (cách cũ, dài dòng hơn)
 
 ```java
 import java.io.File;
@@ -108,3 +103,9 @@ public class ReadData_Demo {
    }
 }
 ```
+
+## Điều kiện để dùng
+
+- Tài nguyên khai báo trong khối `try(...)` phải triển khai interface `AutoCloseable` (có phương thức `close()`).
+- Các tài nguyên được đóng theo **thứ tự ngược lại** với thứ tự khai báo.
+- Bạn vẫn được khai báo biến bên ngoài và tham chiếu vào try-with-resources nếu cần (Java 9+ cho phép dùng biến `final`/effectively final đã khai báo sẵn).

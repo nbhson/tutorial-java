@@ -1,39 +1,37 @@
-# Exceptions
+# Try và Catch
 
-## What Is an Exception in Java?
+## Exception trong Java là gì?
 
-`An exception` is a problem that arises during the execution of a program. When an Exception occurs the normal flow of the program is disrupted and the program/Application terminates abnormally, which is not recommended, therefore, these exceptions are to be handled.
+`Exception` (ngoại lệ) là một sự cố phát sinh trong quá trình chạy chương trình. Khi exception xảy ra, luồng thực thi bình thường bị gián đoạn và chương trình có thể kết thúc bất thường — vì vậy bạn cần xử lý chúng.
 
-## Why Exception Occurs?
+Lý do exception xảy ra có thể là:
 
-An exception can occur for many different reasons. Following are some scenarios where an exception occurs.
-- A user has entered an invalid data.
-- A file that needs to be opened cannot be found.
-- A network connection has been lost in the middle of communications or the JVM has run out of memory.
+- Người dùng nhập dữ liệu không hợp lệ.
+- File cần mở không tồn tại.
+- Kết nối mạng bị mất giữa chừng, hoặc JVM hết bộ nhớ.
 
-> Some of these exceptions are caused by user error, others by programmer error, and others by physical resources that have failed in some manner.
+## Các nhóm exception trong Java
 
-## Java Exception Categories
+- **Checked exceptions** — compiler kiểm tra, bắt buộc phải xử lý.
+- **Unchecked exceptions** — xảy ra lúc chạy (runtime), compiler không ép xử lý.
+- **Errors** — lỗi hệ thống, thường không xử lý được.
 
-Based on these, we have the following categories of Exceptions.'
-- Checked exceptions
-- Unchecked exceptions
-- Errors
+Bạn xem chi tiết từng nhóm ở bài `1_exceptions-introduce` và `8_built-in-exceptions`.
 
-## Java try and catch
+## Java try và catch
 
-> A method catches an exception using a combination of the `try` and `catch` keywords. A try and catch block is placed around the code that might generate an exception. 
+> Bạn bắt một exception bằng cặp từ khóa `try` và `catch`. Khối try/catch được đặt **bao quanh đoạn code có thể gây exception**.
 
-### The try Block
+### Khối try
 
-- When an exception occurs, that exception occurred is handled by `catch` block associated with it. 
-- Every try block should be immediately followed either by a catch block or finally block.
+- Khi exception xảy ra trong khối try, nó sẽ được xử lý bởi khối `catch` tương ứng đi kèm.
+- Mỗi khối `try` phải được theo sau **ngay** bởi một khối `catch` hoặc khối `finally`.
 
-### The catch Block
+### Khối catch
 
-If an exception occurs in protected code, the catch block that follows the try is checked.
+Nếu exception xảy ra trong protected code, khối `catch` đi sau khối `try` sẽ được kiểm tra để tìm loại exception khớp.
 
-### Syntax of Java try and catch Block
+### Cú pháp try/catch
 
 ```java
 try {
@@ -43,7 +41,7 @@ try {
 }
 ```
 
-### Example
+### Ví dụ
 
 ```java
 package com.tutorialspoint;
@@ -62,7 +60,11 @@ public class ExcepTest {
 }
 ```
 
-## Multiple Catch Blocks With Java Try
+Ở đây `a[3]` gây `ArrayIndexOutOfBoundsException` (mảng chỉ có chỉ số 0 và 1), code trong `catch` chạy thay thế, rồi chương trình **tiếp tục chạy bình thường** — in ra "Out of the block".
+
+## Nhiều khối catch (Multiple Catch Blocks)
+
+Một khối `try` có thể đi kèm nhiều khối `catch`, mỗi khối bắt một loại exception:
 
 ```java
 try {
@@ -98,7 +100,11 @@ public class ExcepTest {
 }
 ```
 
-# Multiple Catch Blocks With Java Try
+> Lưu ý: exception xảy ra ở đâu thì các dòng sau đó trong `try` sẽ **không được thực thi** — ví dụ khi `1/b` ném `ArithmeticException`, dòng `a[3]` không chạy nữa.
+
+## Bắt nhiều loại exception trong một catch
+
+Từ Java 7, bạn có thể gộp nhiều loại exception vào **một** khối `catch` bằng toán tử `|`:
 
 ```java
 catch (IOException|FileNotFoundException ex) {
@@ -106,7 +112,7 @@ catch (IOException|FileNotFoundException ex) {
    throw ex;
 ```
 
-> Cần phải chỉ rõ Exception nào nếu muốn sử dụng multiple
+> Nếu muốn dùng dạng multiple này, bạn phải chỉ rõ các loại exception cụ thể.
 
 ```java
  package com.tutorialspoint;
@@ -127,3 +133,8 @@ public class ExcepTest {
    }
 }
 ```
+
+## Lưu ý
+
+- Khối `catch` con (cụ thể hơn) phải đứng **trước** khối `catch` cha (chung hơn) — đặt `catch (Exception e)` đầu tiên sẽ khiến compiler báo lỗi "exception has already been caught".
+- Xem thêm: `3_try-with-resource` (tự đóng tài nguyên), `6_finally-block` (khối luôn chạy), `7_throw-error` (ném exception chủ động).

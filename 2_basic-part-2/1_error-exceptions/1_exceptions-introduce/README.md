@@ -1,28 +1,30 @@
-# Exceptions
+# Exceptions (Ngoại lệ)
 
-## What Is an Exception in Java?
+## Exception trong Java là gì?
 
-`An exception` is a problem that arises during the execution of a program. When an Exception occurs the normal flow of the program is disrupted and the program/Application terminates abnormally, which is not recommended, therefore, these exceptions are to be handled.
+`Exception` (ngoại lệ) là một sự cố phát sinh **trong quá trình chạy chương trình**. Khi exception xảy ra, luồng thực thi bình thường bị gián đoạn và chương trình có thể kết thúc bất thường — điều này không được khuyến khích, vì vậy bạn cần **xử lý (handle)** chúng.
 
-## Why Exception Occurs?
+## Vì sao exception xảy ra?
 
-An exception can occur for many different reasons. Following are some scenarios where an exception occurs.
-- A user has entered an invalid data.
-- A file that needs to be opened cannot be found.
-- A network connection has been lost in the middle of communications or the JVM has run out of memory.
+Exception có thể xảy ra vì nhiều lý do khác nhau. Một số tình huống điển hình:
 
-> Some of these exceptions are caused by user error, others by programmer error, and others by physical resources that have failed in some manner.
+- Người dùng nhập dữ liệu không hợp lệ.
+- File cần mở không tồn tại.
+- Kết nối mạng bị mất giữa chừng, hoặc JVM hết bộ nhớ.
 
-## Java Exception Categories
+> Có exception do lỗi người dùng, có exception do lỗi lập trình viên, và có exception do tài nguyên vật lý gặp sự cố.
 
-Based on these, we have the following categories of Exceptions.'
-- Checked exceptions
-- Unchecked exceptions
-- Errors
+## Các nhóm exception trong Java
 
-### Java Checked Exceptions
+Java chia exception thành 3 nhóm chính:
 
-`A checked exception` is an exception that is checked (notified) by the compiler at compilation-time, these are also called as compile `time exceptions`. **These exceptions cannot simply be ignored, the programmer should take care of (handle) these exceptions.**
+- **Checked exceptions**
+- **Unchecked exceptions**
+- **Errors**
+
+### Checked Exceptions
+
+`Checked exception` là exception được **compiler kiểm tra ngay lúc biên dịch** (nên còn gọi là compile-time exception). **Bạn không thể bỏ qua chúng — bắt buộc phải bắt (try/catch) hoặc khai báo ném ra (throws).**
 
 ```java
 import java.io.File;
@@ -41,34 +43,37 @@ public class FilenotFound_Demo {
 //       FileReader fr = new FileReader(file);
 ```
 
-### Java Unchecked Exceptions
+Compiler báo lỗi vì `FileReader` có thể ném `FileNotFoundException` mà bạn chưa xử lý.
 
-- `An unchecked exception` is an exception that occurs at the **time of execution**. 
-- These include programming bugs, such as logic errors or improper use of an API.
-- **this exception is ignored at the time of compilation.**
+### Unchecked Exceptions
+
+- `Unchecked exception` là exception xảy ra tại **thời điểm chạy (runtime)**.
+- Thường do lỗi lập trình: sai logic, dùng API không đúng cách.
+- **Compiler bỏ qua, không ép bạn xử lý.**
 
 ```java
 public class Unchecked_Demo {
    
    public static void main(String args[]) {
       int num[] = {1, 2, 3, 4};
-      System.out.println(num[5]);
+      System.out.println(num[5]);   // ArrayIndexOutOfBoundsException lúc chạy
    }
 }
 ```
 
 ### Errors
 
-Đây hoàn toàn không phải là trường hợp exceptions mà là những vấn đề phát sinh ngoài tầm kiểm soát của người dùng hoặc lập trình viên. Lỗi thường bị bỏ qua trong mã của bạn vì bạn hiếm khi có thể làm bất cứ điều gì khi xảy ra lỗi. Ví dụ: nếu tràn ngăn xếp xảy ra, lỗi sẽ phát sinh. Chúng cũng bị bỏ qua  at the time of compilation.
+Đây **không phải exception** mà là những vấn đề phát sinh ngoài tầm kiểm soát của người dùng hoặc lập trình viên (ví dụ: `StackOverflowError`, `OutOfMemoryError`). Lỗi thường bị bỏ qua trong mã của bạn vì bạn hiếm khi có thể làm gì khi chúng xảy ra. Chúng cũng chỉ bộc lộ lúc chạy chương trình, không bị compiler kiểm tra.
 
-> Trong Java, quá trình biên dịch (compilation) chạy trước quá trình thực thi (execution). Trong quá trình biên dịch, mã nguồn Java được biên dịch thành mã bytecode, sau đó mã bytecode này được thực thi bởi máy ảo Java (JVM) trong quá trình thực thi.
+> Trong Java, quá trình **biên dịch (compilation)** chạy trước quá trình **thực thi (execution)**: mã nguồn được dịch thành bytecode, sau đó JVM thực thi bytecode đó.
 
 ![alt text](image.png)
 
-## Exception Handling in Java
+## Xử lý exception trong Java
 
 ### Try/catch
-A method catches an exception using a combination of the` try and catch keywords`. A try/catch block is placed around the code that might generate an exception. Code within a try/catch block is referred to as protected code, and the syntax for using try/catch looks like the following −
+
+Bạn bắt exception bằng cặp từ khóa `try` và `catch`. Khối try/catch đặt **bao quanh đoạn code có thể gây exception** — đoạn code này được gọi là *protected code*:
 
 ```java
 try {
@@ -103,9 +108,11 @@ try {
 }
 ```
 
-### The try-with-resources
+Chi tiết từng dạng bạn xem ở các bài riêng: `2_try-catch-block`, `4_multiple-catch-blocks`, `6_finally-block`.
 
-Nói chung, khi chúng ta sử dụng bất kỳ tài nguyên nào như streams, connections, v.v., chúng ta phải đóng chúng một cách rõ ràng bằng cách sử dụng khối cuối cùng. Trong chương trình sau, chúng ta đang đọc dữ liệu từ một tệp bằng FileReader và chúng ta sẽ đóng nó bằng khối cuối cùng.
+### Try-with-resources
+
+Thông thường, khi dùng tài nguyên như stream, connection..., bạn phải đóng chúng một cách tường minh trong khối `finally`. Trong chương trình sau, chúng ta đọc dữ liệu từ file bằng `FileReader` rồi đóng nó trong `finally`:
 
 ```java
 import java.io.File;
@@ -135,17 +142,15 @@ public class ReadData_Demo {
 }
 ```
 
-### Syntax
+Từ Java 7, cú pháp **try-with-resources** cho phép tự động đóng tài nguyên khi ra khỏi khối `try`:
 
 ```java
 try(FileReader fr = new FileReader("file path")) {
    // use the resource
-   } catch () {
+   } catch (IOException e) {
       // body of catch 
    }
 ```
-
-### Example
 
 ```java
 import java.io.FileReader;
@@ -166,7 +171,11 @@ public class Try_withDemo {
 }
 ```
 
-### The Throws/Throw Keywords
+### Throws / Throw
+
+- `throw` — ném một exception cụ thể ra khỏi phương thức.
+- `throws` — khai báo rằng phương thức này có thể ném loại exception đó, đẩy việc xử lý cho nơi gọi.
+
 ```java
 public void divideNumbers(int a, int b) throws ArithmeticException {
     if (b == 0) {
@@ -176,28 +185,21 @@ public void divideNumbers(int a, int b) throws ArithmeticException {
 }
 ```
 
-## Java Exception Class Methods
+## Các phương thức quan trọng của lớp Exception
 
-1. `public String getMessage()`
+| # | Phương thức | Mô tả |
+|---|-------------|-------|
+| 1 | `public String getMessage()` | Trả về thông điệp chi tiết của exception — được khởi tạo trong constructor của `Throwable` |
+| 2 | `public Throwable getCause()` | Trả về nguyên nhân gốc của exception (dạng một đối tượng `Throwable`) |
+| 3 | `public String toString()` | Trả về tên lớp nối với kết quả của `getMessage()` |
+| 4 | `public void printStackTrace()` | In kết quả của `toString()` cùng stack trace ra `System.err` |
+| 5 | `public StackTraceElement[] getStackTrace()` | Trả về mảng các phần tử trong stack trace (phần tử 0 là đỉnh ngăn xếp gọi hàm) |
+| 6 | `public Throwable fillInStackTrace()` | Ghi đè stack trace của đối tượng này bằng stack trace hiện tại |
 
-Returns a detailed message about the exception that has occurred. This message is initialized in the Throwable constructor.
+## Tóm tắt
 
-2. `public Throwable getCause()`
-
-Returns the cause of the exception as represented by a Throwable object.
-
-3. `public String toString()`
-
-Returns the name of the class concatenated with the result of getMessage().
-
-4. `public void printStackTrace()`
-
-Prints the result of toString() along with the stack trace to System.err, the error output stream.
-
-5. `public StackTraceElement [] getStackTrace()`
-
-Returns an array containing each element on the stack trace. The element at index 0 represents the top of the call stack, and the last element in the array represents the method at the bottom of the call stack.
-
-6. `public Throwable fillInStackTrace()`
-
-Fills the stack trace of this Throwable object with the current stack trace, adding to any previous information in the stack trace.
+| Nhóm | Thời điểm phát hiện | Bắt buộc xử lý? | Ví dụ |
+|------|--------------------|-----------------|-------|
+| Checked | Lúc biên dịch | ✅ Có (`try/catch` hoặc `throws`) | `IOException`, `SQLException` |
+| Unchecked | Lúc chạy | ❌ Không ép | `NullPointerException`, `ArithmeticException` |
+| Error | Lúc chạy | Không xử lý được | `StackOverflowError`, `OutOfMemoryError` |

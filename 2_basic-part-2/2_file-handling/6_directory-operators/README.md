@@ -1,15 +1,15 @@
-# Java - Directory Operations
+# Thao tác với thư mục (Directory Operations)
 
-A directory is a File which can contain a list of other files and directories. You use File object to create directories, to list down files available in a directory. For complete detail, check a list of all the methods which you can call on File object and what are related to directories.
+Một **thư mục (directory)** là một "File" đặc biệt — có thể chứa danh sách các file và thư mục khác. Bạn dùng đối tượng `File` để tạo thư mục, liệt kê các file bên trong thư mục. Chi tiết đầy đủ xem danh sách phương thức của lớp `File` trong bài `1_files`.
 
-## Creating Directories
+## Tạo thư mục
 
-There are two useful `File` utility methods, which can be used to create directories −
+Có hai phương thức tiện ích của `File` dùng để tạo thư mục:
 
-- The `mkdir()` method creates a directory, returning true on success and false on failure. Failure indicates that the path specified in the File object already exists, or that the directory cannot be created because the entire path does not exist yet.
-- The `mkdirs()` method creates both a directory and all the parents of the directory.
+- `mkdir()` — tạo **một** thư mục; trả về `true` nếu thành công, `false` nếu thất bại. Thất bại xảy ra khi đường dẫn đã tồn tại, hoặc không thể tạo vì **thư mục cha chưa tồn tại**.
+- `mkdirs()` — tạo thư mục **cùng toàn bộ các thư mục cha** còn thiếu.
 
-### Example to Create Directory in Java
+### Ví dụ tạo thư mục
 
 ```java
 package com.tutorialspoint;
@@ -32,9 +32,9 @@ public class DirectoryTest {
 }
 ```
 
-### Listing (Reading) Directories
+## Liệt kê (đọc) nội dung thư mục
 
-You can use list() method provided by File object to list down all the files and directories available in a directory as follows (inside) −
+Bạn dùng phương thức `list()` của đối tượng `File` để liệt kê tất cả file và thư mục con bên trong:
 
 ```java
 package com.tutorialspoint;
@@ -67,9 +67,9 @@ public class DirectoryTest {
 }
 ```
 
-### Deleting Directories
+## Xóa thư mục
 
-You can use `delete()` method provided by File object to delete a directory as follows −
+Bạn dùng phương thức `delete()` của đối tượng `File` để xóa thư mục. Lưu ý: **thư mục phải rỗng** mới xóa được.
 
 ```java
 package com.tutorialspoint;
@@ -94,3 +94,7 @@ public class DirectoryTest {
    }
 }
 ```
+
+## Gợi ý hiện đại
+
+Với các thao tác thư mục phức tạp hơn (duyệt cây, copy đệ quy, so sánh...), bạn nên dùng `java.nio.file`: `Files.walk()`, `Files.copy()`, `Files.delete()` với `Path` — xem bài `7_files-io`.

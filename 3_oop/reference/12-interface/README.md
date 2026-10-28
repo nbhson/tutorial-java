@@ -10,4 +10,4 @@ Một số đặc điểm của interface:
 - Các thuộc tính trong interface luôn ở dạng public static final mà không cần khai báo, yêu cầu phải có giá trị.
 - Mục đích của interface là để thay thế đa kế thừa lớp của những ngôn ngữ khác (ví dụ như C++, Python…). Ngoài ra, interface sẽ giúp đồng bộ và thống nhất trong việc phát triển hệ thống trao đổi thông tin.
 
-⇨ **Có nghĩa là nó chỉ được extends một class, nhưng có thể implement bao nhiêu Interface tùy ý**
+**Tóm lại:** một lớp chỉ được `extends` một class duy nhất, nhưng có thể `implements` bao nhiêu interface tùy ý.

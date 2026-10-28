@@ -1,6 +1,6 @@
 # Overriding
 
-## Benefit of Overriding in Java
+## Lợi ích của Overriding trong Java
 
 Lợi ích của việc ghi đè là: `khả năng xác định hành vi cụ thể cho loại lớp con`, nghĩa là lớp con có thể triển khai phương thức lớp cha dựa trên yêu cầu của lớp đó. Theo thuật ngữ hướng đối tượng, ghi đè có nghĩa là ghi đè chức năng của phương thức hiện có.
 
@@ -9,13 +9,12 @@ Lợi ích của việc ghi đè là: `khả năng xác định hành vi cụ th
 - Ghi đè phương thức cho phép chúng ta đạt được đa hình thời gian chạy và được sử dụng để viết các định nghĩa cụ thể của phương thức lớp con đã được định nghĩa trong lớp cha.
 - Phương thức là lớp cha và phương thức được ghi đè trong lớp con phải có cùng chữ ký khai báo như danh sách tham số, kiểu và kiểu trả về.
 
-## Usage of Java Method Overriding
+## Cách sử dụng method overriding trong Java
 
-Following are the two important usages of method overriding in Java:
+Dưới đây là hai công dụng quan trọng của method overriding trong Java:
 
-> Method overriding is used for achieving run-time polymorphism.
-> 
-> Method overriding is used for writing specific definition of a subclass method (this method is known as the overridden method).
+> - Dùng để đạt được **đa hình thời gian chạy (run-time polymorphism)**.
+> - Dùng để viết định nghĩa cụ thể cho phương thức của lớp con (phương thức này gọi là **overridden method**).
 
 ## Example of Method Overriding in Java
 
@@ -60,16 +59,16 @@ public class TestDog {
 - Kiểu trả về phải giống hoặc là con của kiểu trả về được khai báo trong phương thức ghi đè ban đầu trong lớp cha.
 - `Access modifier` không thể hạn chế hơn mức truy cập của phương thức ghi đè. Ví dụ: Nếu phương thức của class cha được khai báo là public thì phương thức ghi đè trong lớp con không thể là private hoặc protected.
 - Một phương thức được khai báo là `final` không thể bị ghi đè.
-- A method declared static cannot be overridden but can be re-declared.
-- Constructors cannot be overridden.
+- Phương thức khai báo `static` không thể bị ghi đè, nhưng có thể được **khai báo lại (re-declare)** trong lớp con.
+- Constructor không thể bị ghi đè.
 
 ## Java Method and Constructor Overriding
 
 Trong Java, mỗi lớp có một tên khác nhau và tên của hàm tạo giống với tên lớp. Do đó, chúng ta không thể ghi đè một hàm tạo vì chúng không thể có cùng tên.
 
-## Java Method Overriding: Using the super Keyword
+## Java Method Overriding: dùng từ khóa super
 
-When invoking a superclass version of an overridden method the super keyword is used
+Khi muốn gọi **phiên bản của superclass** cho một phương thức đã bị ghi đè, bạn dùng từ khóa `super`:
 
 ```java
 class Animal {
@@ -94,7 +93,7 @@ public class TestDog {
 }
 ```
 
-Output
+## Kết quả
 
 ```bash
 Animals can move

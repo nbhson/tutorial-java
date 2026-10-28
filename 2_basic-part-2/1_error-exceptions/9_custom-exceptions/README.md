@@ -1,43 +1,44 @@
-# Java throws and throw
+# Custom Exceptions (Ngoại lệ tự định nghĩa) — throw & throws
 
-## What Is an Exception in Java?
+> Bài này gốc là bài về `throw`/`throws`, nhưng trọng tâm là **tự tạo exception của riêng bạn**. Bạn xem thêm cách dùng cơ bản của `throw`/`throws` trong bài `1_exceptions-introduce`.
 
-`An exception` is a problem that arises during the execution of a program. When an Exception occurs the normal flow of the program is disrupted and the program/Application terminates abnormally, which is not recommended, therefore, these exceptions are to be handled.
+## Exception trong Java là gì?
 
-## Why Exception Occurs?
+`Exception` là một sự cố phát sinh trong quá trình chạy chương trình. Khi exception xảy ra, luồng thực thi bình thường bị gián đoạn, chương trình có thể kết thúc bất thường — vì vậy bạn cần xử lý chúng.
 
-An exception can occur for many different reasons. Following are some scenarios where an exception occurs.
-- A user has entered an invalid data.
-- A file that needs to be opened cannot be found.
-- A network connection has been lost in the middle of communications or the JVM has run out of memory.
+Lý do exception xảy ra có thể là:
 
-> Some of these exceptions are caused by user error, others by programmer error, and others by physical resources that have failed in some manner.
+- Người dùng nhập dữ liệu không hợp lệ.
+- File cần mở không tồn tại.
+- Kết nối mạng bị mất giữa chừng, hoặc JVM hết bộ nhớ.
 
-## Java Custom Exception
+## Custom Exception là gì?
 
-`Custom Exception` đề cập đến việc tạo ngoại lệ của riêng bạn để tùy chỉnh một ngoại lệ theo nhu cầu. Các ngoại lệ tùy chỉnh có nguồn gốc từ lớp `Exception`.
+`Custom Exception` (ngoại lệ tự định nghĩa) là việc bạn **tạo ra lớp exception của riêng mình** để mô tả đúng lỗi của bài toán. Các exception tùy chỉnh thường kế thừa từ lớp `Exception`.
 
-## Need of Java Custom Exceptions
-> - To categorize the exceptions based on the different types of errors in your project.
-> - To allow application-level exception handling.
+## Khi nào cần custom exception?
 
-## Create a Custom Exception in Java
+> - Để **phân loại exception** theo từng loại lỗi riêng trong dự án của bạn.
+> - Để cho phép **xử lý exception ở cấp ứng dụng** (bắt đúng loại lỗi nghiệp vụ, ví dụ "tài khoản không đủ tiền").
 
-### Syntax
+## Tạo custom exception trong Java
 
-You just need to extend the predefined Exception class to create your own Exception. **These are considered to be checked exceptions.**
+### Cú pháp
+
+Chỉ cần `extends` lớp `Exception` có sẵn để tạo exception của riêng bạn. **Đây được coi là checked exception.**
 
 ```java
 class MyException extends Exception {
 }
 ```
 
-### Rules to Create Custom Exception
-- Tất cả các trường hợp ngoại lệ phải là con của Throwable.
-- If you want to write a checked exception that is automatically enforced by the `Handle` or `Declare` Rule, you need to extend the `Exception` class.
-- If you want to write a `runtime` exception, you need to extend the `RuntimeException` class.
+### Quy tắc tạo custom exception
 
-### Java Custom Exception Example - Case Handle or Declare Rule
+- Mọi exception phải là con (trực tiếp hoặc gián tiếp) của `Throwable`.
+- Nếu muốn tạo **checked exception** (bắt buộc phải `handle` hoặc `declare` theo Handle-or-Declare Rule), hãy kế thừa lớp `Exception`.
+- Nếu muốn tạo **runtime exception** (không bị compiler ép xử lý), hãy kế thừa lớp `RuntimeException`.
+
+### Ví dụ 1 — kế thừa `Exception` (checked, theo quy tắc Handle-or-Declare)
 
 ```java
 package list;
@@ -91,7 +92,12 @@ class InsufficientFundsException extends Exception {
 }
 ```
 
-### Java Custom Exception Example - Case Extending Runtime Exception
+Trong ví dụ này:
+
+- `withdraw()` khai báo `throws InsufficientFundsException` — nơi gọi **bắt buộc** phải bắt nó trong `try/catch` (Handle) hoặc khai báo tiếp `throws` (Declare).
+- `InsufficientFundsException` mang thêm dữ liệu riêng (`amount`) — điều mà exception có sẵn không làm được.
+
+### Ví dụ 2 — kế thừa `RuntimeException` (unchecked)
 
 ```java
 package com.tutorialspoint;
@@ -106,7 +112,6 @@ public class BankDemo {
       System.out.println("\nWithdrawing $100...");
       c.withdraw(100.00);
       System.out.println("\nWithdrawing $600...");
-      c.withdraw(600.00);
 
    }
 }
@@ -153,3 +158,13 @@ class InsufficientFundsException extends RuntimeException {
    }
 }
 ```
+
+Ở đây `InsufficientFundsException` kế thừa `RuntimeException`, nên `withdraw()` **không cần khai báo `throws`** và nơi gọi cũng không bắt buộc phải `try/catch`. Compiler không kiểm tra — nhưng chương trình vẫn dừng nếu exception không được bắt.
+
+## So sánh hai cách
+
+| Tiêu chí | `extends Exception` | `extends RuntimeException` |
+|----------|--------------------|---------------------------|
+| Loại | Checked | Unchecked |
+| Compiler ép xử lý? | ✅ Bắt buộc `try/catch` hoặc `throws` | ❌ Không |
+| Phù hợp khi | Lỗi nghiệp vụ mà nơi gọi nên/không thể bỏ qua | Lỗi lập trình hoặc lỗi không mong muốn lúc chạy |
