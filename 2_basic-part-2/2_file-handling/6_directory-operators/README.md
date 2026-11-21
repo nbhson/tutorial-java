@@ -1,100 +1,42 @@
 # Thao tác với thư mục (Directory Operations)
 
-Một **thư mục (directory)** là một "File" đặc biệt — có thể chứa danh sách các file và thư mục khác. Bạn dùng đối tượng `File` để tạo thư mục, liệt kê các file bên trong thư mục. Chi tiết đầy đủ xem danh sách phương thức của lớp `File` trong bài `1_files`.
+Một **thư mục (directory)** là một "File" đặc biệt — có thể chứa danh sách các file và thư mục khác. Hãy hình dung thư mục như chiếc hộp của hộp: vẫn là đồ vật, nhưng đồ đạc của nó là những hộp nhỏ hơn. Bạn dùng đối tượng `File` để tạo thư mục, liệt kê các file bên trong thư mục. Chi tiết đầy đủ xem danh sách phương thức của lớp `File` trong bài `1_files`.
 
 ## Tạo thư mục
 
+Mục này nói về việc "đặt hộp mới" vào hệ thống file — hai phương thức `mkdir` khác nhau ở chỗ: có tự tạo hộp cha còn thiếu hay không.
+
 Có hai phương thức tiện ích của `File` dùng để tạo thư mục:
 
-- `mkdir()` — tạo **một** thư mục; trả về `true` nếu thành công, `false` nếu thất bại. Thất bại xảy ra khi đường dẫn đã tồn tại, hoặc không thể tạo vì **thư mục cha chưa tồn tại**.
-- `mkdirs()` — tạo thư mục **cùng toàn bộ các thư mục cha** còn thiếu.
+- `mkdir()` — tạo **một** thư mục; trả về `true` nếu thành công, `false` nếu thất bại. Thất bại xảy ra khi đường dẫn đã tồn tại, hoặc không thể tạo vì **thư mục cha chưa tồn tại** — như muốn đặt hộp vào kệ mà kệ chưa dựng thì không đặt được.
+- `mkdirs()` — tạo thư mục **cùng toàn bộ các thư mục cha** còn thiếu — dựng kệ luôn nếu chưa có.
 
 ### Ví dụ tạo thư mục
 
-```java
-package com.tutorialspoint;
+> 📄 **Code ví dụ:** [`examples/01-vi-du-tao-thu-muc.java`](examples/01-vi-du-tao-thu-muc.java)
 
-import java.io.File;
-
-public class DirectoryTest {
-   public static void main(String args[]) {
-      String dirname = "/tmp/user/java/bin";
-      File directory = new File(dirname);
-
-      // Create directory now.
-      directory.mkdirs();
-
-      // create new file object
-      File file = new File("/tmp/user/java/bin");
-
-      System.out.println(file.exists());      
-   }
-}
-```
+> **Tóm gọn 1 câu:** `mkdir()` đòi cha phải có sẵn, `mkdirs()` tự dựng cả cây tổ chức — cần tạo đường dẫn sâu thì dùng `mkdirs()` cho lành.
 
 ## Liệt kê (đọc) nội dung thư mục
 
+Mục này cho thấy cách "mở hộp ra xem có gì bên trong" — trả về danh sách tên các mục con.
+
 Bạn dùng phương thức `list()` của đối tượng `File` để liệt kê tất cả file và thư mục con bên trong:
 
-```java
-package com.tutorialspoint;
-
-import java.io.File;
-
-public class DirectoryTest {
-
-   public static void main(String[] args) {
-      File file = null;
-      String[] paths;
-  
-      try {      
-         // create new file object
-         file = new File("/tmp");
-
-         // array of files and directory
-         paths = file.list();
-
-         // for each name in the path array
-         for(String path:paths) {
-            // prints filename and directory name
-            System.out.println(path);
-         }
-      } catch (Exception e) {
-         // if any error occurs
-         e.printStackTrace();
-      }
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-liet-ke-oc-noi-dung-thu-muc.java`](examples/02-liet-ke-oc-noi-dung-thu-muc.java)
 
 ## Xóa thư mục
 
-Bạn dùng phương thức `delete()` của đối tượng `File` để xóa thư mục. Lưu ý: **thư mục phải rỗng** mới xóa được.
+Mục này là chỗ nhiều người trầy nhất: xóa thư mục **chỉ thành công khi nó rỗng**.
 
-```java
-package com.tutorialspoint;
+Bạn dùng phương thức `delete()` của đối tượng `File` để xóa thư mục. Lưu ý: **thư mục phải rỗng** mới xóa được — giống như quy định "chỉ được đập hộp khi đã dọn hết đồ bên trong".
 
-import java.io.File;
+> 📄 **Code ví dụ:** [`examples/03-xoa-thu-muc.java`](examples/03-xoa-thu-muc.java)
 
-public class DirectoryTest {
-
-   public static void main(String[] args) {
-      File file = new File("/tmp/user/java/bin");
-      if(file.exists()) {
-         boolean success = file.delete();
-
-         if (success) {
-            System.out.println("The directory has been successfully deleted."); 
-         }else {
-            System.out.println("The directory deletion failed.");
-         }        
-      }else {
-         System.out.println("The directory is not present."); 
-      }
-   }
-}
-```
+> **Tóm gọn 1 câu:** Ba thao tác với thư mục đều qua đối tượng `File`: tạo (`mkdir`/`mkdirs`), xem (`list`), xóa (`delete` — chỉ ăn khi thư mục rỗng).
 
 ## Gợi ý hiện đại
+
+Mục này chỉ đường cho code mới: khi thao tác thư mục phức tạp hơn tạo-xem-xóa, hãy đổi sang `java.nio.file`.
 
 Với các thao tác thư mục phức tạp hơn (duyệt cây, copy đệ quy, so sánh...), bạn nên dùng `java.nio.file`: `Files.walk()`, `Files.copy()`, `Files.delete()` với `Path` — xem bài `7_files-io`.

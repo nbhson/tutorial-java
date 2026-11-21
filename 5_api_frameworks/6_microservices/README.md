@@ -14,9 +14,15 @@
 
 ## Microservices là gì?
 
+Mục này trả lời câu hỏi nền tảng trước khi đụng Spring Cloud: microservices là gì, và đổi lại sự linh hoạt ta phải trả giá gì.
+
 **Microservices** là kiến trúc chia ứng dụng thành các services nhỏ, độc lập, mỗi service đảm nhiệm một business capability riêng. Điều này giúp dễ mở rộng, deploy độc lập, và giảm rủi ro khi có lỗi.
 
+Hãy hình dung monolith như một **siêu thị lớn duy nhất trong thành phố** — mọi thứ ở một chỗ, dễ quản lý nhưng một sự cố hỏng thang máy là cả siêu thị tê liệt. Microservices là **các cửa hàng chuyên doanh riêng lẻ**: tiệm bánh sập không ảnh hưởng tiệm sách, nhưng giờ bạn phải lo tìm đường tới từng tiệm — đó chính là chi phí Spring Cloud lo thay bạn.
+
 ### So sánh Monolith vs Microservices
+
+Sơ đồ dưới đây đặt hai mô hình cạnh nhau để bạn nhìn rõ sự khác biệt về "mặt bằng":
 
 ```
 ┌─────────────────────────────────┐      ┌──────────┐  ┌──────────┐  ┌──────────┐
@@ -39,7 +45,11 @@
 | Database | Shared | Per service |
 | Complexity | Thấp ban đầu | Cao hơn |
 
+> **Cách đọc bảng này:** đọc theo từng "khía cạnh" dọc cột trái, so sánh ngang hai cột Monolith/Microservices — bạn sẽ thấy Microservices thắng ở deploy/scale nhưng thua ở Complexity: đó là cái giá cần cân nhắc trước khi chọn.
+
 ## Spring Cloud là gì?
+
+Mục này giới thiệu "bộ công cụ quản lý chung cư nhiều tòa": các pattern chung của hệ phân tán mà Spring Cloud đóng gói sẵn cho bạn.
 
 **Spring Cloud** cung cấp các công cụ để xây dựng các patterns phổ biến trong hệ thống distributed:
 
@@ -50,202 +60,67 @@
 
 > **Phiên bản**: Spring Cloud 2026.x (tương thích Spring Boot 4.x), Java 17+
 
+> **Tóm gọn 1 câu:** Spring Cloud là "bộ tiện ích chung cho cả khu dân cư service" — tìm nhau, dẫn đường, chịu lỗi, cấu hình tập trung.
+
 ## Thành phần chính
+
+Mục này lần lượt giới thiệu 6 mảnh ghép của một hệ microservices chuẩn — mỗi mảnh giải một bài toán riêng, đọc theo thứ tự là ghép được sơ đồ kiến trúc ở cuối bài.
 
 ### 1. Service Discovery - Eureka Server
 
-Eureka cho phép các services đăng ký và tìm thấy nhau mà không cần hardcode IP/port.
+Eureka cho phép các services đăng ký và tìm thấy nhau mà không cần hardcode IP/port — giống như **sổ điện thoại của tòa nhà**: tenant mới vào là tự ghi tên, ai cần gặp thì tra sổ chứ không cần nhớ số phòng từng người.
 
 #### Eureka Server
 
-```xml
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-</dependency>
-```
+> 📄 **Code ví dụ:** [`examples/01-eureka-server.xml`](examples/01-eureka-server.xml)
 
-```java
-@SpringBootApplication
-@EnableEurekaServer
-public class EurekaServerApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(EurekaServerApplication.class, args);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-eureka-server.java`](examples/02-eureka-server.java)
 
-```yaml
-# application.yml cho Eureka Server
-server:
-  port: 8761
-
-eureka:
-  client:
-    register-with-eureka: false   # Server không tự đăng ký
-    fetch-registry: false          # Server không cần fetch registry
-```
+> 📄 **Code ví dụ:** [`examples/03-eureka-server.yaml`](examples/03-eureka-server.yaml)
 
 #### Eureka Client (Service)
 
-```java
-@SpringBootApplication
-@EnableDiscoveryClient  // Đăng ký với Eureka
-public class UserServiceApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(UserServiceApplication.class, args);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-eureka-client-service.java`](examples/04-eureka-client-service.java)
 
-```yaml
-spring:
-  application:
-    name: user-service   # Tên service (dùng để gọi nhau)
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
-```
+> 📄 **Code ví dụ:** [`examples/05-eureka-client-service.yaml`](examples/05-eureka-client-service.yaml)
 
 ### 2. API Gateway
 
-API Gateway là điểm vào duy nhất cho client, route requests đến services tương ứng.
+API Gateway là điểm vào duy nhất cho client, route requests đến services tương ứng — hãy hình dung nó như **lễ tân sảnh chính**: khách chỉ cần đến một cửa, lễ tân biết chính xác hướng dẫn lên phòng nào.
 
-```xml
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-gateway</artifactId>
-</dependency>
-```
+> 📄 **Code ví dụ:** [`examples/06-2-api-gateway.xml`](examples/06-2-api-gateway.xml)
 
-```yaml
-# application.yml cho API Gateway
-server:
-  port: 8080
+> 📄 **Code ví dụ:** [`examples/07-2-api-gateway.yaml`](examples/07-2-api-gateway.yaml)
 
-spring:
-  application:
-    name: api-gateway
-  cloud:
-    gateway:
-      routes:
-        - id: user-service
-          uri: lb://USER-SERVICE         # lb = load balanced
-          predicates:
-            - Path=/api/users/**
-        - id: task-service
-          uri: lb://TASK-SERVICE
-          predicates:
-            - Path=/api/tasks/**
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
-```
-
-```java
-// Programmatic configuration (alternative)
-@Configuration
-public class GatewayConfig {
-
-    @Bean
-    public RouteLocator routes(RouteLocatorBuilder builder) {
-        return builder.routes()
-            .route("user-service", r -> r
-                .path("/api/users/**")
-                .uri("lb://USER-SERVICE"))
-            .route("task-service", r -> r
-                .path("/api/tasks/**")
-                .uri("lb://TASK-SERVICE"))
-            .build();
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/08-2-api-gateway.java`](examples/08-2-api-gateway.java)
 
 ### 3. Service-to-Service Communication
 
+Mục này nói về "cách các tiệm gọi nhau": chọn công cụ gọi HTTP nào cho hợp thời, và cách cân bằng tải giữa các bản sao của một service.
+
 #### RestTemplate (Legacy) vs WebClient vs RestClient
 
-```java
-// ============ RestClient (Mới, Spring 6.1+) - Khuyến nghị ============
-@Service
-public class UserServiceClient {
-
-    private final RestClient restClient;
-
-    public UserServiceClient(RestClient.Builder builder) {
-        this.restClient = builder
-            .baseUrl("http://user-service")  // Tên từ Eureka, không cần IP
-            .build();
-    }
-
-    public UserDTO getUser(Long id) {
-        return restClient
-            .get()
-            .uri("/api/users/{id}", id)
-            .retrieve()
-            .body(UserDTO.class);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/09-resttemplate-legacy-vs-webclient-vs-restclient.java`](examples/09-resttemplate-legacy-vs-webclient-vs-restclient.java)
 
 #### Load Balanced với @LoadBalanced
 
-```java
-@Configuration
-public class RestClientConfig {
-
-    @Bean
-    @LoadBalanced  // Tự động resolve service name qua Eureka
-    public RestClient restClient(RestClient.Builder builder) {
-        return builder.build();
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/10-load-balanced-voi-loadbalanced.java`](examples/10-load-balanced-voi-loadbalanced.java)
 
 ### 4. Circuit Breaker - Resilience4j
 
-**Circuit Breaker** ngăn cascading failures khi một service down. Spring Boot 4.x tích hợp resilience trực tiếp (không cần Resilience4j dependency riêng).
+Mục này nói về "cầu chì điện" của hệ phân tán: khi một service chết, đừng để cả chuỗi bị cháy theo.
 
-```java
-@Service
-public class TaskService {
+**Circuit Breaker** ngăn cascading failures khi một service down. Hãy hình dung cầu dao điện trong nhà: khi dòng quá tải, nó ngắt sớm để bảo vệ toàn bộ mạch — rồi thỉnh thoảng "thử lại" xem điện đã ổn chưa. Spring Boot 4.x tích hợp resilience trực tiếp (không cần Resilience4j dependency riêng).
 
-    private final UserServiceClient userServiceClient;
+> 📄 **Code ví dụ:** [`examples/11-4-circuit-breaker-resilience4j.java`](examples/11-4-circuit-breaker-resilience4j.java)
 
-    public TaskService(UserServiceClient userServiceClient) {
-        this.userServiceClient = userServiceClient;
-    }
-
-    @CircuitBreaker(name = "userService", fallbackMethod = "getDefaultUser")
-    @Retry(name = "userService")
-    @TimeLimiter(name = "userService")
-    public UserDTO getUserWithResilience(Long userId) {
-        return userServiceClient.getUser(userId);
-    }
-
-    // Fallback method - được gọi khi circuit breaker mở
-    private UserDTO fallbackGetUser(Long userId, Throwable t) {
-        // Trả về default user thay vì fail
-        return new UserDTO(userId, "Unknown User", "unknown@example.com");
-    }
-}
-```
-
-```yaml
-resilience4j:
-  circuitbreaker:
-    instances:
-      userService:
-        sliding-window-size: 10
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 10s
-        permitted-number-of-calls-in-half-open-state: 3
-```
+> 📄 **Code ví dụ:** [`examples/12-4-circuit-breaker-resilience4j.yaml`](examples/12-4-circuit-breaker-resilience4j.yaml)
 
 ### 5. Centralized Configuration - Spring Cloud Config
+
+Mục này giải quyết bài toán "nơi nào lưu cấu hình": một nguồn duy nhất, mọi service kéo về — thay vì mỗi service giữ một bản cấu hình riêng lẻ dễ lệch nhau.
+
+Sơ đồ dưới đây mô tả dòng chảy cấu hình: Git lưu file gốc, Config Server phân phát, các service kéo về dùng.
 
 ```
 ┌──────────────┐     ┌──────────────────┐     ┌───────────────┐
@@ -254,44 +129,17 @@ resilience4j:
 └──────────────┘     └──────────────────┘     └───────────────┘
 ```
 
-```java
-// Config Server
-@SpringBootApplication
-@EnableConfigServer
-public class ConfigServerApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(ConfigServerApplication.class, args);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/13-5-centralized-configuration-spring-cloud-config.java`](examples/13-5-centralized-configuration-spring-cloud-config.java)
 
-```yaml
-# application.yml cho Config Server
-server:
-  port: 8888
-spring:
-  cloud:
-    config:
-      server:
-        git:
-          uri: https://github.com/yourorg/config-repo
-          default-label: main
-```
+> 📄 **Code ví dụ:** [`examples/14-5-centralized-configuration-spring-cloud-config.yaml`](examples/14-5-centralized-configuration-spring-cloud-config.yaml)
 
 ### 6. Distributed Tracing - Micrometer Tracing
 
-```yaml
-# Tracing với Micrometer + Zipkin
-management:
-  tracing:
-    sampling:
-      probability: 1.0  # Trace 100% requests (dev)
-  zipkin:
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans
-```
+> 📄 **Code ví dụ:** [`examples/15-6-distributed-tracing-micrometer-tracing.yaml`](examples/15-6-distributed-tracing-micrometer-tracing.yaml)
 
 ## Kiến trúc hoàn chỉnh
+
+Mục này ghép cả 6 mảnh phía trên vào một sơ đồ duy nhất — nhìn một lần là thấy vị trí từng thành phần trong bức tranh tổng thể.
 
 ```
                     ┌─────────────┐
@@ -319,85 +167,21 @@ management:
 
 ## Ví dụ: Gọi Service qua Eureka
 
-```java
-// Trong Task Service, gọi User Service
-@Service
-public class TaskService {
-
-    private final RestClient restClient;
-
-    public TaskService(@LoadBalanced RestClient.Builder builder) {
-        this.restClient = builder.build();
-    }
-
-    public TaskResponse createTask(TaskRequest request) {
-        // Gọi User Service để validate user tồn tại
-        UserDTO user = restClient
-            .get()
-            .uri("http://user-service/api/users/{id}", request.userId())
-            .retrieve()
-            .body(UserDTO.class);
-
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found");
-        }
-
-        // Tạo task...
-        Task task = new Task(request.title(), request.description());
-        return taskRepository.save(task);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/16-vi-du-goi-service-qua-eureka.java`](examples/16-vi-du-goi-service-qua-eureka.java)
 
 ## Deployment với Docker
 
 ### Dockerfile
 
-```dockerfile
-FROM eclipse-temurin:21-jre-alpine
-WORKDIR /app
-COPY target/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
+> 📄 **Code ví dụ:** [`examples/17-dockerfile.dockerfile`](examples/17-dockerfile.dockerfile)
 
 ### docker-compose.yml
 
-```yaml
-version: '3.8'
-services:
-  eureka-server:
-    build: ./eureka-server
-    ports:
-      - "8761:8761"
-
-  api-gateway:
-    build: ./api-gateway
-    ports:
-      - "8080:8080"
-    depends_on:
-      - eureka-server
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-
-  user-service:
-    build: ./user-service
-    depends_on:
-      - eureka-server
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-
-  task-service:
-    build: ./task-service
-    ports:
-      - "8082:8082"
-    depends_on:
-      - eureka-server
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-```
+> 📄 **Code ví dụ:** [`examples/18-docker-compose-yml.yaml`](examples/18-docker-compose-yml.yaml)
 
 ## Best Practices
+
+Mục này là "nội quy vận hành" của hệ microservices: bảy nguyên tắc mà nếu bỏ qua một, bạn sẽ trả giá lúc 3 giờ sáng.
 
 1. **Database per service**: Mỗi service có database riêng
 2. **API Gateway**: Điểm vào duy nhất, xử lý cross-cutting concerns
@@ -406,6 +190,8 @@ services:
 5. **Distributed Tracing**: Trace requests qua nhiều services
 6. **Health Checks**: Expose `/actuator/health` cho monitoring
 7. **Event-Driven**: Dùng Kafka/RabbitMQ cho async communication
+
+> **Tóm gọn 1 câu:** Microservices là "các cửa hàng chuyên doanh tự lo đời sống của mình" — Spring Cloud là hệ thống điện nước, đường phố và sổ đăng ký giúp chúng sống chung hòa bình.
 
 ## Tài liệu tham khảo
 

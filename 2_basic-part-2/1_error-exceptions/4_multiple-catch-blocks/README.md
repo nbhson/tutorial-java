@@ -1,93 +1,54 @@
 # Exceptions
 
-## What Is an Exception in Java?
+## Exception trong Java là gì?
+
+Mục mở đầu này ôn nhanh nền tảng trước khi vào kỹ thuật "nhiều khối catch".
 
 `An exception` is a problem that arises during the execution of a program. When an Exception occurs the normal flow of the program is disrupted and the program/Application terminates abnormally, which is not recommended, therefore, these exceptions are to be handled.
 
-## Why Exception Occurs?
+Để diễn đạt bằng tiếng Việt cho dễ hình dung: exception là sự cố phát sinh khi chương trình đang chạy, làm luồng thực thi bị gián đoạn — nếu không hứng lấy mà xử lý, chương trình sẽ kết thúc bất thường.
 
-An exception can occur for many different reasons. Following are some scenarios where an exception occurs.
-- A user has entered an invalid data.
-- A file that needs to be opened cannot be found.
-- A network connection has been lost in the middle of communications or the JVM has run out of memory.
+## Vì sao exception xảy ra?
 
-> Some of these exceptions are caused by user error, others by programmer error, and others by physical resources that have failed in some manner.
+Một exception có thể xuất phát từ nhiều nguồn; mấy tình huống sau là quen thuộc nhất:
 
-## Multiple Catch Blocks in Java
+- Người dùng nhập dữ liệu không hợp lệ.
+- File cần mở không tồn tại.
+- Kết nối mạng bị mất giữa chừng, hoặc JVM hết bộ nhớ.
+
+> Có exception do lỗi người dùng, có exception do lỗi lập trình viên, và có exception do tài nguyên vật lý gặp sự cố.
+
+## Multiple Catch Blocks trong Java
+
+Mục này là nội dung chính của bài: khi một đoạn code có thể gặp **nhiều loại** sự cố, bạn xếp nhiều khối `catch` — mỗi khối hứng một loại, như một dãy quầy tiếp đón chuyên từng loại hồ sơ.
 
 Multiple catch blocks in Java are used to catch/handle multiple exceptions that may be thrown from a particular code section. A try block can have multiple catch blocks to handle multiple exceptions.
 
-## Syntax: Multiple Catch Blocks
+Ví von: `try` là quầy thu tiền một cửa hàng, còn các khối `catch` là các quầy khiếu nại chuyên trách — quầy thẻ ngân hàng, quầy đổi trả, quầy bảo hành. Khách mang vấn đề nào thì được dẫn tới đúng quầy đó.
 
-```java
-try {
-   // Protected code
-} catch (ExceptionType1 e1) {
-   // Catch block
-} catch (ExceptionType2 e2) {
-   // Catch block
-} catch (ExceptionType3 e3) {
-   // Catch block
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-syntax-multiple-catch-blocks.java`](examples/01-syntax-multiple-catch-blocks.java)
 
-## Points to Remember while using Multiple Catch Blocks
+## Những điểm cần nhớ khi dùng nhiều khối catch
 
-- Mỗi lần chỉ có thể xử lý một loại ngoại lệ. Trong chế độ được bảo vệ, chỉ một loại ngoại lệ sẽ được nêu ra, do đó nó sẽ chỉ được xử lý trong khối bắt có liên quan.
-- Thứ tự của khối bắt là rất quan trọng. Thứ tự phải từ ngoại lệ cụ thể đến ngoại lệ chung. Trong trường hợp khối ngoại lệ cha xuất hiện trước khối ngoại lệ con, trình biên dịch sẽ khiếu nại và sẽ đưa ra lỗi thời gian biên dịch.
+- Mỗi lần chỉ có thể xử lý một loại ngoại lệ. Trong chế độ được bảo vệ, chỉ một loại ngoại lệ sẽ được nêu ra, do đó nó sẽ chỉ được xử lý trong khối bắt có liên quan — một "vụ tai nạn" chỉ được một quầy tiếp, không hai quầy cùng giành.
+- Thứ tự của khối bắt là rất quan trọng. Thứ tự phải từ ngoại lệ cụ thể đến ngoại lệ chung. Trong trường hợp khối ngoại lệ cha xuất hiện trước khối ngoại lệ con, trình biên dịch sẽ khiếu nại và sẽ đưa ra lỗi thời gian biên dịch. Ví von: xếp hàng theo "chuyên môn hẹp trước, chuyên môn rộng sau" — nếu quầy tổng hợp đứng đầu thì mọi khách đều bị nó "nuốt" mất.
 
-### Example of Java Multiple Catch Blocks
+### Ví dụ Multiple Catch Blocks trong Java
 
-```java
-package com.tutorialspoint;
+> 📄 **Code ví dụ:** [`examples/02-example-of-java-multiple-catch-blocks.java`](examples/02-example-of-java-multiple-catch-blocks.java)
 
-public class ExcepTest {
+> **Tóm gọn 1 câu:** Một `try` được phục vụ bởi nhiều `catch` — xếp catch cụ thể trước, catch chung sau, và mỗi exception chỉ rơi vào đúng một khối.
 
-   public static void main(String args[]) {
-      try {
-         int a[] = new int[2];
-         int b = 0;
-         int c = 1/b;
-         System.out.println("Access element three :" + a[3]);
-      }
-      catch (ArrayIndexOutOfBoundsException e) {
-         System.out.println("ArrayIndexOutOfBoundsException thrown  :" + e);
-      }catch (Exception e) {
-          System.out.println("Exception thrown  :" + e);
-      }
-      System.out.println("Out of the block");
-   }
-}
-```
+## Xử lý nhiều exception trong một khối catch duy nhất
 
-## Handling Multiple Exceptions Within A Single Catch Block
+Mục này giới thiệu cách gộp: nếu nhiều loại exception được xử lý **giống hệt nhau**, khỏi cần nhiều khối — gộp chung một khối bằng toán tử `|`.
 
-### Syntax 
+### Cú pháp
 
-```java
-catch (IOException|FileNotFoundException ex) {
-   logger.log(ex);
-   throw ex;
-```
+> 📄 **Code ví dụ:** [`examples/03-syntax.java`](examples/03-syntax.java)
 
-## Example 
+## Ví dụ
 
-```java
-package com.tutorialspoint;
+> 📄 **Code ví dụ:** [`examples/04-example.java`](examples/04-example.java)
 
-public class ExcepTest {
-
-   public static void main(String args[]) {
-      try {
-         int a[] = new int[2];
-         int b = 0;
-         int c = 1/b;
-         System.out.println("Access element three :" + a[3]);
-      }
-      catch (ArrayIndexOutOfBoundsException | ArithmeticException e) {
-         System.out.println("Exception thrown  :" + e);
-      }
-      System.out.println("Out of the block");
-   }
-}
-```
+> **Tóm gọn 1 câu:** Nhiều `catch` cho nhiều cách xử lý, một `catch` gộp với `|` cho một cách xử lý dùng chung — chọn theo "các lỗi này được xử lý có giống nhau không?"

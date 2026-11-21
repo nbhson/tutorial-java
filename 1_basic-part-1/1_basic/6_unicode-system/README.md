@@ -1,88 +1,49 @@
 # Unicode System
 
+Vậy làm sao một chương trình Java chạy được với tiếng Việt, tiếng Nhật hay emoji — những ký tự ngoài bảng A-Z? Câu trả lời là **Unicode**: Java "khai sinh" đã nói được mọi ngôn ngữ.
+
 > Java programming language, being platform-independent, has built-in support for Unicode characters, allowing developers to create applications that can work seamlessly with diverse languages and scripts.
 
-## Using Unicode Escape Sequences 
+Nói theo cách đời thường: nếu ASCII là **quán ăn chỉ có menu tiếng Anh**, thì Unicode là **buffet quốc tế** — hơn 140.000 món (ký tự) từ chữ "ờ" tiếng Việt đến tiếng Nhật, tiếng Ả Rập. Java dùng Unicode làm bảng mã mặc định nên bạn viết `"Xin chào"` hay `"こんにちは"` vào code đều chạy được, bất kể máy nào.
 
-```java
-package com.tutorialspoint;
+Bảng dưới đây liệt kê 4 cách "gọi món" từ buffet Unicode trong code Java — mỗi mục một cách, từ gõ dấu escape cho đến gán trực tiếp.
 
-public class UnicodeCharacterDemo {
-   public static void main (String[]args) {   		 
-      //Unicode escape sequence
-      char unicodeChar = '\u0041';
-      // point for 'A'
-      System.out.println("Stored Unicode Character: " + unicodeChar); // Stored Unicode Character: A
-   }
-}
-```
+## Using Unicode Escape Sequences
+
+Mục này cho cách viết ký tự Unicode bằng "mã shorthand" `\uXXXX` — hữu ích khi bàn phím không gõ được ký tự đó.
+
+Ví von: `\uXXXX` giống như **gọi món bằng số thứ tự trong menu** — không cần đọc đúng tên món (ký tự), chỉ cần báo mã là nhà hàng mang đúng món ra.
+
+> 📄 **Code ví dụ:** [`examples/01-using-unicode-escape-sequences.java`](examples/01-using-unicode-escape-sequences.java)
+
+> **Tóm gọn 1 câu:** Escape sequence `\uXXXX` là "mã số món ăn" — ký tự nào không gõ được trên bàn phím thì gọi bằng mã.
 
 ## Storing Unicode Values Directly
 
-```java
-package com.tutorialspoint;
+Mục này cho cách gõ thẳng ký tự Unicode vào chuỗi, không cần qua mã escape.
 
-public class UnicodeCharacterDemo {
-   public static void main(String[] args) {
-      // Storing Unicode character directly
-      char unicodeChar = 'A';
-      // Directly storing the character 'A'
-      System.out.println("Stored Unicode Character: " + unicodeChar);
-   }
-}
-```
+Giống như **chỉ thẳng tay viết tên món** thay vì gọi bằng số — đọc code lên là thấy ngay chữ gì, dễ hiểu nhất cho người sau đọc lại.
+
+> 📄 **Code ví dụ:** [`examples/02-storing-unicode-values-directly.java`](examples/02-storing-unicode-values-directly.java)
+
+> **Tóm gọn 1 câu:** Gõ trực tiếp ký tự vào chuỗi khi được — code dễ đọc hơn hẳn dãy mã `\uXXXX` rợn mắt.
 
 ## Assigning Unicode Values to Variables
 
-```java
-package com.tutorialspoint;
+Mục này đưa giá trị Unicode (dưới dạng số) vào biến `char` — cho thấy char thực chất đang lưu một mã số.
 
-public class UnicodeCharacterDemo {
-   public static void main(String[] args) {
-      // Storing Unicode characters using escape sequences
-      char letterA = '\u0041';
-      char letterSigma = '\u03A3';
-      char copyrightSymbol = '\u00A9';
-      // Storing Unicode characters directly
-      char letterZ = 'Z';
-      char letterOmega = 'Ω';
-      char registeredSymbol = '®';
-      // Printing the stored Unicode characters
-      System.out.println("Stored Unicode Characters using Escape Sequences:");
-      System.out.println("Letter A: " + letterA); //  Letter A: A
-      System.out.println("Greek Capital Letter Sigma: " + letterSigma); //  Greek Capital Letter Sigma: Σ
-      System.out.println("Copyright Symbol: " + copyrightSymbol); //  Copyright Symbol: ©
-      System.out.println("\nStored Unicode Characters Directly:");
-      System.out.println("Letter Z: " + letterZ); //  Letter Z: Z
-      System.out.println("Greek Capital Letter Omega: " + letterOmega); //  Greek Capital Letter Omega: Ω
-      System.out.println("Registered Symbol: " + registeredSymbol); // Registered Symbol: ®
+Ví von: `char` như **chỗ ngồi đánh số trong rạp hát** — bạn gán số ghế (mã Unicode), và ký tự tương ứng "ngồi" vào đó. Char thật ra là số khoác áo ký tự.
 
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-assigning-unicode-values-to-variables.java`](examples/03-assigning-unicode-values-to-variables.java)
+
+> **Tóm gọn 1 câu:** Mỗi ký tự Unicode đứng sau một con số — gán số vào `char` là bạn đã "xếp ghế" cho ký tự đó.
 
 ##  Assigning Unicode Characters and Values to Variables
 
-```java
-package com.tutorialspoint;
+Mục này kết hợp cả hai cách trên trong cùng một chương trình, để bạn đối chiếu: cùng một ký tự, viết bằng chữ hay bằng số đều cho kết quả như nhau.
 
-public class UnicodeCharacterDemo {
-   public static void main(String[] args) {
-      // Storing Unicode characters using escape sequences
-      char letterA = '\u0041';
-      char letterSmallA = '\u0061';
-      // Storing Unicode characters directly
-      char letterB = 'B';
+Giống như **hai người gọi cùng một món — một người đọc tên, một người báo số** — bếp vẫn ra đúng một đĩa như nhau. Đây là bài tập đối chiếu giúp chốt: ký tự và mã số của nó là hai mặt của cùng một đồng xu.
 
-      // Manipulating the stored Unicode characters
-      int difference = letterA - letterSmallA;
-      char letterC = (char) (letterB + difference);
-      char letterSmallC = (char) (letterC + 32);
-      // Printing the manipulated Unicode characters
-      System.out.println("Manipulated Unicode Characters:");
-      System.out.println("Difference between A and a: " + difference);
-      System.out.println("Calculated Letter C: " + letterC);
-      System.out.println("Calculated Letter c: " + letterSmallC);
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-assigning-unicode-characters-and-values-to-variables.java`](examples/04-assigning-unicode-characters-and-values-to-variables.java)
+
+> **Tóm gọn 1 câu:** Ký tự hay mã số — hai cách viết, một kết quả; hiểu được điều này là bạn đã nắm bản chất Unicode trong Java.

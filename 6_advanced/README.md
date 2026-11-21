@@ -4,7 +4,13 @@
 
 Phần nâng cao này dành cho những bạn đã nắm vững Java cơ bản và muốn nâng cao kỹ năng để trở thành lập trình viên Java chuyên nghiệp. Chúng ta sẽ đi sâu vào các tính năng hiện đại của Java 17+ và 21+, các design patterns phổ biến, và cách tối ưu hiệu suất ứng dụng.
 
+Nếu các phần trước là học **đi bộ vững**, thì phần này là học **chạy, bơi và leo núi**: cùng ngôn ngữ Java, nhưng ở tầm cao hơn — thiết kế đẹp, xử lý dữ liệu thanh lịch, và hiểu cả "cỗ máy" JVM bên dưới.
+
+> **Tóm gọn 1 câu:** Phần nâng cao biến bạn từ "viết được Java" thành "hiểu Java" — patterns, Stream, Optional, Record và cả cỗ máy JVM bên dưới.
+
 ## Nội dung chính
+
+Mục này là mục lục 5 trạm dừng của phần nâng cao — đọc lướt để chọn điểm xuất phát phù hợp với mình.
 
 ### 1. [Design Patterns](./1_design-patterns/)
 Các mẫu thiết kế phổ biến trong Java: Singleton, Factory, Builder, Observer, Strategy. Hiểu cách áp dụng và khi nào nên sử dụng từng pattern.
@@ -29,6 +35,8 @@ Hiểu sâu về JVM, Garbage Collection, memory management, và các kỹ thu�
 
 ## Các tính năng Java được sử dụng
 
+Mục này là "danh sách công cụ trong hộp": tính năng nào thuộc version Java nào, để bạn biết thứ nào dùng được trên project của mình.
+
 | Tính năng | Java Version | Mục đích |
 |-----------|--------------|----------|
 | Lambda Expressions | Java 8 | Functional programming |
@@ -40,7 +48,11 @@ Hiểu sâu về JVM, Garbage Collection, memory management, và các kỹ thu�
 | Virtual Threads | Java 21 | Concurrency hiệu quả |
 | Scoped Values | Java 21-25 | Thay thế ThreadLocal |
 
+> **Cách đọc bảng này:** xếp theo version tăng dần — dòng càng dưới càng "hiện đại"; đối chiếu cột Java Version với JDK của dự án để biết tính năng nào dùng được ngay.
+
 ## Java 25 LTS - Phiên bản mới nhất (2025)
+
+Mục này cập nhật tin tức "bản vá mới nhất của thành phố": Java 25 mang gì mới đáng chú ý so với các bản LTS trước.
 
 Java 25 được phát hành vào **September 2025** với nhiều tính năng mới:
 
@@ -59,6 +71,8 @@ Java 25 được phát hành vào **September 2025** với nhiều tính năng m
 
 ## Mục tiêu học tập
 
+Mục này là "hợp đồng cam kết đầu ra" của phần nâng cao: hoàn thành 5 bài là bạn đủ 6 năng lực dưới đây.
+
 Sau khi hoàn thành phần này, bạn sẽ:
 
 1. ✅ Hiểu và áp dụng được các design patterns phổ biến
@@ -69,6 +83,8 @@ Sau khi hoàn thành phần này, bạn sẽ:
 6. ✅ Có nền tảng vững để học các chủ đề chuyên sâu hơn
 
 ## So sánh Java 8 vs Java 21+ (Nên nâng cấp)
+
+Mục này là "hóa đơn so sánh" giữa hai thế hệ: bên trái là những gì Java 8 cho bạn, bên phải là thế giới đã đi xa bao nhiêu — đọc để có lý lẽ thuyết phục sếp nâng cấp.
 
 ```
 Java 8 (2014)                    Java 21+ (2023-2025)

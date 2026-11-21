@@ -2,67 +2,26 @@
 
 ## Write to file in Java
 
+Mục này trả lời: file đã có rồi, giờ **ghi nội dung vào** thì có mấy cách? Ba cách phổ biến dưới đây, mỗi cách một "chiếc bút" khác nhau.
+
 We can write to a file in Java using multiple ways. Following are three most popular ways to create a file in Java −
 
 > Using FileOutputStream() constructor
 > Using FileWriter.write() method
 > Using Files.write() method
 
+Ví von: ghi file giống viết thư — `FileWriter` là cây bút viết từng dòng chữ, `FileOutputStream` là bút "viết bằng số" cho dữ liệu nhị phân, còn `Files.write()` là dịch vụ gửi thư gọn nhẹ một phát là xong.
+
 ## Write To File Using FileWriter.write() Method
+
+Mục này đi chi tiết cách được dùng nhiều nhất cho văn bản: `FileWriter` — mở file ở chế độ ghi, mỗi lần `write()` là một lần nét bút chạm giấy.
 
 Syntax
 
-```java
-// get an existing file
-File file = new File("d://test//testFile1.txt");
-
-// Write Content
-FileWriter writer = new FileWriter(file);
-writer.write("Test data");
-writer.close();
-```
+> 📄 **Code ví dụ:** [`examples/01-write-to-file-using-filewriter-write-method.java`](examples/01-write-to-file-using-filewriter-write-method.java)
 
 Example
 
-```java
-package com.tutorialspoint;
+> 📄 **Code ví dụ:** [`examples/02-write-to-file-using-filewriter-write-method.java`](examples/02-write-to-file-using-filewriter-write-method.java)
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
-public class FileTest {
-
-   public static void main(String args[]) {
-   
-      try {
-          File file = new File("d://test//testFile1.txt");
-          
-          //Create the file
-          if (file.createNewFile()) { 
-             System.out.println("File is created!");
-          } else {
-             System.out.println("File already exists.");
-          } 
-          
-          // Write Content
-          FileWriter writer = new FileWriter(file);
-          writer.write("Test data");
-          writer.close();
-          
-          
-          // read content
-          FileReader reader = new FileReader(file);
-          
-          int c;
-          while ((c = reader.read()) != -1) {
-        	  char ch = (char) c;
-              System.out.print(ch);
-          }
-      } catch (IOException e) {
-         System.out.print("Exception");
-      }	
-   }
-}
-```
+> **Tóm gọn 1 câu:** Ghi file = chọn đúng "chiếc bút": `FileWriter` cho chữ, `FileOutputStream` cho byte, `Files.write()` cho thao tác một dòng gọn gàng — bài này tập trung vào `FileWriter`.

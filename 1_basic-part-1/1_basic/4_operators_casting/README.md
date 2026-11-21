@@ -4,6 +4,8 @@
 
 ## Phần 1 — Toán tử
 
+Mục này trang bị "động từ" cho code của bạn: các phép tính, so sánh, logic. Đọc để viết biểu thức đúng và né được mấy cái bẫy kinh điển như chia nguyên hay fallthrough của `++`.
+
 ### 1.1. Toán tử số học
 
 | Toán tử | Ý nghĩa | Ví dụ | Kết quả |
@@ -16,29 +18,17 @@
 | `++` | Tăng 1 | `i++`, `++i` | |
 | `--` | Giảm 1 | `i--`, `--i` | |
 
-```java
-int a = 10, b = 3;
+> **Cách đọc bảng này:** mỗi dòng là một "động từ" phép tính; dừng lâu nhất ở dòng `/` — với hai số nguyên, Java **cắt bỏ phần thập phân** thay vì làm tròn, như chia 10 viên kẹo cho 3 đứa: mỗi đứa 3 viên, phần dư nằm ở `%`.
 
-System.out.println(a / b);        // 3  — chia NGUYEN vi ca 2 la int
-System.out.println(a % b);        // 1
-
-// muon chia thuc: it nhat 1 toan hang la double
-System.out.println(a / 3.0);        // 3.333...
-System.out.println((double) a / b); // 3.333...
-```
+> 📄 **Code ví dụ:** [`examples/01-1-1-toan-tu-so-hoc.java`](examples/01-1-1-toan-tu-so-hoc.java)
 
 ❌ **Pitfall kinh điển:** `(double)(a / b)` vẫn ra **3.0** — vì chia nguyên diễn ra **trước** khi ép kiểu. Phải ép kiểu **trước** phép chia: `(double) a / b`.
 
+> **Tóm gọn 1 câu:** Toán tử số học quen mặt nhưng `/` với số nguyên là "chia kẹo cho đứa trẻ" — phần thập phân bị bỏ, không làm tròn.
+
 ### 1.2. `++` và `--` — prefix vs postfix
 
-```java
-int i = 5;
-System.out.println(i++);  // in 5 — LAY GIA TRI ROI tang (postfix)
-System.out.println(i);    // 6
-
-int j = 5;
-System.out.println(++j);  // in 6 — TANG ROI lay gia tri (prefix)
-```
+> 📄 **Code ví dụ:** [`examples/02-1-2-va-prefix-vs-postfix.java`](examples/02-1-2-va-prefix-vs-postfix.java)
 
 **Vì sao nên cẩn thận?** Dùng `i++` bên trong biểu thức phức tạp (`arr[i++] = i`) là nguồn bug khó tìm. Quy tắc: chỉ dùng `++`/`--` **đứng một mình** trên một dòng.
 
@@ -49,67 +39,31 @@ System.out.println(++j);  // in 6 — TANG ROI lay gia tri (prefix)
 | `==` `!=` | Bằng / khác |
 | `>` `<` `>=` `<=` | So sánh thứ tự |
 
-```java
-// ✗ loi kinh dien: so sanh chuoi bang ==
-String s1 = "hello";
-String s2 = new String("hello");
-System.out.println(s1 == s2);        // false! so sanh THAM CHIEU
-System.out.println(s1.equals(s2));   // true — so sanh NOI DUNG ✅
-
-// voi primitive (int, long, double...) thi == la dung y nghia
-// voi String, Integer, ... luon dung equals()
-```
+> 📄 **Code ví dụ:** [`examples/03-1-3-toan-tu-so-sanh.java`](examples/03-1-3-toan-tu-so-sanh.java)
 
 ### 1.4. Toán tử logic — `&&`, `||`, `!` và short-circuit
 
-```java
-int age = 17;
-boolean coTheDieuXe = age >= 18 && coGiayPhep; // && : ca hai dung moi dung
-
-// SHORT-CIRCUIT: && dung ngay khi ve trai sai; || dung ngay khi ve trai dung
-if (list != null && list.size() > 0) { }  // ✅ an toan — list null thi khong goi size()
-if (list.size() > 0 && list != null) { }  // ✗ NPE khi list null — dung thu tu
-```
+> 📄 **Code ví dụ:** [`examples/04-1-4-toan-tu-logic-va-short-circuit.java`](examples/04-1-4-toan-tu-logic-va-short-circuit.java)
 
 **Vì sao short-circuit quan trọng?** Nó biến điều kiện thứ hai thành "chỉ chạy khi có ý nghĩa" — mô hình phòng thủ chuẩn của Java:
 
-```java
-// mau chuan: null check truoc, dung sau
-if (user != null && user.isActive()) { ... }
-```
+> 📄 **Code ví dụ:** [`examples/05-1-4-toan-tu-logic-va-short-circuit.java`](examples/05-1-4-toan-tu-logic-va-short-circuit.java)
 
 ### 1.5. Toán tử gán ghép
 
-```java
-int x = 10;
-x += 5;   // x = x + 5 → 15
-x -= 3;   // 12
-x *= 2;   // 24
-x /= 4;   // 6
-x %= 4;   // 2
-
-// luu y: toan tu gan ghep an trong ep kieu
-byte b = 10;
-b += 1;            // OK — ngam dinh ep ve byte
-b = (byte) (b + 1); // vi b + 1 la int, gan vao byte phai ep kieu
-```
+> 📄 **Code ví dụ:** [`examples/06-1-5-toan-tu-gan-ghep.java`](examples/06-1-5-toan-tu-gan-ghep.java)
 
 ### 1.6. Toán tử ba ngôi (ternary) và instanceof
 
-```java
-// dieu kien ? gia_tri_neu_dung : gia_tri_neu_sai
-String ketQua = (diem >= 5) ? "DAT" : "TRUOT";
-
-// instanceof — kiem tra kieu object
-Object obj = "hello";
-if (obj instanceof String s) {   // Java 16+: khai bao bien ngay tai cho
-    System.out.println(s.length());
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-1-6-toan-tu-ba-ngoi-ternary-va.java`](examples/07-1-6-toan-tu-ba-ngoi-ternary-va.java)
 
 ❌ **Pitfall:** lồng ternary nhiều tầng (`a ? b ? c : d : e`) — khó đọc như mật mã. Nếu lồng quá 1 tầng, dùng if-else hoặc switch.
 
+> **Tóm gọn 1 câu:** Phần 1 cho bạn bộ "động từ" đầy đủ — nhớ 2 điều vàng: chia nguyên cắt thập phân, và short-circuit giúp bạn chặn lỗi trước khi xảy ra.
+
 ## Phần 2 — Ép kiểu (Casting)
+
+Mục này nói về việc "đổi thùng" cho dữ liệu: chuyển giá trị giữa các kiểu to nhỏ khác nhau. Đọc để biết chiều nào tự động, chiều nào phải tự chịu trách nhiệm — và mất dữ liệu ở đâu.
 
 ### 2.1. Hai chiều chuyển đổi
 
@@ -124,85 +78,33 @@ byte → short → int → long → float → double
 
 **Tầng 2 — Cú pháp và ví dụ:**
 
-```java
-// WIDENING — tu dong
-int i = 100;
-long l = i;        // ✅ tu dong int → long
-double d = i;      // ✅ tu dong int → double (100.0)
-
-// NARROWING — phai ep kieu ro rang
-double pi = 3.99;
-int n = (int) pi;  // 3 — MAT PHAN THAP PHAN (khong lam tron!)
-long big = 5_000_000_000L;
-int n2 = (int) big; // tran — ket qua sai vo dinh
-```
+> 📄 **Code ví dụ:** [`examples/08-2-1-hai-chieu-chuyen-oi.java`](examples/08-2-1-hai-chieu-chuyen-oi.java)
 
 > Ví dụ thực hành trong repo: `4_operator/src/casting/Main.java` và `5_casting/src/casting/Main.java` — demo widening (`int → double`) và narrowing (`(int) 9.78`) bằng chính code chạy được.
 
 ### 2.2. Ba cạm bẫy kinh điển
 
-```java
-// cam bay 1: chia nguyen truoc, ep kieu sau
-int a = 10, b = 3;
-System.out.println((double) (a / b)); // 3.0  — SAI y
-System.out.println((double) a / b);   // 3.33 — DUNG
-
-// cam bay 2: tran so khi narrow
-int lon = 130;
-byte be = (byte) lon;   // be = -126 — wrap-around, khong bao loi!
-
-// cam bay 3: ep kieu object khac chuyen chuoi
-String so = "123";
-int x = (int) so;                    // ✗ khong bien dich duoc!
-int y = Integer.parseInt(so);        // ✅ dung parse
-double z = Double.parseDouble("3.14");
-```
+> 📄 **Code ví dụ:** [`examples/09-2-2-ba-cam-bay-kinh-ien.java`](examples/09-2-2-ba-cam-bay-kinh-ien.java)
 
 ### 2.3. Ép kiểu với Object — và instanceof pattern
 
-```java
-Object obj = "Hello Java";
-
-// ✗ cu: ep kieu truc tiep — neu sai kieu nem ClassCastException
-String s = (String) obj;
-
-// ✅ moi: kiem tra truoc (hoac dung pattern matching)
-if (obj instanceof String str) {
-    System.out.println(str.length()); // str da la String, khong can ep
-}
-```
+> 📄 **Code ví dụ:** [`examples/10-2-3-ep-kieu-voi-object-va-instanceof.java`](examples/10-2-3-ep-kieu-voi-object-va-instanceof.java)
 
 ### 2.4. Autoboxing — primitive và wrapper
 
-```java
-// primitive: int, long, double... | wrapper: Integer, Long, Double...
-Integer a = 127;
-Integer b = 127;
-System.out.println(a == b);   // true  — cache cua Integer tu -128..127
-
-Integer c = 128;
-Integer d = 128;
-System.out.println(c == d);      // false! — ngoai cache, la 2 object khac nhau
-System.out.println(c.equals(d)); // true ✅
-
-int e = c; // unboxing tu dong
-```
+> 📄 **Code ví dụ:** [`examples/11-2-4-autoboxing-primitive-va-wrapper.java`](examples/11-2-4-autoboxing-primitive-va-wrapper.java)
 
 ❌ **Pitfall:** So sánh `Integer` bằng `==` — đúng với giá trị nhỏ, **sai** với giá trị lớn. Luôn dùng `equals()` với wrapper class.
 
+> **Tóm gọn 1 câu:** Ép kiểu là "rót nước giữa các thùng" — rót sang thùng to thì tự động, rót sang thùng nhỏ thì tự tay và đỡ tràn.
+
 ### 2.5. Kiểu `char` — nằm giữa số và chữ
 
-```java
-char kitu = 'A';
-int ma = kitu;               // 65 — widening tu dong
-char k2 = (char) (kitu + 1); // 'B'
-
-// chu → so va nguoc lai
-int chuSo = Character.getNumericValue('7'); // 7
-char c = (char) ('0' + 5);                  // '5'
-```
+> 📄 **Code ví dụ:** [`examples/12-2-5-kieu-char-nam-giua-so-va.java`](examples/12-2-5-kieu-char-nam-giua-so-va.java)
 
 ## Phần 3 — Độ ưu tiên toán tử (tóm tắt)
+
+Mục này xếp thứ tự "ai lên tiếng trước" khi nhiều toán tử đứng chung một biểu thức. Đọc một lượt để có trực giác — nhưng lời khuyên thật sự nằm ở pitfall cuối mục.
 
 Từ cao xuống thấp:
 
@@ -218,6 +120,8 @@ Từ cao xuống thấp:
 10. `= += -= ...` gán
 
 ❌ **Pitfall:** `a + b * c` không bằng `(a + b) * c`. Đừng học thuộc bảng ưu tiên — **dùng ngoặc** để diễn đạt rõ ý, code tự giải thích được.
+
+> **Tóm gọn 1 câu:** Độ ưu tiên toán tử như luật giao thông — biết là tốt, nhưng gắn "biển báo ngoặc" thì ai đọc code cũng hiểu ngay.
 
 ## Bài tập
 
@@ -236,3 +140,5 @@ Từ cao xuống thấp:
 - Widening tự động; narrowing phải ép kiểu tường minh và có thể mất dữ liệu/tràn số.
 - Wrapper class so sánh bằng `equals()`; chuỗi → số dùng `parse`.
 - Dùng ngoặc thay vì ghi nhớ bảng độ ưu tiên.
+
+> **Tóm gọn 1 câu:** Toán tử là động từ, ép kiểu là đổi thùng — hai kỹ năng nhỏ nhưng quyết định code của bạn chạy đúng hay "im lặng trả kết quả sai".

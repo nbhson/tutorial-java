@@ -2,7 +2,9 @@
 
 ## JVM Architecture - Tổng quan
 
-Trước khi tối ưu performance, cần hiểu JVM hoạt động như thế nào.
+Mục này mở nắp "cỗ máy" JVM để xem bên trong có gì: từ nạp class, chạy bytecode, đến vùng nhớ — nền tảng cần có trước khi bàn tối ưu.
+
+Trước khi tối ưu performance, cần hiểu JVM hoạt động như thế nào. Hãy hình dung JVM như một **nhà hàng lớn**: Class Loader là bộ phận "nhận đơn món", Execution Engine là "bếp" (JIT là bếp trưởng tinh nhuệ học nhanh món hot), Runtime Memory là "kho nguyên liệu" — Heap là kho lớn, Stack là bàn làm việc của từng đầu bếp.
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -31,25 +33,11 @@ Trước khi tối ưu performance, cần hiểu JVM hoạt động như thế n
 
 ## Memory Areas
 
+Mục này chi tiết hóa "kho nguyên liệu": từng vùng nhớ dùng để làm gì, dung lượng ra sao, và ai dọn dẹp.
+
 ### Heap vs Stack
 
-```java
-public class MemoryDemo {
-    
-    // Instance variables - stored in HEAP
-    private String name;    // Reference (4/8 bytes) → points to object in Heap
-    
-    public void calculate() {
-        // Local variables - stored in STACK
-        int x = 10;         // Primitive: value stored directly
-        String s = "Hello"; // Reference: points to String in Heap
-        
-        // Object created inside method → stored in Heap
-        List<String> list = new ArrayList<>();
-        list.add("Item");
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-heap-vs-stack.java`](examples/01-heap-vs-stack.java)
 
 | Memory Area | Purpose | Size | GC? |
 |-------------|---------|------|-----|
@@ -58,7 +46,11 @@ public class MemoryDemo {
 | **Metaspace** | Class definitions | Dynamic | ✅ Yes (Java 8+) |
 | **Code Cache** | JIT compiled code | Fixed | ✅ Yes |
 
+> **Cách đọc bảng này:** mỗi dòng là một vùng nhớ trong JVM — cột "GC?" là quan trọng nhất: vùng nào có GC thì rõ ràng, vùng nào "Auto clear" thì tự dọn theo vòng đời method; khi chỉnh `-Xmx` bạn đang chỉnh đúng dòng đầu tiên.
+
 ## Garbage Collection
+
+Mục này nói về "đội dọn dẹp" của JVM: họ làm việc thế nào, có mấy loại đội, và chọn đội nào cho ứng dụng của bạn. Hãy hình dung GC như **đội dọn phòng khách sạn**: quét nhanh phòng nhỏ nhiều lần trong ngày (Minor GC), còn dọn sâu cả tầng thì ít nhưng chậm hơn (Major GC).
 
 ### GC Algorithm cơ bản
 
@@ -86,278 +78,75 @@ Young Generation (Eden + Survivor)     Old Generation
 | **ZGC** | Ultra-low latency (<1ms) | Ultra-low latency |
 | **Shenandoah** | Concurrent, same as ZGC | Red Hat environments |
 
+> **Cách đọc bảng này:** chọn theo cột "Phù hợp" trước — đó là câu trả lời cho "ứng dụng của mình thuộc dạng nào"; G1 là lựa chọn an toàn mặc định, chỉ tính đến ZGC/Shenandoah khi bạn thật sự bị chặn bởi độ trễ.
+
 ### Cấu hình G1 GC (Recommended)
 
-```bash
-# Cấu hình JVM cho production
-java -Xms4g -Xmx4g \
-     -XX:+UseG1GC \
-     -XX:MaxGCPauseMillis=200 \
-     -XX:+ParallelRefProcEnabled \
-     -XX:G1HeapRegionSize=4m \
-     -XX:InitiatingHeapOccupancyPercent=45 \
-     -jar myapp.jar
-```
+> 📄 **Code ví dụ:** [`examples/02-cau-hinh-g1-gc-recommended.sh`](examples/02-cau-hinh-g1-gc-recommended.sh)
 
 ### ZGC (Ultra-low latency)
 
-```bash
-# Java 17+ với ZGC
-java -Xms8g -Xmx8g \
-     -XX:+UseZGC \
-     -XX:+ZGenerational \
-     -jar myapp.jar
-```
+> 📄 **Code ví dụ:** [`examples/03-zgc-ultra-low-latency.sh`](examples/03-zgc-ultra-low-latency.sh)
 
 ## Performance Best Practices
 
+Mục này là "sáu bài tiết kiệm" cho code chạy nhanh hơn: mỗi mục một sai lầm phổ biến kèm cách làm đúng.
+
 ### 1. Object Creation
 
-```java
-// ❌ Tạo object không cần thiết
-for (String s : list) {
-    String upper = new String(s.toUpperCase());  // Unnecessary new object
-    process(upper);
-}
-
-// ✅ Tái sử dụng/Caching
-String upper = s.toUpperCase();  // Không tạo String mới
-```
+> 📄 **Code ví dụ:** [`examples/04-1-object-creation.java`](examples/04-1-object-creation.java)
 
 ### 2. String Operations
 
-```java
-// ❌ String concatenation trong loop
-String result = "";
-for (String s : list) {
-    result += s + ",";  // Tạo nhiều String objects
-}
-
-// ✅ StringBuilder
-StringBuilder sb = new StringBuilder();
-for (String s : list) {
-    if (sb.length() > 0) sb.append(",");
-    sb.append(s);
-}
-String result = sb.toString();
-
-// ✅ Java 9+: interned strings được optimize
-// Nhưng vẫn nên dùng StringBuilder cho loop dài
-
-// ✅ String.join (Java 8+)
-String result = String.join(",", list);
-
-// ✅ Collectors.joining (Stream)
-String result = list.stream().collect(Collectors.joining(","));
-```
+> 📄 **Code ví dụ:** [`examples/05-2-string-operations.java`](examples/05-2-string-operations.java)
 
 ### 3. Collection Selection
 
-```java
-// Chọn đúng Collection cho use case
-
-// ArrayList: Default, fast iteration, slow insert/remove ở giữa
-// LinkedList: Fast insert/remove, slow random access
-
-// HashMap: O(1) average cho get/put, không ordered
-// TreeMap: O(log n), sorted by key
-// LinkedHashMap: O(1), insertion order
-
-// HashSet vs EnumSet
-// EnumSet rất nhanh, chỉ dùng cho Enums
-Set<Status> statuses = EnumSet.noneOf(Status.class);
-
-// Set.of() vs new HashSet<>() (Java 9+)
-Set<String> set1 = Set.of("a", "b", "c");  // Immutable, faster
-Set<String> set2 = new HashSet<>(List.of("a", "b", "c"));  // Mutable
-```
+> 📄 **Code ví dụ:** [`examples/06-3-collection-selection.java`](examples/06-3-collection-selection.java)
 
 ### 4. Streams Performance
 
-```java
-// ❌ Sequential stream cho CPU-intensive
-list.stream()
-    .map(HeavyCalculation::process)
-    .collect(toList());
-
-// ✅ Parallel stream cho large datasets
-list.parallelStream()
-    .map(HeavyCalculation::process)
-    .collect(toList());
-
-// ✅ Hoặc
-list.stream()
-    .parallel()
-    .map(HeavyCalculation::process)
-    .collect(toList());
-
-// ⚠️ Chỉ dùng parallel khi:
-// - Dataset lớn (100k+ elements)
-// - Operations CPU-intensive
-// - Không cần order preservation
-```
+> 📄 **Code ví dụ:** [`examples/07-4-streams-performance.java`](examples/07-4-streams-performance.java)
 
 ### 5. Avoiding Boxing/Unboxing
 
-```java
-// ❌ Primitive boxing trong loop
-int sum = 0;
-for (Integer i : intList) {  // Boxing: int → Integer
-    sum += i;  // Unboxing: Integer → int
-}
-
-// ✅ Primitive streams
-int sum = intList.stream()
-    .mapToInt(Integer::intValue)  // Giữ nguyên primitive
-    .sum();
-
-// ✅ Hoặc sum trực tiếp
-long sum = IntStream.range(1, 1000).sum();
-```
+> 📄 **Code ví dụ:** [`examples/08-5-avoiding-boxing-unboxing.java`](examples/08-5-avoiding-boxing-unboxing.java)
 
 ### 6. Lazy Initialization
 
-```java
-// ❌ Eager initialization
-private final ExpensiveObject expensive = new ExpensiveObject();
-
-public ExpensiveObject getObject() {
-    return expensive;  // Luôn tạo dù có dùng hay không
-}
-
-// ✅ Lazy initialization
-private volatile ExpensiveObject expensive;  // volatile for thread-safety
-
-public ExpensiveObject getObject() {
-    if (expensive == null) {
-        synchronized (this) {
-            if (expensive == null) {
-                expensive = new ExpensiveObject();
-            }
-        }
-    }
-    return expensive;
-}
-
-// ✅ LazyHolder pattern (thread-safe, lazy)
-private static class Holder {
-    static final ExpensiveObject INSTANCE = new ExpensiveObject();
-}
-
-public static ExpensiveObject getInstance() {
-    return Holder.INSTANCE;
-}
-```
+> 📄 **Code ví dụ:** [`examples/09-6-lazy-initialization.java`](examples/09-6-lazy-initialization.java)
 
 ## Profiling Tools
 
+Mục này giới thiệu "máy đo nhịp tim" của ứng dụng: đo được thì sửa đúng chỗ, đo không được thì tối ưu bằng cảm tính.
+
 ### Built-in Tools
 
-```bash
-# JConsole - GUI monitoring
-jconsole
-
-# VisualVM - Profiler (cần JDK)
-jvisualvm
-
-# JShell - Interactive shell
-jshell
-
-# Print GC details
-java -Xlog:gc*:file=gc.log:time:filecount=5,filesize=10m myapp.jar
-
-# Analyze GC logs
-jstat -gcutil <pid> 1000  # GC statistics every 1s
-```
+> 📄 **Code ví dụ:** [`examples/10-built-in-tools.sh`](examples/10-built-in-tools.sh)
 
 ### Flight Recorder (JDK Mission Control)
 
-```bash
-# Start with JFR enabled
-java -XX:StartFlightRecording=dumponexit=true,filename=recording.jfr \
-     -jar myapp.jar
-
-# Analyze
-jfr print --events CPULoad,GC ./recording.jfr
-```
+> 📄 **Code ví dụ:** [`examples/11-flight-recorder-jdk-mission-control.sh`](examples/11-flight-recorder-jdk-mission-control.sh)
 
 ## Common Performance Issues
 
+Mục này là "hồ sơ án tích" hai tội danh kinh điển: rò rỉ bộ nhớ và cấu hình pool sai — đều nằm ngoài tầm mắt nhưng giết ứng dụng từ từ.
+
 ### Memory Leaks
 
-```java
-// ❌ Cached objects không được clean up
-Map<String, ExpensiveObject> cache = new HashMap<>();
-
-public ExpensiveObject getCached(String key) {
-    return cache.computeIfAbsent(key, k -> new ExpensiveObject());
-    // ⚠️ Cache grow forever, never evicted!
-}
-
-// ✅ Dùng WeakHashMap cho caches
-Map<String, ExpensiveObject> cache = new WeakHashMap<>();
-// Objects bị removed khi không còn referenced ở đâu khác
-
-// ✅ Dùng Caffeine (best cache library)
-Cache<String, ExpensiveObject> cache = Caffeine.newBuilder()
-    .maximumSize(1000)
-    .expireAfterWrite(Duration.ofMinutes(10))
-    .build();
-
-// ✅ Dùng LRU cache
-Map<String, ExpensiveObject> cache = new LinkedHashMap<>(16, 0.75f, true) {
-    @Override
-    protected boolean removeEldestEntry(Map.Entry eldest) {
-        return size() > MAX_SIZE;
-    }
-};
-```
+> 📄 **Code ví dụ:** [`examples/12-memory-leaks.java`](examples/12-memory-leaks.java)
 
 ### Thread Pool Misconfiguration
 
-```java
-// ❌ Tạo thread pool không có bounds
-ExecutorService executor = Executors.newCachedThreadPool();
-// ⚠️ Có thể tạo vô số threads → OOM!
-
-// ✅ Fixed thread pool
-ExecutorService executor = Executors.newFixedThreadPool(
-    Runtime.getRuntime().availableProcessors() * 2
-);
-
-// ✅ Virtual Threads (Java 21+)
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    // Tạo hàng triệu virtual threads!
-    for (int i = 0; i < 1_000_000; i++) {
-        executor.submit(() -> process(task));
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/13-thread-pool-misconfiguration.java`](examples/13-thread-pool-misconfiguration.java)
 
 ## Quick Reference - JVM Flags
 
-```bash
-# Memory
--Xms512m              # Initial heap size
--Xmx4g                # Maximum heap size
--Xss2m                # Stack size per thread
--XX:MetaspaceSize=256m # Metaspace size
--XX:MaxMetaspaceSize=512m
+Mục này là "tờ Cheat sheet" cầm tay: các cờ JVM hay dùng để tra nhanh khi cần chỉnh cấu hình.
 
-# GC
--XX:+UseG1GC          # Use G1 garbage collector
--XX:+UseZGC           # Use ZGC (Java 11+)
--XX:+UseSerialGC      # Use Serial GC
--XX:MaxGCPauseMillis=200  # Target max GC pause
+> 📄 **Code ví dụ:** [`examples/14-quick-reference-jvm-flags.sh`](examples/14-quick-reference-jvm-flags.sh)
 
-# JIT
--XX:+TieredCompilation    # Faster startup, better long-run perf
--XX:CompileThreshold=1000 # Methods compiled after 1000 invocations
-
-# Logging
--Xlog:gc*:file=gc.log    # GC logging
--XX:+PrintGCDetails       # Detailed GC logs (legacy)
-```
+> **Tóm gọn 1 câu:** Tối ưu JVM là "hiểu nhà hàng rồi mới chỉnh bếp" — biết vùng nhớ, chọn đúng đội GC, và đo bằng profiler trước khi sửa.
 
 ## Tài liệu tham khảo
 

@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: user-service   # Tên service (dùng để gọi nhau)
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

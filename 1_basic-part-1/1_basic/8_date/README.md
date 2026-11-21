@@ -4,27 +4,25 @@
 
 Lưu ý trước khi dùng: `java.util.Date` là lớp cũ (từ Java 1.0), nhiều phương thức của nó đã bị đánh dấu deprecated. Trong dự án thực tế hiện nay, bạn nên ưu tiên `java.time` (LocalDate, LocalDateTime, Instant...). Tuy nhiên, `Date` vẫn gặp rất nhiều trong code cũ, nên bạn cần biết cách dùng cơ bản sau đây.
 
+Ví von: `java.util.Date` như **đồng hồ cơ của ông nội** — hơi lỗi thời so với đồng hồ thông minh (`java.time`), nhưng nhiều nhà vẫn còn treo nó, nên bạn phải biết xem giờ bằng nó.
+
 ## Các constructor
+
+Mục này nói về hai cách "lên dây cót" một đối tượng Date: lấy giờ hiện tại, hoặc đặt từ một mốc mili giây cho trước.
 
 `Date( )` — khởi tạo đối tượng với **ngày giờ hiện tại**.
 
 `Date(long millisec)` — nhận tham số là số mili giây đã trôi qua kể từ 00:00 ngày 01/01/1970 (GMT).
 
-```java
-import java.util.Date;
+Con số 01/01/1970 chính là "mốc xuất phát" của thế giới máy tính (epoch) — giống mọi cuộc đua đều tính từ vạch xuất phát, Java tính thời gian từ mốc đó bằng số mili giây đã chạy được.
 
-public class DateDemo {
-   public static void main(String args[]) {
-      Date date = new Date();          // thời điểm hiện tại
-      System.out.println(date.toString());
+> 📄 **Code ví dụ:** [`examples/01-cac-constructor.java`](examples/01-cac-constructor.java)
 
-      Date d2 = new Date(0L);          // 01/01/1970 00:00:00 GMT
-      System.out.println(d2);
-   }
-}
-```
+> **Tóm gọn 1 câu:** `Date` có 2 cửa vào: cửa "bây giờ" (`Date()`) và cửa "đếm từ 1970" (`Date(long)`).
 
 ## Các phương thức của lớp Date
+
+Mục này là bảng "túi chép sơ đồ đồng hồ": liệt kê các thao tác so sánh, chuyển đổi, đọc-đặt thời gian của Date. Dùng như tra cứu, không cần học thuộc.
 
 | # | Phương thức | Mô tả |
 |---|-------------|-------|
@@ -40,7 +38,15 @@ public class DateDemo {
 | 10 | `Instant toInstant()` | Chuyển đối tượng `Date` này thành `Instant` |
 | 11 | `String toString()` | Chuyển đối tượng `Date` này thành chuỗi |
 
+> **Cách đọc bảng này:** quét theo cột Mô tả từ trên xuống — nhóm đầu (after, before, compareTo, equals) để **so sánh** hai mốc thời gian, nhóm giữa (getTime/setTime/from/toInstant) để **chuyển đổi** qua lại với mili giây và Instant, nhóm cuối là các method tiện ích. Cần thao tác gì với ngày thì tra đúng dòng đó.
+
+> **Tóm gọn 1 câu:** Bảng method của Date xoay quanh 3 việc: so sánh thời điểm, đọc/đặt giờ theo mili giây, và chuyển đổi qua lại với `Instant`.
+
 ## Các ký tự định dạng của SimpleDateFormat
+
+Mục này là "từ điển mẫu" khi bạn muốn in ngày giờ theo kiểu riêng — mỗi ký tự đứng trong mẫu là một mảnh ghép của chuỗi kết quả.
+
+> **Cách đọc bảng này:** cột Ký tự là chữ bạn đặt vào chuỗi pattern (ví dụ `"dd/MM/yyyy"`), cột Ví dụ cho thấy nó in ra gì. Chú ý các cặp giống nhau nhưng khác hoa-thường (`m` phút vs `M` tháng, `d` ngày vs `D` ngày trong năm) — đây là chỗ hay gõ nhầm nhất.
 
 | Ký tự | Ý nghĩa | Ví dụ |
 |-------|---------|-------|
@@ -65,7 +71,13 @@ public class DateDemo {
 | `'` | Escape cho văn bản | Delimiter |
 | `"` | Dấu nháy đơn | ` |
 
+Ví von: các ký tự này giống **khuôn bánh** — trộn đúng ký tự vào khuôn (`"dd/MM/yyyy"`), thì dữ liệu thô bị "đổ" ra thành hình dáng bạn muốn. Đổi ký tự trong khuôn là đổi hình bánh.
+
 ## Các ký tự chuyển đổi ngày và giờ (printf/Formatter)
+
+Mục này giới thiệu bộ ký tự khác, dùng với `printf`/`Formatter` thay cho SimpleDateFormat — cùng mục đích in ngày giờ, khác "khuôn".
+
+> **Cách đọc bảng này:** đọc tương tự bảng trên — cột Ký tự dùng trong chuỗi format của printf (ví dụ `%tY-%tm-%td`), cột Ví dụ là kết quả in. Nếu thấy choáng vì dài: 90% trường hợp thực tế chỉ cần `F` (ngày ISO), `T` (giờ 24 số) và `D` (kiểu Mỹ); phần còn lại để dành khi tra.
 
 | Ký tự | Ý nghĩa | Ví dụ |
 |-------|---------|-------|
@@ -100,3 +112,5 @@ public class DateDemo {
 | `Z` | Múi giờ | PST |
 | `s` | Số giây kể từ 1970-01-01 00:00:00 GMT | 1078884319 |
 | `Q` | Số mili giây kể từ 1970-01-01 00:00:00 GMT | 1078884319047 |
+
+> **Tóm gọn 1 câu:** Hai bộ ký tự định dạng là hai "khuôn in" ngày giờ — SimpleDateFormat một khuôn, printf một khuôn, nhớ `M`/`m` khác nhau là tránh được nửa số lỗi.

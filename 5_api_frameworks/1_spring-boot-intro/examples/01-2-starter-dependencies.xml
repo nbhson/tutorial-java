@@ -1,0 +1,5 @@
+<!-- Thay vì khai báo từng cái: spring-web, spring-mvc, jackson-databind, tomcat... -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>

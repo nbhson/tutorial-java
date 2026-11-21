@@ -1,88 +1,46 @@
 # Exceptions
 
-## What Is an Exception in Java?
+## Exception trong Java là gì?
+
+Mục nền ôn nhanh khái niệm trước khi vào khối `finally`.
 
 `An exception` is a problem that arises during the execution of a program. When an Exception occurs the normal flow of the program is disrupted and the program/Application terminates abnormally, which is not recommended, therefore, these exceptions are to be handled.
 
-## Why Exception Occurs?
+Diễn đạt lại: exception là sự cố giữa chừng làm chương trình gián đoạn — không xử lý thì chương trình dừng bất thường.
 
-An exception can occur for many different reasons. Following are some scenarios where an exception occurs.
-- A user has entered an invalid data.
-- A file that needs to be opened cannot be found.
-- A network connection has been lost in the middle of communications or the JVM has run out of memory.
+## Vì sao exception xảy ra?
+
+- Người dùng nhập dữ liệu không hợp lệ.
+- File cần mở không tồn tại.
+- Kết nối mạng bị mất giữa chừng, hoặc JVM hết bộ nhớ.
 
 > Some of these exceptions are caused by user error, others by programmer error, and others by physical resources that have failed in some manner.
 
-## Finally 
+## Finally
+
+Mục này trả lời câu hỏi: có việc gì bắt buộc phải làm **dù thành công hay thất bại** không? Câu trả lời là khối `finally` — việc dọn dẹp không được bỏ qua.
 
 The finally block follows a try block or a catch block. `A finally block of code always executes,` irrespective of occurrence of an Exception.
 
-```java 
-try {
-   // Protected code
-} catch (ExceptionType1 e1) {
-   // Catch block
-} catch (ExceptionType2 e2) {
-   // Catch block
-} catch (ExceptionType3 e3) {
-   // Catch block
-} finally {
-   // The finally block always executes.
-}
-```
+Ví von: `finally` như nhân viên rạp phim tắt đèn và dọn ghế sau mỗi suất chiếu — dù phim hay, phim dở, hay mất điện giữa buổi, công việc dọn dẹp vẫn phải chạy. Đó là chỗ đứng duy nhất trong code mà bạn coi là "chắc chắn được thực thi".
+
+> 📄 **Code ví dụ:** [`examples/01-finally.java`](examples/01-finally.java)
 
 # Points To Remember While Using Finally Block
+
 - Không bắt buộc phải có mệnh đề cuối cùng bất cứ khi nào có khối thử/bắt.
-- Khối `finally` không được thực thi trong trường hợp phương thức exit() được gọi trước khối cuối cùng hoặc xảy ra lỗi nghiêm trọng khi thực thi chương trình.
+- Khối `finally` không được thực thi trong trường hợp phương thức exit() được gọi trước khối cuối cùng hoặc xảy ra lỗi nghiêm trọng khi thực thi chương trình — chỉ khi JVM "tắt máy" hẳn thì nhân viên dọn dẹp mới không kịp làm việc.
 - `finally` block is executed even method returns a value before finally block.
 
 # Why Java Finally Block Used?
-- Java finally block can be used for clean-up (closing) the connections, files opened, streams, etc. those must be closed before exiting the program.
+
+- Java finally block can be used for clean-up (closing) the connections, files opened, streams, etc. those must be closed before exiting the program — đúng vai trò "trả đồ sau khi mượn, bất kể có làm xong việc hay không".
 - It can also be used to print some final information.
 
 ## Example
 
-```java
-package com.tutorialspoint;
+> 📄 **Code ví dụ:** [`examples/02-example.java`](examples/02-example.java)
 
-public class ExcepTest {
+> 📄 **Code ví dụ:** [`examples/03-example.java`](examples/03-example.java)
 
-   public static void main(String args[]) {
-      int a[] = new int[2];
-      try {
-         System.out.println("Access element three :" + a[3]);
-      } catch (ArrayIndexOutOfBoundsException e) {
-         System.out.println("Exception thrown  :" + e);
-      }finally {
-         a[0] = 6;
-         System.out.println("First element value: " + a[0]);
-         System.out.println("The finally statement is executed");
-      }
-   }
-}
-```
-
-```java
-package com.tutorialspoint;
-
-public class ExcepTest {
-
-   public static void main(String args[]) {     
-      System.out.println(testFinallyBlock());
-   }
-
-   private static int testFinallyBlock() {
-      int a[] = new int[2];
-      try {
-         return 1; 
-      } catch (ArrayIndexOutOfBoundsException e) {
-      System.out.println("Exception thrown  :" + e);
-      }finally {
-         a[0] = 6;
-         System.out.println("First element value: " + a[0]);
-         System.out.println("The finally statement is executed");
-      }
-      return 0;
-   }
-}
-```
+> **Tóm gọn 1 câu:** `finally` là "việc dọn dẹp bắt buộc" — chạy bất kể exception có xảy ra hay không, chỉ trừ khi JVM tắt hẳn (exit hoặc lỗi nghiêm trọng).

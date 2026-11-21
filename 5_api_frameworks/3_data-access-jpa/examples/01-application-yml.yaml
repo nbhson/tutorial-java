@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Tạo schema tự động (dev)
+    show-sql: true           # In SQL ra console (dev)
+    properties:
+      hibernate:
+        format_sql: true     # Format SQL đẹp hơn
+    open-in-view: false      # Tránh lazy loading issues
+
+  h2:
+    console:
+      enabled: true          # Mở H2 Console: http://localhost:8080/h2-console
+      path: /h2-console

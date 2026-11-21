@@ -4,69 +4,35 @@
 
 **Lambda Expressions** và **Stream API** được giới thiệu từ Java 8, mang Functional Programming vào Java. Đây là những tính năng quan trọng nhất để xử lý collections hiện đại.
 
+Hãy hình dung cách cũ là **rót nước từng ly bằng tay** (vòng lặp for chạm vào từng phần tử), còn Stream là **ống dẫn nước có các van lọc**: bạn lắp van (lọc, biến đổi) theo trật tự và chỉ mở khóa cuối — nước tự chảy qua.
+
 > **Yêu cầu**: Java 8+ (một số tính năng nâng cao cần Java 16+)
+
+> **Tóm gọn 1 câu:** Lambda + Stream là cách khai báo "muốn gì" thay vì "làm từng bước như thế nào" khi xử lý collections.
 
 ## Lambda Expressions
 
-Lambda là một cách viết ngắn gọn cho anonymous function (hàm không tên).
+Mục này giới thiệu "cú pháp rút gọn" của hàm không tên — nền móng để mọi thứ phía sau hoạt động.
+
+Lambda là một cách viết ngắn gọn cho anonymous function (hàm không tên). Ví von: nếu anonymous class là **viết cả lá đơn xin việc** để xin làm một việc nhỏ, thì lambda là **đưa một tấm danh thiếp** — chỉ nói đúng thứ người ta cần.
 
 ### Cú pháp
 
-```java
-// Cú pháp cơ bản
-(parameters) -> expression
-(parameters) -> { statements; }
-
-// Ví dụ
-Runnable r1 = () -> System.out.println("Hello");           // Không tham số
-Consumer<String> c1 = s -> System.out.println(s);           // 1 tham số
-BinaryOperator<Integer> add = (a, b) -> a + b;             // 2 tham số
-Comparator<String> cmp = (s1, s2) -> s1.length() - s2.length();
-```
+> 📄 **Code ví dụ:** [`examples/01-cu-phap.java`](examples/01-cu-phap.java)
 
 ### So sánh trước/sau Lambda
 
-```java
-// ============ TRƯỚC Java 8: Anonymous Inner Class ============
-Comparator<String> comparator = new Comparator<String>() {
-    @Override
-    public int compare(String s1, String s2) {
-        return s1.length() - s2.length();
-    }
-};
-
-// ============ SAU Java 8: Lambda ============
-Comparator<String> comparator = (s1, s2) -> s1.length() - s2.length();
-
-// ============ Method Reference (thậm chí ngắn hơn) ============
-Comparator<String> comparator = Comparator.comparingInt(String::length);
-```
+> 📄 **Code ví dụ:** [`examples/02-so-sanh-truoc-sau-lambda.java`](examples/02-so-sanh-truoc-sau-lambda.java)
 
 ## Functional Interfaces
 
-Functional interface là interface có **đúng 1 abstract method**. Java 8 cung cấp 4 interfaces chính trong `java.util.function`.
+Mục này nói về "khuôn khuôn cho lambda": interface chỉ có đúng một phương thức trừu tượng, chính là nơi lambda được gắn vào.
+
+Functional interface là interface có **đúng 1 abstract method**. Java 8 cung cấp 4 interfaces chính trong `java.util.function`. Hãy hình dung chúng như **4 loại phích cắm chuẩn**: cắm 2 chân ra 1 kết quả (Function), chỉ kiểm tra đúng/sai (Predicate), chỉ thu vào không trả ra (Consumer), chỉ phát ra không cần đầu vào (Supplier).
 
 ### 4 Functional Interfaces chính
 
-```java
-import java.util.function.*;
-
-// 1. Predicate<T>: T → boolean
-Predicate<String> isEmpty = s -> s.isEmpty();
-System.out.println(predicate.test(""));  // true
-
-// 2. Consumer<T>: T → void
-Consumer<String> printer = s -> System.out.println(s);
-printer.accept("Hello");  // In ra console
-
-// 3. Function<T, R>: T → R
-Function<String, Integer> length = s -> s.length();
-System.out.println(length.apply("Java"));  // 4
-
-// 4. Supplier<T>: () → T
-Supplier<List<String>> listSupplier = () -> new ArrayList<>();
-List<String> list = listSupplier.get();
-```
+> 📄 **Code ví dụ:** [`examples/03-4-functional-interfaces-chinh.java`](examples/03-4-functional-interfaces-chinh.java)
 
 ### Các Functional Interfaces khác
 
@@ -80,7 +46,11 @@ List<String> list = listSupplier.get();
 | `UnaryOperator<T>` | `T → T` | Function với cùng input/output type |
 | `BinaryOperator<T>` | `(T,T) → T` | 2 tham số cùng type, 1 ra |
 
+> **Cách đọc bảng này:** cột "Signature" là quan trọng nhất — mũi tên `→` nghĩa là "cho vào... để nhận ra..."; 4 dòng đầu là bộ tứ chính, 3 dòng sau là biến thể khi cần nhiều tham số hay cùng kiểu vào/ra.
+
 ## Stream API
+
+Mục này là "bảo mật chính" của bài: pipeline xử lý dữ liệu khai báo, gồm 3 công đoạn tạo stream → biến đổi → thu kết quả.
 
 Stream là một "pipeline" các operations để xử lý dữ liệu theo cách declarative.
 
@@ -93,197 +63,39 @@ Source → Intermediate Operations → Terminal Operation
 
 ### Tạo Stream
 
-```java
-import java.util.stream.*;
-import java.util.*;
-
-// Từ Collection
-List<String> list = List.of("Java", "Spring", "Boot");
-Stream<String> stream1 = list.stream();
-
-// Từ Array
-String[] array = {"a", "b", "c"};
-Stream<String> stream2 = Arrays.stream(array);
-
-// Stream.of
-Stream<Integer> stream3 = Stream.of(1, 2, 3, 4, 5);
-
-// Stream.generate (infinite stream)
-Stream<Double> randoms = Stream.generate(Math::random).limit(5);
-
-// Stream.iterate
-Stream<Integer> evenNumbers = Stream.iterate(0, n -> n + 2).limit(10);
-```
+> 📄 **Code ví dụ:** [`examples/04-tao-stream.java`](examples/04-tao-stream.java)
 
 ## Các Operations
 
+Mục này phân chia công nhân trên dây chuyền thành hai ca: ca "trung gian" chưa chạy (lazy) và ca "kết thúc" mới kích hoạt cả dây chuyền.
+
 ### Intermediate Operations (Lazy)
 
-```java
-List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-
-// filter: Lọc theo điều kiện
-Stream<Integer> evens = numbers.stream()
-    .filter(n -> n % 2 == 0);  // [2, 4, 6, 8, 10]
-
-// map: Chuyển đổi từng element
-Stream<Integer> squares = numbers.stream()
-    .map(n -> n * n);  // [1, 4, 9, 16, 25, ...]
-
-// sorted: Sắp xếp
-Stream<Integer> sorted = numbers.stream()
-    .sorted(Comparator.reverseOrder());
-
-// distinct: Loại bỏ duplicates
-Stream<Integer> unique = Stream.of(1, 2, 2, 3, 3, 3).distinct();  // [1, 2, 3]
-
-// limit/skip: Giới hạn
-Stream<Integer> first3 = numbers.stream().limit(3);      // [1, 2, 3]
-Stream<Integer> skip3 = numbers.stream().skip(3);         // Bỏ 3 phần tử đầu
-
-// flatMap: "Làm phẳng" nested streams
-List<List<Integer>> nested = List.of(List.of(1, 2), List.of(3, 4));
-Stream<Integer> flattened = nested.stream()
-    .flatMap(List::stream);  // [1, 2, 3, 4]
-```
+> 📄 **Code ví dụ:** [`examples/05-intermediate-operations-lazy.java`](examples/05-intermediate-operations-lazy.java)
 
 ### Terminal Operations
 
-```java
-// collect: Thu thập kết quả
-List<Integer> result = numbers.stream()
-    .filter(n -> n % 2 == 0)
-    .collect(Collectors.toList());
-
-// Java 16+: toList() trực tiếp
-List<Integer> evens = numbers.stream()
-    .filter(n -> n % 2 == 0)
-    .toList();  // Shorter version
-
-// forEach: Xử lý từng phần tử
-numbers.stream().forEach(System.out::println);
-
-// reduce: Gộp thành 1 giá trị
-int sum = numbers.stream()
-    .reduce(0, Integer::sum);  // Tính tổng
-
-// count, min, max
-long count = numbers.stream().count();
-Optional<Integer> max = numbers.stream().max(Integer::compareTo);
-
-// anyMatch, allMatch, noneMatch
-boolean hasEven = numbers.stream().anyMatch(n -> n % 2 == 0);    // true
-boolean allPositive = numbers.stream().allMatch(n -> n > 0);     // false
-boolean noNegative = numbers.stream().noneMatch(n -> n < 0);     // true
-
-// findFirst, findAny
-Optional<Integer> first = numbers.stream().findFirst();
-
-// toArray
-Integer[] arr = numbers.stream().toArray(Integer[]::new);
-```
+> 📄 **Code ví dụ:** [`examples/06-terminal-operations.java`](examples/06-terminal-operations.java)
 
 ## Ví dụ thực tế
 
+Mục này đưa stream ra "đường đua thật": xử lý danh sách sản phẩm và chạy song song khi dữ liệu lớn.
+
 ### Xử lý List Products
 
-```java
-public record Product(String name, String category, double price, int stock) {}
-
-public class StreamExamples {
-
-    public static void main(String[] args) {
-        List<Product> products = List.of(
-            new Product("Laptop", "Electronics", 25000, 10),
-            new Product("Phone", "Electronics", 15000, 5),
-            new Product("T-Shirt", "Clothing", 150, 100),
-            new Product("Shoes", "Clothing", 500, 50),
-            new Product("Book", "Books", 80, 200)
-        );
-
-        // 1. Lọc sản phẩm giá > 100, sắp xếp theo giá
-        List<Product> affordable = products.stream()
-            .filter(p -> p.price() < 1000)
-            .sorted(Comparator.comparingDouble(Product::price))
-            .toList();
-        System.out.println("Sản phẩm giá < 500: " + affordable);
-
-        // 2. Lấy danh sách tên sản phẩm (uppercase)
-        List<String> names = products.stream()
-            .map(Product::name)
-            .toList();
-
-        // 3. Tính tổng giá trị tồn kho
-        double totalValue = products.stream()
-            .mapToDouble(p -> p.price() * p.quantity())
-            .sum();
-
-        // 4. Group by category
-        Map<String, List<Product>> byCategory = products.stream()
-            .collect(Collectors.groupingBy(Product::category));
-
-        // 5. Tìm sản phẩm có giá cao nhất
-        Optional<Product> mostExpensive = products.stream()
-            .max(Comparator.comparingDouble(Product::price));
-
-        // 6. Đếm theo category
-        Map<String, Long> countByCategory = products.stream()
-            .collect(Collectors.groupingBy(
-                Product::category,
-                Collectors.counting()
-            ));
-
-        // 7. Partition (chia 2 nhóm theo điều kiện)
-        Map<Boolean, List<Product>> partition = products.stream()
-            .collect(Collectors.partitioningBy(p -> p.price() < 1000));
-
-        // 8. Chuỗi nối từ danh sách tên
-        String nameStr = products.stream()
-            .map(Product::name)
-            .collect(Collectors.joining(", ", "[", "]"));
-        // "[Laptop, T-Shirt, Shoes, Book]"
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-xu-ly-list-products.java`](examples/07-xu-ly-list-products.java)
 
 ### Parallel Streams
 
-```java
-// Sequential stream (1 thread)
-long count1 = numbers.stream()
-    .filter(n -> n % 2 == 0)
-    .count();
-
-// Parallel stream (nhiều threads)
-long count2 = numbers.parallelStream()
-    .filter(n -> n % 2 == 0)
-    .count();
-
-// Khi nào dùng parallel?
-// ✅ Dataset lớn (hàng trăm nghìn+), CPU-bound tasks
-// ❌ Dataset nhỏ, I/O-bound, cần ordering
-```
+> 📄 **Code ví dụ:** [`examples/08-parallel-streams.java`](examples/08-parallel-streams.java)
 
 ## Optional với Stream
 
-```java
-// Optional trong Stream pipeline
-Optional<String> firstLongName = names.stream()
-    .filter(name -> name.length() > 5)
-    .findFirst();
-
-// Xử lý Optional
-firstLongName.ifPresent(name -> System.out.println("Found: " + name));
-
-// Map và flatMap trong Stream
-Map<String, List<String>> groupedNames = people.stream()
-    .collect(Collectors.groupingBy(
-        Person::getCity,
-        Collectors.mapping(Person::getName, Collectors.toList())
-    ));
-```
+> 📄 **Code ví dụ:** [`examples/09-optional-voi-stream.java`](examples/09-optional-voi-stream.java)
 
 ## Best Practices
+
+Mục này là "nội quy sử dụng stream": sáu thói quen giúp code vừa đẹp vừa không tự gây ra lỗi hiệu năng.
 
 1. **Prefer method references** khi có thể: `String::toUpperCase` thay vì `s -> s.toUpperCase()`
 2. **Tránh side effects**: Stream không nên mutate external state
@@ -291,6 +103,8 @@ Map<String, List<String>> groupedNames = people.stream()
 4. **Lazy evaluation**: Intermediate ops không chạy cho đến khi có terminal op
 5. **Không reuse Stream**: Mỗi stream chỉ được consume 1 lần
 6. **Parallel stream cẩn thận**: Chỉ dùng cho CPU-bound + dataset lớn
+
+> **Tóm gọn 1 câu:** Stream là dây chuyền lắp ráp khai báo — lắp van (intermediate) chưa chạy, mở khóa (terminal) mới chảy, và dây chuyền chỉ chạy được một lần duy nhất.
 
 ## Tài liệu tham khảo
 

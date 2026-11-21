@@ -16,6 +16,8 @@
 | **I** | [Interface Segregation](./4-i/README.md) | Phân tách giao diện | Bị ép implement method không dùng? Không được phép. |
 | **D** | [Dependency Inversion](./5-d/README.md) | Đảo ngược phụ thuộc | Code cấp cao có phụ thuộc vào code cấp thấp không? Không được — cả hai phụ thuộc vào abstraction. |
 
+> **Cách đọc bảng này:** mỗi dòng là một nguyên tắc, đứng theo chữ cái S-O-L-I-D; đọc cột "Câu hỏi cốt lõi" là nắm được tinh thần ngay — mỗi nguyên tắc đều trả lời bằng một "được/không được" dứt khoát. Click vào tên để vào bài chi tiết.
+
 **Tầng 3 — Vì sao SOLID quan trọng?** Hãy xét chi phí thay đổi phần mềm:
 
 ```
@@ -27,7 +29,11 @@ Chi phí sửa code ∝ (số class bị ảnh hưởng khi thay 1 yêu cầu)
 
 SOLID không giúp code "chạy nhanh hơn" — nó giúp **tốc độ phát triển dài hạn không suy giảm**.
 
+> **Tóm gọn 1 câu:** SOLID là bộ LEGO cho code — mỗi khối một việc, thay khối này không làm gãy khối kia, nên dự án lớn vẫn sửa được nhanh sau nhiều năm.
+
 ## 2. Cấu trúc thư mục
+
+Mục này cho bạn xem bản đồ kho tài liệu: 5 bài lý thuyết + 1 project thực hành, để bạn biết mình đang đứng đâu trên lộ trình.
 
 ```
 4_solid/
@@ -40,6 +46,8 @@ SOLID không giúp code "chạy nhanh hơn" — nó giúp **tốc độ phát tr
 ```
 
 ## 3. Project thực hành: Pizza App
+
+Mục này giới thiệu "lực đẩy chính" của cả chương: một quán pizza ảo mà ta sẽ mổ xẻ xuyên suốt 5 bài lý thuyết.
 
 Toàn bộ thư mục `6-pizza-app` là một dự án áp dụng SOLID theo phong cách "Factory Method" kinh điển (từ cuốn Head First Design Patterns). Cấu trúc:
 
@@ -55,97 +63,37 @@ Toàn bộ thư mục `6-pizza-app` là một dự án áp dụng SOLID theo pho
 
 Luồng hoạt động:
 
-```java
-// Main.java
-HuePizzaStore huePizzaStore = new HuePizzaStore();
-huePizzaStore.orderPizza("cheese");
+> 📄 **Code ví dụ:** [`examples/01-3-project-thuc-hanh-pizza-app.java`](examples/01-3-project-thuc-hanh-pizza-app.java)
 
-// PizzaStore.java (abstract)
-public void orderPizza(String type) {
-    Pizza pizza = CreatePizza(type);  // phương thức factory — mỗi store tự tạo pizza riêng
-    pizza.prepare();
-    pizza.bake();
-    pizza.cut();
-    pizza.box();
-}
-```
-
-Chúng ta sẽ dùng chính project này làm ví dụ xuyên suốt 5 bài lý thuyết.
+Chúng ta sẽ dùng chính project này làm ví dụ xuyên suốt 5 bài lý thuyết — giống như học giải phẫu trên cùng một "bệnh nhân" thay vì đổi bệnh nhân mỗi buổi học.
 
 ## 4. Tóm tắt nhanh cả 5 nguyên tắc
 
+Mục này là bản "tóm tắt lướt" 5 bài phía dưới: mỗi nguyên tắc một đoạn ngắn kèm code mẫu, đủ để bạn ôn lại trong 5 phút trước buổi phỏng vấn.
+
 ### 4.1. SRP — mỗi class một trách nhiệm
 
-```java
-// ✗ vi phạm: một class vừa tính lương, vừa in báo cáo, vừa lưu DB
-class NhanVien {
-    void tinhLuong() {}
-    void inBaoCao() {}
-    void luuDatabase() {}
-}
-
-// ✅ tách: mỗi class một lý do thay đổi duy nhất
-class TinhLuongService { void tinhLuong(NhanVien nv) {} }
-class BaoCaoService     { void in(NhanVien nv) {} }
-class NhanVienRepository{ void save(NhanVien nv) {} }
-```
+> 📄 **Code ví dụ:** [`examples/02-4-1-srp-moi-class-mot-trach-nhiem.java`](examples/02-4-1-srp-moi-class-mot-trach-nhiem.java)
 
 ### 4.2. OCP — mở rộng bằng thêm code, không phải sửa code
 
-```java
-// ✗ mỗi loại khuyến mãi mới phải sửa if-else trong class cũ
-double tinhGiam(double total, String loai) {
-    if (loai.equals("VIP")) return total * 0.1;
-    if (loai.equals("MỚI"))  return 50_000;
-    return 0;
-}
-
-// ✅ mở rộng bằng implement interface mới
-interface KhuyenMai { double giamGia(double total); }
-class KhuyenMaiVip implements KhuyenMai { public double giamGia(double t) { return t * 0.1; } }
-class KhuyenMaiMoi implements KhuyenMai { public double giamGia(double t) { return 50_000; } }
-```
+> 📄 **Code ví dụ:** [`examples/03-4-2-ocp-mo-rong-bang-them-code.java`](examples/03-4-2-ocp-mo-rong-bang-them-code.java)
 
 ### 4.3. LSP — lớp con không được phá hành vi của lớp cha
 
-```java
-// ✗ vi phạm kinh điển: Vuong extends ChuNhat nhưng phá rule
-class ChuNhat { void setW(int w); void setH(int h); }
-class Vuong extends ChuNhat {  // setW đồng thời setH → phá kỳ vọng của caller
-}
-
-// ✅ tách interface riêng nếu hành vi khác nhau
-interface Hinh { double dienTich(); }
-```
+> 📄 **Code ví dụ:** [`examples/04-4-3-lsp-lop-con-khong-uoc-pha.java`](examples/04-4-3-lsp-lop-con-khong-uoc-pha.java)
 
 ### 4.4. ISP — nhiều interface nhỏ tốt hơn một interface béo
 
-```java
-// ✗ một interface ép implement những method không cần
-interface MayIn { in(); scan(); fax(); }
-
-// ✅ tách nhỏ
-interface CoTheIn  { in(); }
-interface CoTheScan{ scan(); }
-// MayInInOnly chỉ implements CoTheIn
-```
+> 📄 **Code ví dụ:** [`examples/05-4-4-isp-nhieu-interface-nho-tot-hon.java`](examples/05-4-4-isp-nhieu-interface-nho-tot-hon.java)
 
 ### 4.5. DIP — phụ thuộc abstraction, không phụ thuộc chi tiết
 
-```java
-// ✗ phụ thuộc cứng vào MySQL
-class UserService {
-    private MySQLDatabase db = new MySQLDatabase(); // muốn đổi PostgreSQL? sửa code!
-}
-
-// ✅ phụ thuộc interface
-class UserService {
-    private final UserRepository db;      // abstraction
-    UserService(UserRepository db) { this.db = db; } // inject từ ngoài — chính là DI trong Spring
-}
-```
+> 📄 **Code ví dụ:** [`examples/06-4-5-dip-phu-thuoc-abstraction-khong-phu.java`](examples/06-4-5-dip-phu-thuoc-abstraction-khong-phu.java)
 
 ## 5. Các dấu hiệu nhận biết code vi phạm SOLID
+
+Mục này là "hộp kiểm tra sức khỏe": nếu code của bạn xuất hiện mấy triệu chứng dưới đây, khả năng cao nó đang vi phạm một nguyên tắc SOLID nào đó.
 
 - 🔴 Class dài > 300 dòng với nhiều nhóm method không liên quan.
 - 🔴 Nhiều `if-else` / `switch` theo loại (type) ở nhiều nơi khác nhau.
@@ -154,7 +102,11 @@ class UserService {
 - 🔴 Lớp con phải override method của cha để "làm rỗng" (`throw new UnsupportedOperationException()`).
 - 🔴 Interface có 20+ method, implementer chỉ dùng 3.
 
+> **Tóm gọn 1 câu:** Code vi phạm SOLID thường "kêu" trước khi gãy — class béo, if-else theo loại rải rác, và mỗi tính năng mới phải sửa một loạt file.
+
 ## 6. Lộ trình học
+
+Mục này nói về cách học sao cho hiểu chứ không phải đọc cho xong — thứ tự và cách luyện tay với từng nguyên tắc.
 
 1. Đọc từng bài theo thứ tự 1 → 5, mỗi bài có ví dụ ❌/✅.
 2. Mở `6-pizza-app/src` trong IDE, chạy `Main`, đọc code liên hệ từng nguyên tắc.

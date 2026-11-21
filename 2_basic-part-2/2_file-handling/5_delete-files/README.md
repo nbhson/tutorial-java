@@ -1,78 +1,25 @@
-# Java -Deleting Files in Java
+# Java - Deleting Files in Java
 
 To delete a file in Java, you can use the File.delete() method. This method deletes the files or directory from the given path.
 
+Nói bằng tiếng Việt: để xóa file trong Java, bạn dùng phương thức `File.delete()` — xóa file hoặc thư mục tại đường dẫn cho trước. Ví von: `delete()` như nút "dọn vào thùng rác" — bấm xong là mất, không có hộp thoại xác nhận, nên hãy chắc chắn trước khi gọi. Phương thức trả về `boolean`: `true` nếu xóa thành công, `false` nếu file không tồn tại hoặc đang bị khóa.
+
 ## Syntax
 
-```java
-File file = new File("C:/java/hello.txt");
+Mục này cho xem cú pháp gọi `delete()` — chỉ một dòng, nhưng trả về kết quả nên bạn cần kiểm tra.
 
-if(file.exists()){
-   file.delete();
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-syntax.java`](examples/01-syntax.java)
 
 ## Deleting File from Current Directory
 
-```java
-package com.tutorialspoint;
+Mục này xóa một file ở thư mục hiện tại — tình huống phổ biến nhất trong thực tế.
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-public class FileTest {
-  
-   public static void main(String args[]) throws IOException {
-      BufferedWriter out = new BufferedWriter (new FileWriter("test.txt"));
-      out.write("test data");
-      out.close();
-
-      File file = new File("test.txt");
-      if(file.exists()) {
-         boolean success = file.delete();
-
-         if (success) {
-            System.out.println("The file has been successfully deleted."); 
-         }else {
-            System.out.println("The file deletion failed.");
-         }        
-      }else {
-         System.out.println("The file is not present."); 
-      }
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-deleting-file-from-current-directory.java`](examples/02-deleting-file-from-current-directory.java)
 
 ## Deleting All Files From Given Directory
 
-```java
-package com.tutorialspoint;
+Mục này nâng lên một bậc: xóa **tất cả** file trong một thư mục — cần duyệt qua từng file rồi gọi `delete()` cho từng cái.
 
-import java.io.File;
-import java.io.IOException;
+> 📄 **Code ví dụ:** [`examples/03-deleting-all-files-from-given-directory.java`](examples/03-deleting-all-files-from-given-directory.java)
 
-public class FileTest {
-  
-   public static void deleteFiles(File dirPath) {
-      File filesList[] = dirPath.listFiles(); // mảng chứa tất cả các file và thư mục con trong đường dẫn được chỉ định dirPath.
-      for(File file : filesList) {
-         if(file.isFile()) {
-            file.delete();
-         } else {
-            deleteFiles(file);
-         }
-      }
-   }
-   public static void main(String args[]) throws IOException {
-      
-      //Creating a File object for directory
-      File file = new File("D:\\test");
-      
-      //List of all files and directories
-      deleteFiles(file);
-      System.out.println("Files deleted.");
-   }
-}
-```
+> **Tóm gọn 1 câu:** Xóa file = gọi `File.delete()` và kiểm tra `boolean` trả về — xóa được là nhờ file tồn tại và không ai đang "giữ" nó.

@@ -4,218 +4,51 @@
 
 Java 16-21 giới thiệu các tính năng ngôn ngữ hiện đại giúp code ngắn gọn, an toàn và dễ đọc hơn: **Records** (Java 16), **Sealed Classes** (Java 17), và **Pattern Matching** (Java 16-21).
 
+Cả ba là một bộ "ba món ăn kèm" của cùng bữa ăn: Record làm món chính (dữ liệu), Sealed làm gia vị (giới hạn), Pattern Matching là cách ăn (phân xử) — dùng chung sẽ ngon hơn dùng riêng.
+
 > **Yêu cầu**: Java 17+ (LTS). Một số tính năng cần Java 21.
+
+> **Tóm gọn 1 câu:** Record rút gọn data class, Sealed khóa số lượng "con cháu", Pattern Matching phân xử kiểu — ba tính năng hợp thành cặp bài trùng của modeling hiện đại.
 
 ---
 
 ## 1. Record (Java 16+)
 
-**Record** là một cách ngắn gọn để tạo **immutable data class** - class chỉ chứa dữ liệu, tự động generate constructor, getters, equals, hashCode, toString.
+Mục này nói về "khuôn in dữ liệu": một dòng khai báo thay cho cả chục dòng constructor/getter/equals/hashCode.
+
+**Record** là một cách ngắn gọn để tạo **immutable data class** - class chỉ chứa dữ liệu, tự động generate constructor, getters, equals, hashCode, toString. Ví von: class truyền thống là **nhà xây thủ công** (đổ móng, lên tường, sơn từng bước), Record là **nhà lắp ghép** — báo trước danh sách phòng, mọi thứ còn lại được dựng sẵn đúng chuẩn.
 
 ### So sánh Class truyền thống vs Record
 
-```java
-// ============ TRƯỚC: Traditional Class (30+ dòng code) ============
-public class Point {
-    private final int x;
-    private final int y;
-
-    public Point(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public int getX() { return x; }
-    public int getY() { return y; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Point)) return false;
-        Point point = (Point) o;
-        return x == point.x && y == point.y;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y);
-    }
-
-    @Override
-    public String toString() {
-        return "Point{x=" + x + ", y=" + y + "}";
-    }
-}
-
-// ============ SAU: Record (1 dòng!) ============
-public record Point(int x, int y) {}
-// Tự động có: constructor, x(), y(), equals(), hashCode(), toString()
-```
+> 📄 **Code ví dụ:** [`examples/01-so-sanh-class-truyen-thong-vs-record.java`](examples/01-so-sanh-class-truyen-thong-vs-record.java)
 
 ### Sử dụng Record
 
-```java
-public record Task(
-    Long id,
-    String title,
-    String description,
-    boolean completed,
-    LocalDateTime createdAt
-) {
-    // Compact Constructor - validation
-    public Task {
-        if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("Title không được để trống");
-        }
-    }
-
-    // Optional: Custom methods
-    public boolean isDone() {
-        return completed;
-    }
-
-    // Optional: Static factory methods
-    public static Task createNew(String title, String description) {
-        return new Task(null, title, description, false, LocalDateTime.now());
-    }
-
-    // Optional: "With" methods - tạo copy với giá trị mới
-    public Task withCompleted(boolean newCompleted) {
-        return new Task(id, title, description, newCompleted, createdAt);
-    }
-}
-
-// Sử dụng
-Task task = new Task(1L, "Học Java", "Học Record", false, LocalDateTime.now());
-
-// Accessor methods (không có "get" prefix)
-String title = task.title();     // Không phải getTitle()
-boolean done = task.completed(); // Không phải isCompleted()
-
-// Record là immutable - không có setters!
-// task.setTitle("New");  // ❌ Compile error
-
-// Tạo copy với thay đổi
-Task completedTask = task.withCompleted(true);
-```
+> 📄 **Code ví dụ:** [`examples/02-su-dung-record.java`](examples/02-su-dung-record.java)
 
 ### Record trong Spring Boot (DTOs)
 
-```java
-// Request DTO
-public record CreateUserRequest(
-    @NotBlank String name,
-    @Email String email,
-    @Size(min = 8) String password
-) {}
-
-// Response DTO
-public record UserResponse(
-    Long id,
-    String name,
-    String email,
-    String createdAt
-) {
-    // Static factory từ Entity
-    public static UserResponse from(User user) {
-        return new UserResponse(
-            user.getId(),
-            user.getName(),
-            user.getEmail(),
-            user.getCreatedAt().toString()
-        );
-    }
-}
-
-// Controller
-@PostMapping("/api/users")
-public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
-    User user = userService.create(request);
-    return ResponseEntity.status(201).body(UserResponse.from(user));
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-record-trong-spring-boot-dtos.java`](examples/03-record-trong-spring-boot-dtos.java)
 
 ### Compact Constructor với validation
 
-```java
-public record Range(int min, int max) {
-    public Task {
-        if (min > max) {
-            throw new IllegalArgumentException("min phải <= max");
-        }
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-compact-constructor-voi-validation.java`](examples/04-compact-constructor-voi-validation.java)
 
 ---
 
 ## 2. Sealed Classes (Java 17+)
 
-**Sealed Classes** cho phép kiểm soát **chính xác** class nào được phép extend/implement.
+Mục này nói về "khóa cửa gia phả": class cha tự quyết định chính xác ai được làm con, ai không.
+
+**Sealed Classes** cho phép kiểm soát **chính xác** class nào được phép extend/implement. Hãy hình dung một **câu lạc bộ có danh sách thành viên kín**: chỉ ai có tên trong danh sách mới được gia nhập — không ai tự ý "extends" vào được.
 
 ### Code ví dụ
 
-```java
-// Sealed interface - chỉ các class được phép implement
-public sealed interface Shape 
-    permits Circle, Rectangle, Triangle {
-    double area();
-}
-
-// Các permitted subclasses
-public record Circle(double radius) implements Shape {
-    @Override
-    public double area() {
-        return Math.PI * radius * radius;
-    }
-}
-
-public record Rectangle(double width, double height) implements Shape {
-    @Override
-    public double area() {
-        return width * height;
-    }
-}
-
-public record Triangle(double base, double height) implements Shape {
-    @Override
-    public double area() {
-        return 0.5 * width * height;
-    }
-}
-
-// Lưu ý: Circle, Rectangle, Triangle phải là final, sealed, hoặc non-sealed
-// final: không cho kế thừa nữa
-// sealed: tiếp tục hạn chế
-// non-sealed: mở lại cho mọi class
-```
+> 📄 **Code ví dụ:** [`examples/05-code-vi-du.java`](examples/05-code-vi-du.java)
 
 ### Pattern Matching với Sealed Classes
 
-```java
-public class ShapeCalculator {
-
-    // Pattern matching cho switch (Java 21)
-    public static double area(Shape shape) {
-        return switch (shape) {
-            case Circle c -> Math.PI * c.radius() * c.radius();
-            case Rectangle r -> r.width() * r.height();
-            case Triangle t -> 0.5 * t.base() * t.height();
-            // Không cần default! Compiler biết đã cover hết
-        };
-    }
-
-    // instanceof pattern matching (Java 16+)
-    public static String describe(Shape shape) {
-        if (shape instanceof Circle c) {
-            return "Circle with radius " + c.radius();
-        } else if (shape instanceof Rectangle r) {
-            return "Rectangle " + r.width() + "x" + r.height();
-        }
-        return "Unknown shape";
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/06-pattern-matching-voi-sealed-classes.java`](examples/06-pattern-matching-voi-sealed-classes.java)
 
 ### Lợi ích của Sealed Classes
 
@@ -224,143 +57,41 @@ public class ShapeCalculator {
 3. **Domain modeling**: Mô hình hóa chính xác business rules
 4. **API design**: Kiểm soát API surface
 
+> **Tóm gọn 1 câu:** Sealed class là "câu lạc bộ danh sách kín" — compiler biết đủ mọi thành viên nên switch không cần default, và business rule được đóng khung chặt.
+
 ---
 
 ## 3. Pattern Matching
 
+Mục này nói về "kiểm tra và gán một phát": thay vì instanceof rồi cast riêng lẻ, pattern matching gộp hai bước thành một.
+
 ### instanceof Pattern Matching (Java 16+)
 
-```java
-// ============ TRƯỚC Java 16 ============
-if (obj instanceof String) {
-    String str = (String) obj;
-    System.out.println(str.length());
-}
-
-// ============ SAU Java 16 ============
-if (obj instanceof String str) {
-    System.out.println(str.length());  // str đã được cast
-}
-
-// Với conditions
-if (obj instanceof String str && str.length() > 5) {
-    System.out.println("Long string: " + str);
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-instanceof-pattern-matching-java-16.java`](examples/07-instanceof-pattern-matching-java-16.java)
 
 ### Switch Expressions (Java 14+)
 
-```java
-// Traditional switch (verbose)
-String result;
-switch (day) {
-    case MONDAY:
-    case TUESDAY:
-        result = "Weekday";
-        break;
-    case SATURDAY:
-    case SUNDAY:
-        result = "Weekend";
-        break;
-    default:
-        result = "Unknown";
-}
-
-// Modern switch expression (Java 14+)
-String result = switch (day) {
-    case MONDAY, TUESDAY -> "Weekday";
-    case SATURDAY, SUNDAY -> "Weekend";
-    default -> "Other";
-};
-```
+> 📄 **Code ví dụ:** [`examples/08-switch-expressions-java-14.java`](examples/08-switch-expressions-java-14.java)
 
 ### Pattern Matching for Switch (Java 21)
 
-```java
-public class PatternMatchingDemo {
-
-    // Switch với pattern matching
-    public static String process(Object obj) {
-        return switch (obj) {
-            case Integer i when i > 0 -> "Positive number: " + i;
-            case Integer i -> "Non-positive number: " + i;
-            case String s -> "String: " + s.toUpperCase();
-            case List<?> list -> "List with " + list.size() + " elements";
-            case null -> "Null value";
-            default -> "Unknown type";
-        };
-    }
-
-    // Record patterns (Java 21)
-    public record Point(int x, int y) {}
-
-    public static int sumCoordinates(Object obj) {
-        return switch (obj) {
-            case Point(int x, int y) -> x + y;        // Deconstruct record
-            case Point p -> p.x() + p.y();             // Traditional access
-            default -> 0;
-        };
-    }
-
-    // Nested patterns
-    public record Line(Point start, Point end) {}
-
-    public static boolean isVertical(Object obj) {
-        return switch (obj) {
-            case Line(Point(var x1, var y1), Point(var x2, var y2)) 
-                when x1 == x2 -> true;
-            default -> false;
-        };
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/09-pattern-matching-for-switch-java-21.java`](examples/09-pattern-matching-for-switch-java-21.java)
 
 ---
 
 ## Ví dụ tổng hợp: Domain Model với Records + Sealed
 
-```java
-// ============ Domain: Payment Processing ============
+Mục này là "bữa tiệc cả bộ ba": Record + Sealed + Pattern Matching cùng vận hành trong một domain model hoàn chỉnh.
 
-// Sealed interface cho payment results
-public sealed interface PaymentResult 
-    permits Success, Failure, Pending {
-}
+> 📄 **Code ví dụ:** [`examples/10-vi-du-tong-hop-domain-model-voi-records.java`](examples/10-vi-du-tong-hop-domain-model-voi-records.java)
 
-// Records cho từng case
-public record Success(String transactionId, BigDecimal amount) 
-    implements PaymentResult {}
-
-public record Failure(String reason, String errorCode) 
-    implements PaymentResult {
-}
-
-public record Pending(String checkBackAt) 
-    implements PaymentResult {
-}
-```
-
-```java
-// Service xử lý với pattern matching
-@Service
-public class PaymentProcessor {
-
-    public String processResult(PaymentResult result) {
-        return switch (result) {
-            case Success(var id, var amount) -> 
-                "✅ Thanh toán thành công: " + amount + " (ID: " + id + ")";
-            case Failure(var reason, _) -> 
-                "❌ Thanh toán thất bại: " + reason;
-            case Pending(var checkAt) -> 
-                "⏳ Đang xử lý, kiểm tra lại sau: " + checkBackAt;
-        };
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/11-vi-du-tong-hop-domain-model-voi-records.java`](examples/11-vi-du-tong-hop-domain-model-voi-records.java)
 
 ---
 
 ## So sánh các tính năng theo version
+
+Mục này là "bảng niên đại": tính năng nào ra mắt ở version nào, để bạn biết dùng được gì trên JDK của dự án.
 
 | Tính năng | Java Version | Mô tả |
 |-----------|--------------|-------|
@@ -374,13 +105,19 @@ public class PaymentProcessor {
 | Flexible Constructor Bodies | 25 (final) | Code trước super() |
 | Scoped Values | 21-25 | Thread-safe context sharing |
 
+> **Cách đọc bảng này:** đọc từ trên xuống theo version tăng dần — ba dòng đầu (Java 8-16) gần như chắc chắn dùng được, các dòng từ 17 trở lên cần đối chiếu JDK của dự án.
+
 ## Best Practices
+
+Mục này là "năm bài học xương máu" khi áp dụng cả ba tính năng vào project thật.
 
 1. **Dùng Record cho DTOs, Value Objects**: Thay vì class với Lombok
 2. **Dùng Sealed + Pattern Matching**: Cho domain models với finite variants
 3. **Records là immutable**: Không thể có setters
 4. **Sealed cần cẩn thận**: Chỉ dùng khi số variants thực sự cố định
 5. **Kết hợp cả 3**: Records + Sealed + Pattern Matching = powerful domain modeling
+
+> **Tóm gọn 1 câu:** "Nhà lắp ghép" (Record) + "câu lạc bộ kín" (Sealed) + "phân xử một phát ăn ngay" (Pattern Matching) = cách modeling gọn nhất của Java hiện đại.
 
 ## Tài liệu tham khảo
 

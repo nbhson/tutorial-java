@@ -4,7 +4,13 @@
 
 Phần này sẽ hướng dẫn bạn xây dựng ứng dụng web hiện đại với **Spring Boot 4.x** - framework phổ biến nhất để phát triển ứng dụng Java trong doanh nghiệp. Chúng ta sẽ đi từ cơ bản đến nâng cao, từ việc tạo một dự án Spring Boot đầu tiên đến việc xây dựng kiến trúc microservices hoàn chỉnh.
 
+Hãy hình dung Spring Boot như một **bộ đồ nghề đầu bếp chuyên nghiệp**: nguyên liệu (code Java) của bạn không đổi, nhưng mọi dụng cụ — lò nướng, dao, thớt — đã được đặt đúng chỗ sẵn, bạn chỉ việc vào bếp là nấu được ngay.
+
+> **Tóm gọn 1 câu:** Phần này là hành trình "vào bếp thực chiến" với Spring Boot: từ mở project đầu tiên tới dựng cả hệ microservices.
+
 ## Nội dung chính
+
+Mục này là mục lục của cả phần — sáu trạm dừng, mỗi trạm một kỹ năng, đọc lướt để biết lộ trình trước khi xuống tay.
 
 ### 1. [Spring Boot Introduction](./1_spring-boot-intro/)
 Giới thiệu Spring Boot, cách tạo project với Spring Initializr, cấu trúc project, và các khái niệm cơ bản về dependency management.
@@ -26,12 +32,16 @@ Giới thiệu kiến trúc microservices, Service Discovery với Eureka, API G
 
 ## Yêu cầu
 
+Mục này liệt kê "vé vào cửa": thứ bạn cần có trên máy trước khi bắt đầu phần này.
+
 - **Java**: 17 trở lên (Khuyến nghị Java 21 hoặc 25)
 - **Spring Boot**: 4.x (phiên bản mới nhất 2026)
 - **Build Tool**: Maven hoặc Gradle
 - **IDE**: IntelliJ IDEA (khuyến nghị) hoặc VS Code
 
 ## Phiên bản và Công nghệ sử dụng
+
+Mục này là "nhãn hiệu hàng hóa" của toàn bộ phần — các version bạn sẽ đụng tới xuyên suốt, để khi đọc tài liệu ngoài bạn biết mình đang đứng ở thế hệ nào.
 
 | Công nghệ | Phiên bản | Ghi chú |
 |-----------|-----------|---------|
@@ -43,6 +53,8 @@ Giới thiệu kiến trúc microservices, Service Discovery với Eureka, API G
 | H2 Database | 2.x | Database cho development |
 | Lombok | 1.18.x | Giảm boilerplate code |
 
+> **Cách đọc bảng này:** mỗi dòng là một công cụ trong bộ đồ nghề của phần này; cột "Phiên bản" là con số cần đối chiếu khi project của bạn gặp lỗi tương thích, cột "Ghi chú" nói nhanh về vai trò của nó.
+
 ## Tài liệu tham khảo
 
 - [Spring Boot Official Documentation](https://spring.io/projects/spring-boot)
@@ -52,6 +64,8 @@ Giới thiệu kiến trúc microservices, Service Discovery với Eureka, API G
 - [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)
 
 ## Mục tiêu học tập
+
+Mục này là "hợp đồng cam kết đầu ra" của cả phần: hoàn thành 6 bài là bạn đủ 6 năng lực dưới đây.
 
 Sau khi hoàn thành phần này, bạn sẽ có thể:
 

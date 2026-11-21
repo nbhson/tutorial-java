@@ -1,0 +1,2 @@
+super.variable
+super.method();

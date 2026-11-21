@@ -4,77 +4,29 @@
 
 ## 1. Nhắc lại: Getter/Setter là gì?
 
+Mục này ôn nhanh nền móng trước khi phê bình: getter/setter sinh ra để làm gì và tại sao ai cũng học nó đầu tiên.
+
 **Tầng 1 — Trực giác:** Biến `private` là **cửa khóa**; getter/setter là **lễ tân** đứng trước cửa — khách không tự vào phòng, phải thông qua lễ tân kiểm tra.
 
 **Tầng 2 — Định nghĩa:** Encapsulation = ẩn dữ liệu (`private`) + chỉ cho thao tác qua method công khai. Getter đọc giá trị, setter gán giá trị.
 
-```java
-public class Person {
-    private String name;
-    private int age;
+> 📄 **Code ví dụ:** [`examples/01-1-nhac-lai-getter-setter-la-gi.java`](examples/01-1-nhac-lai-getter-setter-la-gi.java)
 
-    public String getName()        { return name; }
-    public void   setName(String n){ this.name = n; }
-
-    public int    getAge()         { return age; }
-    public void   setAge(int a)    { this.age = a; }
-}
-```
+> **Tóm gọn 1 câu:** Getter/setter là "lễ tân" của class — đúng vai trò thì giữ phép lịch sự, nhưng để lễ tân làm thay cả việc kinh doanh thì hỏng (mục sau nói kỹ).
 
 ## 2. Khi nào setter là anti-pattern?
 
+Mục này là trái tim của bài: chỉ ra mặt tối của setter — tại sao "đặt ai cũng vào được" lại phá hỏng dữ liệu, và đâu là cách đặt câu hỏi đúng trước khi viết một setter.
+
 ### 2.1. Setter "mù" — mọi invariant có thể bị phá
 
-```java
-// ✗ code client co the tao object o trang thai SAI bat cu luc nao
-Person p = new Person();
-p.setAge(-5);              // tuoi am? khong ai chan!
-p.setName(null);           // ten null? van duoc!
-
-// object "nua trong" — truyen lung tung trong he thong
-p.setAge(25);              // ai do quen goi dong nay
-xuLyDonHang(p);            // nhan object chua du du lieu
-```
+> 📄 **Code ví dụ:** [`examples/02-2-1-setter-mu-moi-invariant-co-the.java`](examples/02-2-1-setter-mu-moi-invariant-co-the.java)
 
 **Tầng 3 — Vì sao có hại?** Setter vô điều kiện biến class thành **túi dữ liệu mở**: trạng thái hợp lệ chỉ tồn tại "đôi lúc", và mọi method khác phải tự phòng thủ kiểm tra null/âm/rỗng. Object có **constructor hợp lệ duy nhất** thì trạng thái sai **không thể tồn tại**.
 
 ### 2.2. So sánh ❌/✅
 
-```java
-// ✗ anti-pattern: setter mù, object khong bao gio "hoan chinh"
-public class TaiKhoan {
-    private String soTk;
-    private long soDu;
-
-    public void setSoTk(String s) { this.soTk = s; }
-    public void setSoDu(long d)   { this.soDu = d; }  // ai cung set duoc so du!
-}
-
-// ✅ tot hon: tao hop le trong constructor, thay doi qua method y nghia
-public class TaiKhoan {
-    private final String soTk;   // final: khong the thay sau khi tao
-    private long soDu;
-
-    public TaiKhoan(String soTk, long soDuBanDau) {
-        if (soTk == null || soTk.isBlank()) throw new IllegalArgumentException("soTK rong");
-        if (soDuBanDau < 0) throw new IllegalArgumentException("so du am");
-        this.soTk = soTk;
-        this.soDu = soDuBanDau;
-    }
-
-    public long soDu() { return soDu; }
-
-    public void napTien(long tien) {        // hanh vi co nghia, khong phai "set"
-        if (tien <= 0) throw new IllegalArgumentException("Tien nap phai > 0");
-        soDu += tien;
-    }
-
-    public void rutTien(long tien) {
-        if (tien > soDu) throw new IllegalArgumentException("Khong du so du");
-        soDu -= tien;
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-2-2-so-sanh.java`](examples/03-2-2-so-sanh.java)
 
 **Nguyên tắc: đặt câu hỏi "hành vi nghiệp vụ này là gì?"** — `napTien`, `rutTien`, `guiEmail`, `dongDon` — thay vì `setX`/`setY` máy móc.
 
@@ -82,80 +34,21 @@ public class TaiKhoan {
 
 ❌ Getter trả về **tham chiếu mảng/collection** — bên ngoài sửa được nội dung bên trong:
 
-```java
-public class LopHoc {
-    private final List<String> hs = new ArrayList<>();
+> 📄 **Code ví dụ:** [`examples/04-2-3-getter-cung-co-the-la-van.java`](examples/04-2-3-getter-cung-co-the-la-van.java)
 
-    public List<String> getHocSinh() { return hs; } // ✗ nguoi ngoai hs.clear() duoc!
-}
-
-// ✅ tra ve ban sao khong the sua
-public List<String> getHocSinh() {
-    return List.copyOf(hs); // bang sao khong doi (Java 10+)
-}
-```
-
-Xem code mẫu `10-setters-getters/src/Main.java`: `setSchoolYear` nhận mảng và lưu `schoolYear.clone()` — đây là cách **phòng thủ đúng** khi bắt buộc nhận mảng: copy dữ liệu vào, tránh bên ngoài thay đổi mảng gốc sau khi set.
+Xem code mẫu `10-setters-getters/src/Main.java`: `setSchoolYear` nhận mảng và lưu `schoolYear.clone()` — đây là cách **phòng thủ đúng** khi bắt buộc nhận mảng: copy dữ liệu vào, tránh bên ngoài thay đổi mảng gốc sau khi set. Ví von: thay vì đưa cho khách bản gốc sơ đồ phòng, hãy đưa bản photo — khách vẽ vẽ lung tung trên bản photo thì bản gốc vẫn nguyên.
 
 ## 3. Builder Pattern — thay thế constructor nhiều tham số
 
+Mục này giới thiệu "người sửa sai" cho cả setter lẫn constructor dài: Builder Pattern — dựng object bằng từng câu có tên rõ nghĩa, và chỉ "bàn giao" khi đủ dữ liệu.
+
 ### 3.1. Vấn đề: "telescoping constructor"
 
-```java
-// ✗ constructor tham so dai — de nham vi tri!
-new Pizza("L", true, false, true, false, "An");
-// true, false, true la gi? da pho-mat, khong hanh, co oi? khong ai nho duoc
-```
+> 📄 **Code ví dụ:** [`examples/05-3-1-van-e-telescoping-constructor.java`](examples/05-3-1-van-e-telescoping-constructor.java)
 
 ### 3.2. Builder — gọi bằng tên, đọc như tiếng Anh
 
-```java
-public class Pizza {
-    private final String size;          // bat buoc
-    private final boolean phoMat;       // tuy chon
-    private final boolean hanh;
-    private final boolean oi;
-    private final String ghiChu;
-
-    private Pizza(Builder b) {          // constructor private — chi Builder tao duoc
-        this.size    = b.size;
-        this.phoMat  = b.phoMat;
-        this.hanh    = b.hanh;
-        this.oi      = b.oi;
-        this.ghiChu  = b.ghiChu;
-    }
-
-    public static class Builder {
-        // bat buoc
-        private final String size;
-        // tuy chon — khoi tao gia tri mac dinh
-        private boolean phoMat = true;
-        private boolean hanh   = false;
-        private boolean oi     = false;
-        private String ghiChu  = "";
-
-        public Builder(String size) { this.size = size; }
-
-        public Builder phoMat(boolean v) { this.phoMat = v; return this; }
-        public Builder hanh(boolean v)   { this.hanh = v;   return this; }
-        public Builder oi(boolean v)     { this.oi = v;     return this; }
-        public Builder ghiChu(String s)  { this.ghiChu = s; return this; }
-
-        public Pizza build() {
-            if (size == null || size.isBlank())
-                throw new IllegalArgumentException("Size bat buoc");
-            return new Pizza(this);
-        }
-    }
-}
-
-// ✅ su dung — doc nhu cau thoai mai
-Pizza p = new Pizza.Builder("L")
-        .phoMat(true)
-        .oi(true)
-        .ghiChu("Cat thanh 8 mieng")
-        .build();
-```
+> 📄 **Code ví dụ:** [`examples/06-3-2-builder-goi-bang-ten-oc-nhu.java`](examples/06-3-2-builder-goi-bang-ten-oc-nhu.java)
 
 ### 3.3. Vì sao Builder tốt hơn setter?
 
@@ -167,7 +60,9 @@ Pizza p = new Pizza.Builder("L")
 | Thread-safe? | ✗ Phải lo đồng bộ | ✅ Nếu immutable |
 | Đọc code gọi | `setX(...); setY(...)` — thứ tự tùy ý | Chuỗi method có tên rõ nghĩa |
 
-**Tầng 3 — Vì sao immutable đáng giá?** Object không đổi trạng thái thì: chia sẻ giữa các thread an toàn tuyệt đối, dùng làm key Map/phần tử Set không lo hash thay đổi, và dễ suy luận (nhìn là biết giá trị — không cần tìm "ai set nó ở đâu").
+> **Cách đọc bảng này:** mỗi dòng là một tiêu chí so sánh; cột giữa là cách làm cũ (setter + no-arg constructor), cột phải là Builder. Đọc từ trên xuống để thấy Builder thắng ở mọi "hạng thi" — đặc biệt hai dòng đầu (trạng thái nửa vời và validation) là lý do quyết định.
+
+**Tầng 3 — Vì sao immutable đáng giá?** Object không đổi trạng thái thì: chia sẻ giữa các thread an toàn tuyệt đối, dùng làm key Map/phần tử Set không lo hash thay đổi, và dễ suy luận (nhìn là biết giá trị — không cần tìm "ai set nó ở đâu"). Ví von: immutable object giống như tấm vé in sẵn — ai cầm vé cũng thấy cùng một thông tin, không ai được ghi đè lên vé của người khác.
 
 **Khi nào vẫn dùng setter hợp lệ?**
 - Framework yêu cầu (JPA entity, Jackson deserialize, JavaBean của thư viện cũ) — thỏa hiệp chấp nhận được.
@@ -175,21 +70,17 @@ Pizza p = new Pizza.Builder("L")
 
 ## 4. Record + validation — lựa chọn hiện đại (Java 16+)
 
+Mục này nói về "lối tắt đời mới": nếu object chỉ là dữ liệu, record của Java 16+ thay thế phần lớn nhu cầu viết Builder thủ công.
+
 Khi object chỉ là dữ liệu, `record` + compact constructor thay thế phần lớn nhu cầu Builder:
 
-```java
-public record KhachHang(String ten, String email, int tuoi) {
-    public KhachHang {
-        if (ten == null || ten.isBlank()) throw new IllegalArgumentException("Ten rong");
-        if (!email.contains("@"))         throw new IllegalArgumentException("Email sai");
-        if (tuoi < 0 || tuoi > 150)       throw new IllegalArgumentException("Tuoi sai");
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-4-record-validation-lua-chon-hien-ai-java.java`](examples/07-4-record-validation-lua-chon-hien-ai-java.java)
 
 Chỉ khi có **nhiều tham số tùy chọn** thì Builder mới hơn hẳn record.
 
 ## 5. Bài tập
+
+Mục này là "bài tập về nhà" để biến lý thuyết anti-pattern thành phản xạ code thật của bạn.
 
 1. Refactor `TaiKhoan` có 4 setter thành class immutable với constructor + `napTien`/`rutTien`. Chứng minh không thể tạo tài khoản số dư âm.
 2. Viết Builder cho `TaiKhoan` khi có nhiều field tùy chọn (chi nhánh, loại TK, hạn mức...).
@@ -203,3 +94,5 @@ Chỉ khi có **nhiều tham số tùy chọn** thì Builder mới hơn hẳn re
 - Nhiều tham số tùy chọn → **Builder Pattern**: immutable, validation tập trung, code gọi dễ đọc.
 - Getter trả collection/mảng → trả bản sao không đổi (`List.copyOf`, `clone()` như code mẫu).
 - Setter chỉ chấp nhận khi framework bắt buộc hoặc khi object thật sự mutable có method nghiệp vụ bảo vệ.
+
+> **Tóm gọn 1 câu:** Setter vô điều kiện là "cửa để ngỏ" — hãy khóa bằng constructor/record có validation, và mở của rộng có kiểm soát bằng Builder khi tham số nhiều.

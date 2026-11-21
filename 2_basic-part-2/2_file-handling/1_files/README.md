@@ -2,9 +2,17 @@
 
 ## Lớp File là gì?
 
+Mục này trả lời câu hỏi định vị quan trọng: `File` là gì, làm được gì và **không** làm được gì — hiểu nhầm chỗ này là mất mấy tiếng debug oan.
+
 Lớp `File` trong Java (thuộc gói `java.io`) biểu diễn **đường dẫn** tới file hoặc thư mục một cách trừu tượng. Bạn dùng nó để tạo, tìm kiếm, xóa, đổi tên file/thư mục... Lưu ý: `File` chỉ làm việc với **siêu dữ liệu** (tên, kích thước, quyền), không đọc/ghi nội dung bên trong file — việc đó thuộc về các stream/reader.
 
+Ví von: đối tượng `File` giống như **thẻ nhân thân của căn nhà** — ghi rõ địa chỉ, diện tích, chủ quyền — nhưng không phải căn nhà. Muốn xem đồ đạc bên trong (đọc/ghi nội dung) thì bạn phải bước vào nhà qua cửa (stream/reader), cầm thẻ thì chỉ biết thông tin ngoài mặt tiền.
+
+> **Tóm gọn 1 câu:** `File` là "thẻ căn cước" của đường dẫn — quản lý thông tin bên ngoài file, còn nội dung bên trong là việc của stream/reader.
+
 ## Các constructor của lớp File
+
+Mục này liệt kê 4 cách "sinh mã số" cho một đường dẫn — tùy bạn có sẵn đối tượng cha, chuỗi đường dẫn hay URI.
 
 | Constructor | Ý nghĩa |
 |-------------|---------|
@@ -13,12 +21,13 @@ Lớp `File` trong Java (thuộc gói `java.io`) biểu diễn **đường dẫn
 | `File(String parent, String child)` | Tạo đối tượng File từ đường dẫn cha (chuỗi) và tên con |
 | `File(URI uri)` | Tạo đối tượng File từ một URI dạng `file:` |
 
-```java
-File f1 = new File("data.txt");                       // đường dẫn tương đối
-File f2 = new File("/Users/you/docs", "report.pdf");  // thư mục cha + tên file
-```
+> **Cách đọc bảng này:** mỗi dòng là một cách khai báo mới; cột trái cho biết "cung cấp gì để tạo", cột phải là việc nó làm. Phổ biến nhất là dòng 2 — truyền nguyên chuỗi đường dẫn.
+
+> 📄 **Code ví dụ:** [`examples/01-cac-constructor-cua-lop-file.java`](examples/01-cac-constructor-cua-lop-file.java)
 
 ## Các phương thức quan trọng của lớp File
+
+Mục này là "bảng chức năng" đầy đủ của lớp `File`, chia theo nhóm việc: hỏi thông tin, hỏi quyền/trạng thái, hỏi thời gian-kích thước, tạo/xóa/đổi tên, liệt kê nội dung, và file tạm. Đọc theo nhóm sẽ đỡ choáng hơn nhiều so với học thuộc cả 30 dòng.
 
 ### Thông tin cơ bản
 
@@ -30,6 +39,8 @@ File f2 = new File("/Users/you/docs", "report.pdf");  // thư mục cha + tên f
 | 4 | `public String getPath()` | Chuyển đường dẫn trừu tượng thành chuỗi pathname |
 | 5 | `public boolean isAbsolute()` | Kiểm tra đường dẫn có phải tuyệt đối không |
 | 6 | `public String getAbsolutePath()` | Trả về chuỗi đường dẫn tuyệt đối |
+
+> **Cách đọc bảng này:** các bảng dưới đây đều theo cùng khuôn mẫu — cột **Phương thức** là cái bạn gõ trong code, cột **Mô tả** là kết quả nhận về. Prefix `public` cứ bỏ qua khi đọc; chữ `boolean` đầu kết quả nghĩa là phương thức trả về đúng/sai thay vì dữ liệu.
 
 ### Kiểm tra quyền và trạng thái
 
@@ -82,40 +93,13 @@ File f2 = new File("/Users/you/docs", "report.pdf");  // thư mục cha + tên f
 
 ## Ví dụ tổng hợp
 
-```java
-import java.io.File;
-import java.io.IOException;
-
-public class FileDemo {
-    public static void main(String[] args) throws IOException {
-        File file = new File("example.txt");
-
-        if (file.createNewFile()) {
-            System.out.println("Đã tạo: " + file.getName());
-        } else {
-            System.out.println("File đã tồn tại.");
-        }
-
-        System.out.println("Đường dẫn tuyệt đối: " + file.getAbsolutePath());
-        System.out.println("Kích thước: " + file.length() + " bytes");
-        System.out.println("Có thể ghi? " + file.canWrite());
-        System.out.println("Là thư mục? " + file.isDirectory());
-
-        // Đổi tên
-        File newName = new File("renamed.txt");
-        if (file.renameTo(newName)) {
-            System.out.println("Đã đổi tên thành " + newName.getName());
-        }
-
-        // Xóa
-        if (newName.delete()) {
-            System.out.println("Đã xóa file.");
-        }
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-tong-hop.java`](examples/02-vi-du-tong-hop.java)
 
 ## Lưu ý
 
-- `File` tạo ra **đối tượng trong bộ nhớ**, không tạo file thật trên đĩa — phải gọi `createNewFile()` thì file mới xuất hiện.
+Mục này chốt hai "cái bẫy" thực tế khi làm việc với lớp `File`.
+
+- `File` tạo ra **đối tượng trong bộ nhớ**, không tạo file thật trên đĩa — phải gọi `createNewFile()` thì file mới xuất hiện. Giống như viết tên vào danh sách khách mời chưa có nghĩa là khách đã đến.
 - Với các thao tác hiện đại (duyệt cây, copy, đọc toàn bộ file...), bạn nên ưu tiên `java.nio.file` (`Path`, `Files`) — xem bài `6_directory-operators` và `7_files-io`.
+
+> **Tóm gọn 1 câu:** Lớp `File` = thẻ căn cước của đường dẫn: tra thông tin, hỏi quyền, tạo/xóa/đổi tên được, nhưng đọc-ghi nội dung thì phải nhờ stream, và code mới nên nghiêng về `java.nio.file`.

@@ -1,11 +1,14 @@
 # Data Types
 
+Trước khi đựng gì vào "hộp" (biến), phải chọn **kiểu hộp**: kiểu dữ liệu quyết định hộp to bao nhiêu, đựng được gì, làm được gì với nội dung bên trong. Mục này nói về hai dòng hộp chính của Java: nguyên thủy và tham chiếu.
+
 Có 2 kiểu dữ liệu trong java:
 - Kiểu dữ liệu nguyên thủy: có 8 kiểu dữ liệu nguyên thủy trong java
-    
 
 -	Kiểu dữ liệu tham chiếu
-    - Kiểu dữ liệu tham chiếu là kiểu dữ liệu của đối tượng, biến của kiểu dữ liệu tham chiếu chỉ chứa địa chỉ của đối tượng tại bộ nhớ stack. Đối tượng dữ liệu lại nằm ở bộ nhớ Heap. Một số kiểu dữ liệu cụ thể như các mảng (Array), lớp đối tượng (Class) hoặc kiểu lớp giao tiếp (Interface) 
+    - Kiểu dữ liệu tham chiếu là kiểu dữ liệu của đối tượng, biến của kiểu dữ liệu tham chiếu chỉ chứa địa chỉ của đối tượng tại bộ nhớ stack. Đối tượng dữ liệu lại nằm ở bộ nhớ Heap. Một số kiểu dữ liệu cụ thể như các mảng (Array), lớp đối tượng (Class) hoặc kiểu lớp giao tiếp (Interface)
+
+Ví von dễ nhớ nhất: primitive là **tiền mặt trong túi bạn** (giá trị nằm ngay tại chỗ), reference là **thẻ ATM** (đầu thẻ chỉ là "địa chỉ", tiền thật nằm ở ngân hàng — tức Heap). Đưa thẻ cho ai, người ta đi đến đúng ví tiền của bạn, chứ không mang cả tài khoản theo.
 
 ## Java Primitive Data Types
 
@@ -20,65 +23,18 @@ There are eight primitive data types supported by Java. Below is the list of the
 - **Double**: lưu trữ kiểu số thực kích cỡ là 8 byte. Khi gán giá trị có thể có hoặc không “d” ở phía sau.
 - **Char**: Kiểu dữ liệu để lưu trữ kí tự trong bảng Unicode
 
-```java
-public class JavaTester {
-   public static void main(String args[]) {
+Hãy hình dung 8 kiểu này như **bộ hộp đựng đồ kích thước từ nhỏ đến lớn**: hộp nuốt nhỏ (boolean, byte), hộp vừa (short, int), hộp to (long), hộp đựng chất lỏng (float, double) và hộp đựng từng ký tự (char). Chọn hộp vừa đủ — đựng hạt tiêu mà lấy container thì phí bộ nhớ.
 
-      byte byteValue1 = 2;
-      byte byteValue2 = 4;
-      byte byteResult = (byte)(byteValue1 + byteValue2);
+> 📄 **Code ví dụ:** [`examples/01-java-primitive-data-types.java`](examples/01-java-primitive-data-types.java)
 
-      System.out.println("Byte: " + byteResult);
-
-      short shortValue1 = 2;
-      short shortValue2 = 4;
-      short shortResult = (short)(shortValue1 + shortValue2);
-
-      System.out.println("Short: " + shortResult);
-
-      int intValue1 = 2;
-      int intValue2 = 4;
-      int intResult = intValue1 + intValue2;
-
-      System.out.println("Int: " + intResult);
-
-      long longValue1 = 2L;
-      long longValue2 = 4L;
-      long longResult = longValue1 + longValue2;
-
-      System.out.println("Long: " + longResult);
-
-      float floatValue1 = 2.0f;
-      float floatValue2 = 4.0f;
-      float floatResult = floatValue1 + floatValue2;
-
-      System.out.println("Float: " + floatResult);
-
-      double doubleValue1 = 2.0;
-      double doubleValue2 = 4.0;
-      double doubleResult = doubleValue1 + doubleValue2;
-
-      System.out.println("Double: " + doubleResult);
-
-      boolean booleanValue = true;
-
-      System.out.println("Boolean: " + booleanValue);
-
-      char charValue = 'A';
-
-      System.out.println("Char: " + charValue);     
-   }
-}
-```
+> **Tóm gọn 1 câu:** 8 kiểu primitive là 8 cỡ hộp có sẵn — chọn cỡ vừa với dữ liệu, cứ int và double làm mặc định khi phân vân.
 
 ## Java Reference/Object Data Type
 
 - The reference data types are created using defined constructors of the classes. - They are used to access objects. These variables are declared to be of a specific type that cannot be changed. For example, Employee, Puppy, etc.
 
-```java
-// Creating an object of 'Animal' class
-Animal animal = new Animal("giraffe");
+Với kiểu tham chiếu, biến chỉ cầm **chìa khóa trỏ đến object** chứ không ôm cả object trong người. Kiểu của biến gắn chặt từ lúc khai báo và không đổi được — như hợp đồng thuê ghi rõ "căn hộ loại B" thì không tự chuyển thành loại C được.
 
-// Creating an object of 'String' class
-String myString = new String("Hello, World!");
-```
+> 📄 **Code ví dụ:** [`examples/02-java-reference-object-data-type.java`](examples/02-java-reference-object-data-type.java)
+
+> **Tóm gọn 1 câu:** Primitive giữ giá trị thật trong tay, reference chỉ giữ địa chỉ — bản chất khác nhau này là gốc của mọi câu chuyện `==` vs `equals()` sau này.

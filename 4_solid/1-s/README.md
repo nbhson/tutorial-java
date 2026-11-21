@@ -16,63 +16,27 @@
 
 Ba nhóm cùng đụng vào một file → conflict khi merge, một sửa làm gãy hai chỗ còn lại, test không biết tin ai.
 
+Hãy hình dung một quán ăn chỉ có **một người làm đủ mọi việc**: nấu, thu ngân, rửa bát, giao hàng. Chỉ cần anh ta nghỉ một buổi, cả quán sập. Class làm nhiều việc cũng y như vậy.
+
+> **Tóm gọn 1 câu:** SRP nói rằng một class chỉ nên có một lý do để thay đổi — một người thợ, một chuyên môn.
+
 ## 2. Ví dụ ❌ vi phạm
 
-```java
-// ✗ mot class lam 3 viec: tinh luong, in bao cao, luu DB
-class NhanVien {
-    private String ten;
-    private double luongCoBan;
+Mục này cho bạn xem một class "làm đủ thứ" điển hình — tính lương, in báo cáo và lưu database cùng nằm một chỗ, để bạn tự nhận ra nó ở chính code của mình.
 
-    double tinhLuong() {
-        // logic tinh luong — doi khi KE TOAN yeu cau sua
-        return luongCoBan * 1.1 - 500;
-    }
-
-    void inBaoCaoLuong() {
-        // dinh dang bao cao — doi khi BO PHAN KD yeu cau sua
-        System.out.println("Bang luong cua " + ten + ": " + tinhLuong());
-    }
-
-    void luuDatabase() {
-        // SQL — doi khi DBA yeu cau sua
-        System.out.println("INSERT INTO nhan_vien VALUES ('" + ten + "')");
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-2-vi-du-vi-pham.java`](examples/01-2-vi-du-vi-pham.java)
 
 Ba lý do thay đổi trong một class = tần suất sửa gấp 3 lần, nguy cơ hỏng chéo gấp nhiều hơn.
 
 ## 3. Ví dụ ✅ tuân thủ
 
-```java
-// ✅ tach theo trach nhiem
-class NhanVien {                       // chi giu du lieu
-    private final String ten;
-    private final double luongCoBan;
-    NhanVien(String ten, double luong) { this.ten = ten; this.luongCoBan = luong; }
-    String ten()          { return ten; }
-    double luongCoBan()   { return luongCoBan; }
-}
+Mục này bê tảng ❌ phía trên ra và dán nhãn lại: mỗi nhóm hành vi một class riêng, ai có lý do thay đổi gì thì chỉ đụng vào class của mình.
 
-class TinhLuongService {               // chi logic tinh toan
-    double tinh(NhanVien nv) { return nv.luongCoBan() * 1.1 - 500; }
-}
-
-class BaoCaoLuongService {             // chi dinh dang xuat
-    void in(NhanVien nv, TinhLuongService service) {
-        System.out.println("Bang luong cua " + nv.ten() + ": " + service.tinh(nv));
-    }
-}
-
-class NhanVienRepository {             // chi truy van du lieu
-    void save(NhanVien nv) {
-        System.out.println("INSERT INTO nhan_vien VALUES ('" + nv.ten() + "')");
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-3-vi-du-tuan-thu.java`](examples/02-3-vi-du-tuan-thu.java)
 
 ## 4. Áp dụng vào pizza-app
+
+Mục này chứng minh SRP không phải lý thuyết suông: chính project pizza-app của chúng ta đang tuân thủ nó trong từng class.
 
 Trong `6-pizza-app/src`, mỗi class có một trách nhiệm rõ ràng:
 
@@ -81,23 +45,13 @@ Trong `6-pizza-app/src`, mỗi class có một trách nhiệm rõ ràng:
 - `Store/PizzaStore.java` — điều phối: đặt hàng → tạo pizza → quy trình chế biến.
 - `Store/DNPizzaStore.java` — quyết định tạo pizza nào cho khu vực Đà Nẵng.
 
-```java
-// PizzaStore KHONG tu tao pizza — giao cho subclass qua factory method
-public abstract class PizzaStore {
-    public void orderPizza(String type) {
-        Pizza pizza = CreatePizza(type); // tao pizza la trach nhiem cua subclass
-        pizza.prepare();                 // quy trinh la trach nhiem cua Pizza
-        pizza.bake();
-        pizza.cut();
-        pizza.box();
-    }
-    protected abstract Pizza CreatePizza(String type);
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-4-ap-dung-vao-pizza-app.java`](examples/03-4-ap-dung-vao-pizza-app.java)
 
 **Vì sao tách như vậy?** Lý do thay đổi của "quy trình chế biến" (nấu chín khác nhau) và "thành phần pizza" (món mới) là hai lý do **khác nhau** — tách class giúp sửa cái này không động vào cái kia.
 
 ## 5. Dấu hiệu nhận biết vi phạm
+
+Mục này là bộ "kim chỉ nam chẩn đoán": quét qua vài dấu hiệu dưới đây là biết ngay một class đang ôm quá nhiều việc.
 
 - 🔴 Tên class chứa `Manager`, `Util`, `Helper`, `Service` bao trùm mọi thứ.
 - 🔴 Import của class gồm những "thế giới" không liên quan: vừa `java.sql`, vừa `java.io`, vừa `javax.swing`.
@@ -110,12 +64,18 @@ public abstract class PizzaStore {
 
 ## 6. Bài tập
 
+Mục này là phần "luyện tay" — lý thuyết đã hiểu phải đi qua tay mới nhớ, bạn thử cả ba bài dưới đây trước khi sang bài OCP.
+
 1. Tìm trong code cũ của bạn một class dài > 200 dòng, liệt kê các nhóm method, tách thành các class theo trách nhiệm.
 2. Refactor `Employee` (tính lương + gửi email + lưu DB) thành 4 class. Viết unit test riêng cho phần tính lương không cần mock gì.
 3. Trong pizza-app, nếu thêm yêu cầu "in hóa đơn sau khi order" — bạn sẽ đặt class đó ở đâu, vì sao không nhét vào `PizzaStore`?
 
 ## 7. Tóm tắt
 
+Mục này gom lại cả bài thành ba gạch đầu dòng để bạn ôn nhanh.
+
 - SRP: một class = một lý do thay đổi = một nhóm stakeholder.
 - Tách theo trách nhiệm, không phải theo tầng kỹ thuật.
 - Lợi ích: ít conflict merge, test dễ, sửa không lo hỏng chéo.
+
+> **Tóm gọn 1 câu:** SRP là "một người thợ, một việc" — tách class theo lý do thay đổi, không phải theo tầng kỹ thuật hay số dòng code.

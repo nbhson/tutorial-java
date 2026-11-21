@@ -1,83 +1,38 @@
 # Exceptions
 
-## What Is an Exception in Java?
+## Exception trong Java là gì?
+
+Mục nền ôn nhanh khái niệm trước khi vào cấu trúc try lồng nhau.
 
 `An exception` is a problem that arises during the execution of a program. When an Exception occurs the normal flow of the program is disrupted and the program/Application terminates abnormally, which is not recommended, therefore, these exceptions are to be handled.
 
-## Why Exception Occurs?
+Diễn đạt lại: exception là sự cố giữa chừng làm gián đoạn chương trình — không hứng lấy thì chương trình dừng bất thường, nên ta phải xử lý.
 
-An exception can occur for many different reasons. Following are some scenarios where an exception occurs.
-- A user has entered an invalid data.
-- A file that needs to be opened cannot be found.
-- A network connection has been lost in the middle of communications or the JVM has run out of memory.
+## Vì sao exception xảy ra?
+
+- Người dùng nhập dữ liệu không hợp lệ.
+- File cần mở không tồn tại.
+- Kết nối mạng bị mất giữa chừng, hoặc JVM hết bộ nhớ.
 
 > Some of these exceptions are caused by user error, others by programmer error, and others by physical resources that have failed in some manner.
 
 ## Nested Try Block
 
+Mục này là nội dung chính của bài: đặt một khối `try` bên trong một khối `try` khác — giống như bảo hiểm tầng: phòng tuyến trong chưa đỡ được thì phòng tuyến ngoài gánh.
+
 A try block can be nested within another try block. This structure is termed as Nested try block. Whenever an exception is raised within a nested try block, its exception is pushed to Stack. The exception propagates from child to parent try block and so on.
 
-(question: real use case for this? do we use it often)
+Hãy hình dung như tòa nhà nhiều tầng chống cháy: cháy ở một phòng thì hệ thống của phòng đó dập trước; nếu phòng không dập được, đám cháy "lan lên" và hệ thống của cả tầng, rồi cả tòa nhà mới can thiệp. Exception cũng "lan" từ try con lên try cha như vậy.
 
-```java
-try { // parent try block
-   try {  // child try block
-   
-   }
-   catch(ExceptionType1 e1){  // child catch block
-   
-   }
-} catch (ExceptionType2 e1) { // parent catch block
+> 📄 **Code ví dụ:** [`examples/01-nested-try-block.java`](examples/01-nested-try-block.java)
 
-} 
-```
+## Những điểm cần nhớ khi dùng Nested Try Block
 
-## Pointer To Remember While Using Nested Try Block
+- Child catch block should have specific exception for better code clarity. Parent catch block can have more generic exception handled so that if child catch block is not able to handle the exception then parent catch block can handle it. Nói ngắn gọn: tầng trong bắt lỗi **cụ thể** (biết rõ đang xử lý cái gì), tầng ngoài bắt lỗi **chung** làm "lưới vớt" cuối cùng.
+- If a exception is handled correctly in child catch block, then in parent, another exception can be raised and handled. Tức là tầng trong xử lý xong thì không "đem bán" nữa, nhưng tầng ngoài vẫn có thể gặp và xử lý một exception khác phát sinh sau đó.
 
-- Child catch block should have specific exception for better code clarity. Parent catch block can have more generic exception handled so that if child catch block is not able to handle the exception then parent catch block can handle it.
-- If a exception is handled correctly in child catch block, then in parent, another exception can be raised and handled.
+> 📄 **Code ví dụ:** [`examples/02-pointer-to-remember-while-using-nested-try-block.java`](examples/02-pointer-to-remember-while-using-nested-try-block.java)
 
-```java
-package com.tutorialspoint;
+> 📄 **Code ví dụ:** [`examples/03-pointer-to-remember-while-using-nested-try-block.java`](examples/03-pointer-to-remember-while-using-nested-try-block.java)
 
-public class ExcepTest {
-
-   public static void main(String args[]) {
-      try {
-         int a[] = new int[2];
-         try {
-            int b = 0;
-            int c = 1/b;
-         }catch(Exception e) {
-            System.out.println("Child - Exception thrown: " + e);
-         }
-         System.out.println("Access element three :" + a[3]);
-      }
-      catch (ArrayIndexOutOfBoundsException e) {
-         System.out.println("Parent - Exception thrown: " + e);
-      }
-      System.out.println("Out of the block");
-   }
-}
-
-// Child - Exception thrown: java.lang.ArithmeticException: / by zero
-// Parent - Exception thrown: java.lang.ArrayIndexOutOfBoundsException: 3
-```
-
-```java
-try {
-   int a[] = new int[2];
-   try {
-      int b = 0;
-      int c = 1/b;
-   } catch(ArrayIndexOutOfBoundsException e) {
-      System.out.println("Child - Exception thrown: " + e);
-   }
-   System.out.println("Access element three :" + a[3]);
-}
-catch (Exception e) {
-   System.out.println("Parent - Exception thrown: " + e);
-}
-
-// Parent - Exception thrown: java.lang.ArithmeticException: / by zero
-````
+> **Tóm gọn 1 câu:** Nested try là phòng tuyến xếp tầng: try con bắt lỗi cụ thể, không xong thì exception lan lên try cha làm lớp lưới vớt.

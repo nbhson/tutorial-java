@@ -4,97 +4,37 @@
 
 ## 1. Switch cổ điển
 
-**Tầng 1 — Trực giác:** `if-else` là **chuỗi câu hỏi có/không** ("nếu A thì... nếu B thì..."). `switch` là **bảng tra cứu**: đưa giá trị vào, chọn đúng ô tương ứng.
+Mục này mở đầu với dạng switch gốc: so giá trị và rẽ nhánh bằng case/break. Đọc để hiểu cách hoạt động — và hiểu vì sao Java buộc phải ra đời bản nâng cấp ở các mục sau.
 
-```java
-int thu = 3;
-switch (thu) {
-    case 1:
-        System.out.println("Thu Hai");
-        break;                       // bat buoc! khong co break → rơi xuống case sau
-    case 2:
-        System.out.println("Ba");
-        break;
-    case 6:
-    case 7:                          // nhom case — khong co break o day la Y DING
-        System.out.println("Cuoi tuan");
-        break;
-    default:                         // khong khop case nao
-        System.out.println("Ngay trong tuan");
-        break;
-}
-```
+**Tầng 1 — Trực giác:** `if-else` là **chuỗi câu hỏi có/không** ("nếu A thì... nếu B thì..."). `switch` là **bảng tra cứu**: đưa giá trị vào, chọn đúng ô tương ứng — như nút thang máy, bạn bấm đúng tầng là đi đúng cửa, không phải hỏi "có phải tầng 3 không?" từng tầng một.
+
+> 📄 **Code ví dụ:** [`examples/01-1-switch-co-ien.java`](examples/01-1-switch-co-ien.java)
 
 ❌ **Pitfall — quên `break`:** code **rơi xuyên** (fallthrough) xuống case sau:
 
-```java
-int diem = 5;
-switch (diem) {
-    case 5:
-        System.out.println("Trung binh");
-        // thieu break → chay tiep xuong case 6!
-    case 6:
-        System.out.println("Kha");   // se in voi diem = 5!
-        break;
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-1-switch-co-ien.java`](examples/02-1-switch-co-ien.java)
 
 Đây là nguồn bug kinh điển — chính vì vậy Java 14 đã ra **switch expression**.
 
+> **Tóm gọn 1 câu:** Switch cổ điển là bảng tra cứu có "cửa trượt" — quên `break` là trượt xuyên qua các ô bên dưới.
+
 ## 2. Switch expression (Java 14+) — arrow `->`
 
-```java
-// switch tra ve gia tri, khong can break, khong so rơi xu
-String tenThu = switch (thu) {
-    case 1 -> "Thu Hai";
-    case 2 -> "Ba";
-    case 6, 7 -> "Cuoi tuan";        // nhieu case mot dong
-    default -> "Ngay trong tuan";
-};
+Mục này giới thiệu bản nâng cấp of switch: mũi tên `->` thay cho break, gọn hơn và an toàn hơn. Đọc để biết cú pháp hiện đại bạn sẽ dùng trong code mới.
 
-// co the co khoi lenh + yield de tra ve gia tri
-int soNgay = switch (thang) {
-    case 1, 3, 5, 7, 8, 10, 12 -> 31;
-    case 4, 6, 9, 11 -> 30;
-    case 2 -> {
-        int namNhuan = (nam % 4 == 0 && nam % 100 != 0) || nam % 400 == 0 ? 1 : 0;
-        yield 28 + namNhuan;         // yield = tra ve gia tri trong khoi
-    }
-    default -> -1;
-};
-```
+> 📄 **Code ví dụ:** [`examples/03-2-switch-expression-java-14-arrow.java`](examples/03-2-switch-expression-java-14-arrow.java)
 
-**Vì sao arrow `->` an toàn hơn?** Không có fallthrough, và compiler **bắt buộc** mọi case phải được xử lý (exhaustiveness) — thiếu case là lỗi biên dịch.
+**Vì sao arrow `->` an toàn hơn?** Không có fallthrough, và compiler **bắt buộc** mọi case phải được xử lý (exhaustiveness) — thiếu case là lỗi biên dịch. Ví von: bản cổ điển là cửa trượt mở kỳ hỉ (quên break là tuột xuống tầng dưới), bản expression là cửa đóng chặt từng phòng — hết phòng này qua phòng khác phải "được phép".
+
+> **Tóm gọn 1 câu:** Mũi tên `->` "kín cửa" hơn break — không trượt case, thiếu case compiler còn gõ cửa nhắc bạn.
 
 ## 3. Pattern matching switch (Java 21+) — switch theo KIỂU
 
+Mục này nâng switch lên tầm cao mới: thay vì so giá trị, switch so **kiểu dữ liệu** của đối tượng. Đọc để thay thế những chuỗi `if instanceof` dài lê thê.
+
 Trước Java 21, `switch` chỉ so sánh giá trị bằng. Java 21 cho phép switch theo **kiểu dữ liệu** — thay thế chuỗi `if instanceof` dài:
 
-```java
-// ✗ cu: chuoi if-instanceof loi nhoi
-static String moTa(Object obj) {
-    if (obj instanceof Integer i) {
-        return "so nguyen " + i;
-    } else if (obj instanceof String s) {
-        return "chuoi " + s;
-    } else if (obj == null) {
-        return "null";
-    }
-    return "khong ro";
-}
-
-// ✅ java 21: switch pattern matching — gon va day du (exhaustive)
-static String moTa(Object obj) {
-    return switch (obj) {
-        case Integer i when i > 0 -> "so nguyen duong: " + i;  // when = dieu kien bo sung
-        case Integer i            -> "so nguyen: " + i;
-        case String s when s.isEmpty() -> "chuoi rong";
-        case String s             -> "chuoi: " + s;
-        case null                 -> "la null";                // xu ly null trong switch!
-        default                   -> "khong ro";
-    };
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-3-pattern-matching-switch-java-21-switch-theo.java`](examples/04-3-pattern-matching-switch-java-21-switch-theo.java)
 
 **Điểm mới:**
 
@@ -103,56 +43,33 @@ static String moTa(Object obj) {
 - `case null` — cuối cùng switch xử lý được null mà không ném NPE.
 - Compiler kiểm tra **exhaustive**: nếu bạn switch trên `Object` mà không có `default`, code không biên dịch được.
 
+> **Tóm gọn 1 câu:** Pattern matching switch là "bảng phân loại hành lý theo chất liệu" — nhìn vào kiểu của từng món để xếp vào đúng quầy, kèm điều kiện `when` tinh chỉnh.
+
 ## 4. Pattern matching + Record destructuring
 
-```java
-record Diem(int x, int y) {}
-record Circle(Diem tam, double r) {}
+Mục này kết hợp switch với record để vừa phân loại vừa "mổ" lấy dữ liệu bên trong trong một dòng. Đọc để thấy cú pháp hiện đại gọn đến mức nào.
 
-static double dienTich(Object shape) {
-    return switch (shape) {
-        case Circle(var t, double r) -> Math.PI * r * r;  // destructure record ngay trong case
-        case Diem d                  -> 0;
-        default                      -> throw new IllegalArgumentException();
-    };
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-4-pattern-matching-record-destructuring.java`](examples/05-4-pattern-matching-record-destructuring.java)
 
 Kết hợp với **sealed interface** → compiler kiểm tra đủ mọi nhánh (xem chi tiết ở bài 2_basic-part-2/7_miscellaneous).
 
+> **Tóm gọn 1 câu:** Switch + record destructuring là "mở phong bì ngay tại quầy" — phân loại và rút dữ liệu bên trong chỉ trong một case duy nhất.
+
 ## 5. switch trên String và enum
 
-```java
-// String — Java 7+
-switch (lenh) {
-    case "start": batDau(); break;
-    case "stop":  dungLai(); break;
-    default:      System.out.println("Lenh khong hop le");
-}
+Mục này bổ sung hai kiểu dữ liệu hay dùng switch nhất ngoài số: chuỗi và enum. Đọc để biết switch "ăn" được gì.
 
-// enum — pho bien nhat
-enum HinhThuc { TUAN_TRA, THANG, NAM }
+> 📄 **Code ví dụ:** [`examples/06-5-switch-tren-string-va-enum.java`](examples/06-5-switch-tren-string-va-enum.java)
 
-double tienTietKiem(double tien, HinhThuc kyHan) {
-    return switch (kyHan) {
-        case TUAN_TRA -> tien * 0.001;
-        case THANG -> tien * 0.05;
-        case NAM -> tien * 0.06;
-    }; // khong can default — enum da du case
-}
-```
+> **Tóm gọn 1 câu:** String và enum là "khách quen" của switch — enum còn được compiler gác thiếu case miễn phí.
 
 ## 6. ❌/✅ Pitfalls tổng hợp
 
-```java
-// ✗ quen break trong switch cu → fallthrough
-// ✗ switch Object khong xu ly null → NullPointerException (Java 21: dung case null)
-// ✗ dung switch khi dieu kien la pham vi (if x > 100) — if phu hop hon
+Mục này gom các lỗi hay gặp của switch vào một file ví dụ duy nhất để bạn soi và tự rút kinh nghiệm.
 
-// ✅ switch expression mac dinh khi can "map gia tri → ket qua"
-// ✅ su dung enum + switch cho logic phan loai — compiler bao khi thieu case
-// ✅ pattern matching thay cho chuoi if-instanceof dai dong
-```
+> 📄 **Code ví dụ:** [`examples/07-6-pitfalls-tong-hop.java`](examples/07-6-pitfalls-tong-hop.java)
+
+> **Tóm gọn 1 câu:** Xem pitfalls người khác mắc trước — rẻ hơn nhiều so với tự mắc rồi debug lúc 2 giờ sáng.
 
 ## 6. Bài tập
 
@@ -167,3 +84,5 @@ double tienTietKiem(double tien, HinhThuc kyHan) {
 - **Switch expression** (Java 14+): arrow `->`, gọn, trả giá trị, không rơi xuyên.
 - **Pattern matching switch** (Java 21+): switch theo kiểu, `when` guard, `case null`, record destructuring, exhaustiveness kiểm tra lúc compile.
 - Dùng switch khi ánh xạ giá trị/kiểu → kết quả; dùng if-else khi điều kiện là khoảng giá trị phức tạp.
+
+> **Tóm gọn 1 câu:** Switch đi từ "bảng tra có cửa trượt" đến "bộ máy phân loại thông minh" — dùng khi ánh xạ giá trị/kiểu ra kết quả, và để if-else lo những điều kiện dạng khoảng.

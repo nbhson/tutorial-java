@@ -22,25 +22,15 @@ Tổng quan công cụ giải quyết:
 | `AtomicInteger`... | ✅ | ✅ | CAS, không blocking |
 | `ReentrantLock` | ✅ | ✅ | Blocking, nhưng linh hoạt |
 
+> **Cách đọc bảng này:** đọc ngang từng dòng là một công cụ, so 2 cột giữa (Visibility/Atomicity) để biết nó chữa được vấn đề nào trong 2 vấn đề ở trên, cột **Chi phí** là cái giá phải trả — đây là bản đồ tóm tắt cả bài.
+
+> **Tóm gọn 1 câu:** Đồng bộ hóa = giải bài "dữ liệu chung giữa nhiều thread": phải chữa cả visibility lẫn atomicity, mỗi công cụ dưới đây chữa một mức khác nhau với chi phí khác nhau.
+
 ## 2. volatile — nhẹ nhất nhưng hạn chế
 
-```java
-public class TaskRunner {
-    // co volatile: moi lan doc deu lay gia tri moi nhat tu bo nho chinh
-    private volatile boolean running = true;
+Mục này nói về công cụ nhẹ nhất trong bảng: chỉ chữa visibility, không chữa atomicity — biết lúc nào đủ dùng, lúc nào là ảo tưởng an toàn.
 
-    public void run() {
-        while (running) {
-            // lam viec...
-        }
-        System.out.println("Da thoat vong lap"); // co volatile thi moi duoc chay
-    }
-
-    public void stop() {
-        running = false; // thread khac ghi, thread run nhin thay ngay
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-2-volatile-nhe-nhat-nhung-han-che.java`](examples/01-2-volatile-nhe-nhat-nhung-han-che.java)
 
 **Volatile đảm bảo gì?**
 - Mỗi lần **đọc** lấy giá trị mới nhất từ bộ nhớ chính (không dùng cache cũ).
@@ -48,47 +38,21 @@ public class TaskRunner {
 
 **Volatile KHÔNG đảm bảo gì?** Tính nguyên tử của thao tác ghép:
 
-```java
-volatile int count = 0;
-
-void increment() {
-    count++; // van SAI voi nhieu thread! doc → +1 → ghi van la 3 buoc
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-2-volatile-nhe-nhat-nhung-han-che.java`](examples/02-2-volatile-nhe-nhat-nhung-han-che.java)
 
 ❌ **Pitfall:** Tưởng `volatile` = "thread-safe". Nó chỉ đúng khi: **một thread ghi, các thread khác chỉ đọc** (cờ điều khiển, cấu hình nóng). Nếu có nhiều thread cùng ghi, phải dùng synchronized / atomic.
 
 ✅ **Vì sao `volatile` vẫn cần?** Chi phí gần bằng 0 so với khóa, và nó giải quyết triệt để bài toán "vòng lặp không bao giờ thấy cờ dừng".
 
+> **Tóm gọn 1 câu:** `volatile` là "loa phát thanh" bảo mọi thread nghe tin mới nhất — nhưng chỉ loa được, không khoá được cửa, nên đừng dùng nó cho dữ liệu nhiều người cùng ghi.
+
 ## 3. synchronized — khóa cổ điển
+
+Mục này nói về công cụ khóa trăm năm không lỗi thời: một ổ khóa gắn sẵn trên mỗi object, ai giữ khóa mới được vào phòng.
 
 ### 3.1. Ba cách dùng
 
-```java
-public class Counter {
-    private int count = 0;
-    private final Object lock = new Object();
-
-    // Cach 1: synchronized method — khoa la this
-    public synchronized void tang() {
-        count++;
-    }
-
-    // Cach 2: synchronized static — khoa la class object (Counter.class)
-    public static synchronized void reset() {
-        // chi 1 thread bat ky trong toan bo JVM vao day
-    }
-
-    // Cach 3: synchronized block — khoa bat ky object nao ✅ linh hoat nhat
-    public void tangNhanh() {
-        // phan khong can khoa: lam binh thuong
-        synchronized (lock) {
-            count++;
-        }
-        // phan khong can khoa
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-3-1-ba-cach-dung.java`](examples/03-3-1-ba-cach-dung.java)
 
 ### 3.2. Cách hoạt động — monitor và intrinsic lock
 
@@ -105,42 +69,13 @@ public class Counter {
 
 ### 3.3. Sửa lại Counter
 
-```java
-public class SafeCounter {
-    private int count = 0;
-
-    public synchronized void increment() {
-        count++;
-    }
-
-    public synchronized int get() { // doc cung phai synchronized!
-        return count;
-    }
-}
-
-// Dang static: bien dem dung chung cho moi instance
-public class GlobalCounter {
-    private static int count = 0;
-
-    public static void increment() {
-        synchronized (GlobalCounter.class) {
-            count++;
-        }
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-3-3-sua-lai-counter.java`](examples/04-3-3-sua-lai-counter.java)
 
 ❌ **Pitfall 1:** synchronized phương thức ghi mà quên synchronized phương thức đọc. Thread đọc có thể thấy giá trị "nửa vời" hoặc cũ vì không có barrier.
 
 ❌ **Pitfall 2:** Khóa trên object **đổi được tham chiếu**:
 
-```java
-private String lock = "KHOA";          // ✗
-public void doSomething() {
-    synchronized (lock) { /* ... */ }  // neu ai do gan lock = "KHOA KHAC" → khoa vo hieu hoa
-}
-private final Object lock = new Object(); // ✅ final, khong ai doi duoc
-```
+> 📄 **Code ví dụ:** [`examples/05-3-3-sua-lai-counter.java`](examples/05-3-3-sua-lai-counter.java)
 
 ❌ **Pitfall 3:** Dùng chuỗi literal làm khóa: `synchronized ("myLock")` — string literal được **intern** và dùng chung toàn JVM → khóa "rỉ" ra ngoài phạm vi mong muốn.
 
@@ -148,93 +83,21 @@ private final Object lock = new Object(); // ✅ final, khong ai doi duoc
 
 Deadlock xảy ra khi tối thiểu 2 thread giữ khóa mà cần thêm khóa mà thread kia đang giữ → cả hai chờ vĩnh viễn.
 
-```java
-public class Account {
-    private int balance;
-    private final Object lock = new Object();
-
-    public void transferTo(Account other, int amount) {
-        synchronized (this.lock) {       // Thread A: khoa tai khoan nguoi gui
-            synchronized (other.lock) {   // Thread B: da khoa tai khoan nguoi nhan
-                if (balance >= amount) {
-                    this.balance -= amount;
-                    other.balance += amount;
-                }
-            }
-        }
-    }
-}
-
-// Thread A: chuyen 100 tu TK1 → TK2 (khoa TK1 roi khoa TK2)
-// Thread B: chuyen 50  tu TK2 → TK1 (khoa TK2 roi khoa TK1)
-// A khoa TK1, doi khoa TK2; B khoa TK2, doi khoa TK1 → DEADLOCK!
-```
+> 📄 **Code ví dụ:** [`examples/06-3-4-deadlock-bay-nguy-hiem-nhat-cua.java`](examples/06-3-4-deadlock-bay-nguy-hiem-nhat-cua.java)
 
 ✅ **Nguyên tắc ngăn deadlock (4 điều kiện, phá bỏ 1):**
 
-```java
-// Cach 1: tranh — khóa theo thứ tự cố định (so sánh ID)
-public void transferTo(Account other, int amount) {
-    Account first = this.id < other.id ? this : other;
-    Account second = this.id < other.id ? other : this;
+> 📄 **Code ví dụ:** [`examples/07-3-4-deadlock-bay-nguy-hiem-nhat-cua.java`](examples/07-3-4-deadlock-bay-nguy-hiem-nhat-cua.java)
 
-    synchronized (first.lock) {
-        synchronized (second.lock) {
-            if (balance >= amount) {
-                this.balance -= amount;
-                other.balance += amount;
-            }
-        }
-    }
-}
-
-// Cach 2: cho phep huy — khoa tryLock, neu khong lay duoc thi rollback
-public void transferTo(Account other, int amount) {
-    while (!this.lock.tryLock()) { Thread.yield(); }
-    try {
-        while (!other.lock.tryLock(100, TimeUnit.MILLISECONDS)) {
-            other.lock.unlock();
-            this.lock.unlock();
-            Thread.sleep(10); // cho 10ms roi thu lai
-            this.lock.lock();
-        }
-        // lam viec...
-    } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-    } finally {
-        if (other.lock.isHeldByCurrentThread()) other.lock.unlock();
-        if (this.lock.isHeldByCurrentThread())  this.lock.unlock();
-    }
-}
-```
+> **Tóm gọn 1 câu:** `synchronized` là ổ khóa gắn sẵn trên mọi object — đơn giản, tự giải phóng, chữa đủ visibility + atomicity, nhưng nhớ chọn đúng vật giữ khóa và cảnh giác deadlock.
 
 ## 4. Atomic classes — CAS thay vì khóa
 
+Mục này giới thiệu lớp "không khóa mà vẫn an toàn": dùng phép so sánh-và-đổi nguyên tử ở cấp CPU thay vì xếp hàng xin khóa.
+
 ### 4.1. AtomicInteger / AtomicLong
 
-```java
-import java.util.concurrent.atomic.AtomicInteger;
-
-public class AtomicCounter {
-    private final AtomicInteger count = new AtomicInteger(0);
-
-    public void increment() {
-        count.incrementAndGet();   // count++
-    }
-
-    public int get() {
-        return count.get();
-    }
-
-    // cac phep tinh nguyen tu khac
-    public void add(int delta) { count.addAndGet(delta); }
-    public void decrement()   { count.decrementAndGet(); }
-    public int  getAndSet(int val) { return count.getAndSet(val); }
-    public boolean compareAndSet(int expect, int update) {
-        return count.compareAndSet(expect, update); // CAS thu cong
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/08-4-1-atomicinteger-atomiclong.java`](examples/08-4-1-atomicinteger-atomiclong.java)
 
 ### 4.2. Nguyên lý hoạt động — Compare-And-Swap (CAS)
 
@@ -252,13 +115,7 @@ CAS(register, expected, newValue):
 
 **Tầng 2 — Quy trình `incrementAndGet()`:**
 
-```java
-// AtomicInteger duoi cap goi:
-do {
-    int old = value.get();          // 1. doc gia tri hien tai
-    int next = old + 1;             // 2. tinh gia tri moi
-} while (!value.compareAndSet(old, next)); // 3. thu ghi, neu day thi lap lai
-```
+> 📄 **Code ví dụ:** [`examples/09-4-2-nguyen-ly-hoat-ong-compare-and.java`](examples/09-4-2-nguyen-ly-hoat-ong-compare-and.java)
 
 **Tầng 3 — Vì sao nhanh hơn synchronized?**
 
@@ -267,65 +124,15 @@ do {
 
 ❌ **Pitfall:** AtomicInteger không đủ cho các thao tác phức tạp hơn 1 giá trị:
 
-```java
-// ✗ atomic nhung van loi!
-if (counter.get() < MAX) {
-    counter.increment(); // giua 2 dong, thread khac da tang len
-}
+> 📄 **Code ví dụ:** [`examples/10-4-2-nguyen-ly-hoat-ong-compare-and.java`](examples/10-4-2-nguyen-ly-hoat-ong-compare-and.java)
 
-// ✅ phai synchronized cho ca logic
-synchronized (lock) {
-    if (count < MAX) count.increment();
-}
-```
+> **Tóm gọn 1 câu:** Atomic class = "soi-hồ-sơ-xong-nhảy-vào-làm" (CAS) thay vì xếp hàng xin khóa — nhanh khi ít người tranh chấp, và chỉ giải quyết được thao tác trên một giá trị.
 
 ## 5. ReentrantLock — synchronized linh hoạt hơn
 
-```java
-import java.util.concurrent.locks.*;
+Mục này giới thiệu bản khóa "tùy chỉnh cao cấp" của synchronized: thêm được timeout, fairness và kiểm tra trạng thái — đổi lại bạn phải tự chìa khóa đúng chỗ.
 
-public class CounterWithLock {
-    private final ReentrantLock lock = new ReentrantLock();
-    private int count = 0;
-
-    public void increment() {
-        lock.lock();
-        try {
-            count++;
-        } finally {
-            lock.unlock(); // phai trong finally, dam bao giai phong khoa
-        }
-    }
-
-    // Cac tinh nang dac biet cua ReentrantLock:
-    public void tryIncrement() {
-        if (lock.tryLock()) {     // tra ve false neu dang bi khoa
-            try {
-                count++;
-            } finally {
-                lock.unlock();
-            }
-        } else {
-            // xu ly khi khong lay duoc khoa
-        }
-    }
-
-    public void incrementWithTimeout() throws InterruptedException {
-        // cho toi da 5 giay de lay khoa
-        if (lock.tryLock(5, TimeUnit.SECONDS)) {
-            try {
-                count++;
-            } finally {
-                lock.unlock();
-            }
-        }
-    }
-
-    public boolean hasQueuedThreads() {
-        return lock.hasQueuedThreads(); // co thread nao dang cho khoa nay
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/11-5-reentrantlock-synchronized-linh-hoat-hon.java`](examples/11-5-reentrantlock-synchronized-linh-hoat-hon.java)
 
 **ReentrantLock vs synchronized:**
 
@@ -337,74 +144,25 @@ public class CounterWithLock {
 | Đọc trạng thái khóa | ❌ Không | ✅ `hasQueuedThreads()`, `isHeldByCurrentThread()` |
 | Lock có thể reentrant | ✅ | ✅ |
 
+> **Cách đọc bảng này:** đọc ngang từng tiêu chí để thấy ReentrantLock có gì mà synchronized không có (timeout, fairness, đọc trạng thái) — và dòng đầu nhắc bạn cái giá: phải tự `unlock()` trong finally.
+
 ❌ **Pitfall:** Quên `unlock()` trong `finally` → nếu có exception giữa chừng, khóa không bao giờ được giải phóng → chương trình treo vĩnh viễn.
 
 ✅ **Quy tắc:** Dùng `synchronized` khi code đơn giản, không cần timeout hay fairness. Chuyển sang `ReentrantLock` khi cần timeout, kiểm tra trạng thái khóa, hoặc cần fairness nghiêm ngặt.
 
+> **Tóm gọn 1 câu:** ReentrantLock là "ổ khóa cao cấp có đồng hồ hẹn giờ và hàng ưu tiên" — nhiều tính năng hơn synchronized nhưng bẻ khóa (unlock) phải bằng tay trong `finally`.
+
 ## 6. ReadWriteLock — tối ưu cho đọc nhiều ghi ít
 
-```java
-import java.util.concurrent.locks.*;
+Mục này nói về khóa thông minh: cho phép nhiều người **đọc cùng lúc** (đọc không hỏng dữ liệu), chỉ cô lập duy nhất khi có người **ghi**.
 
-public class CacheDemo {
-    private final Map<String, String> cache = new HashMap<>();
-    private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
-
-    public String get(String key) {
-        rwLock.readLock().lock();
-        try {
-            return cache.get(key); // nhieu thread doc cung luc duoc
-        } finally {
-            rwLock.readLock().unlock();
-        }
-    }
-
-    public void put(String key, String value) {
-        rwLock.writeLock().lock();
-        try {
-            cache.put(key, value);
-        } finally {
-            rwLock.writeLock().unlock();
-        }
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/12-6-readwritelock-toi-uu-cho-oc-nhieu-ghi.java`](examples/12-6-readwritelock-toi-uu-cho-oc-nhieu-ghi.java)
 
 ### 6.1. StampedLock (Java 8+) — đọc lạc quan
 
 `StampedLock` cho phép đọc không khóa trước (optimistic read), kiểm tra sau:
 
-```java
-import java.util.concurrent.locks.StampedLock;
-
-public class Point {
-    private int x, y;
-    private final StampedLock sl = new StampedLock();
-
-    public void move(int dx, int dy) {
-        long stamp = sl.writeLock();  // khoa ghi (exclusive)
-        try {
-            x += dx; y += dy;
-        } finally {
-            sl.unlockWrite(stamp);
-        }
-    }
-
-    public double distanceFromOrigin() {
-        long stamp = sl.tryOptimisticRead(); // doc khong khoa
-        int lx = x; int ly = y;             // doc nhanh
-        if (!sl.validate(stamp)) {          // kiem tra co ai ghi khong
-            stamp = sl.readLock();            // fall back sang read lock
-            try {
-                lx = x; ly = y;
-            } finally {
-                sl.unlockRead(stamp);
-            }
-        }
-        return Math.sqrt(lx * lx + ly * ly);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/13-6-1-stampedlock-java-8-oc-lac-quan.java`](examples/13-6-1-stampedlock-java-8-oc-lac-quan.java)
 
 **Khi nào dùng?** Dữ liệu ít khi ghi, phần lớn thời gian chỉ đọc. StampedLock cho hiệu năng cao nhất trong trường hợp này vì hầu hết các lần đọc không khóa gì cả.
 
@@ -421,6 +179,8 @@ public class Point {
 | Đọc nhiều, ghi ít | `ReadWriteLock` | Nhiều đọc đồng thời |
 | Đọc lạc quan (ít ghi) | `StampedLock` | Overhead thấp nhất |
 | Trao đổi message giữa thread | `BlockingQueue` | Đồng bộ hóa tự động producer/consumer |
+
+> **Cách đọc bảng này:** cột **Tình huống** là bài toán đồng bộ bạn đang gặp, đọc ngang để lấy công cụ đúng và lý do — dùng bảng này như "menu chọn món" sau khi đã đọc qua các mục 2–6.
 
 ## 8. Bài tập
 
@@ -441,3 +201,5 @@ public class Point {
 - `ReadWriteLock` = nhiều reader đồng thời, writer riêng biệt.
 - `StampedLock` = đọc lạc quan, hiệu năng cao cho read-heavy workloads.
 - Luôn **synchronize cả get lẫn set** khi dùng shared mutable state.
+
+> **Tóm gọn 1 câu:** Synchronization là nghệ thuật dùng chung một bảng tính giữa nhiều nhân viên: chọn loa (`volatile`), ổ khóa (`synchronized`/`ReentrantLock`), hay máy tính cá nhân tự kiểm tra (`Atomic`) theo đúng bài toán và mức tranh chấp.

@@ -14,11 +14,19 @@
 
 ## REST API là gì?
 
+Mục này trả lời câu hỏi nền tảng trước khi viết bất cứ dòng code nào: REST là gì, và API của chúng ta sẽ "trông" như thế nào trên HTTP.
+
 **REST** (Representational State Transfer) là một kiểu kiến trúc để thiết kế API. RESTful API sử dụng các HTTP methods chuẩn như GET, POST, PUT, DELETE để thực hiện các thao tác CRUD (Create, Read, Update, Delete) trên resources.
+
+Hãy hình dung REST API như **quầy thu ngân nhà hàng**: bạn gọi món (gửi request), quầy trả hóa đơn/món ăn (response), và mỗi loại yêu cầu (xem menu, đặt món, đổi món, hủy món) có cách gọi riêng chuẩn hóa — ai cũng hiểu dù chưa từng vào nhà hàng này.
 
 > **Phiên bản**: Spring Boot 4.x, Java 17+. Chúng ta sẽ xây dựng REST API cho một ứng dụng Quản lý Công việc (Task Management).
 
+> **Tóm gọn 1 câu:** REST là "khuân vác dữ liệu bằng HTTP chuẩn" — mỗi hành động CRUD có một method và một đường dẫn đúng phép.
+
 ## Các HTTP Methods và ý nghĩa
+
+Mục này là "bảng cửu chương" của API: method nào dùng cho việc gì và trả status nào, để bạn không tạo task bằng GET kiểu "rừng lên".
 
 | Method | CRUD | Mục đích | HTTP Status |
 |--------|------|----------|-------------|
@@ -28,394 +36,67 @@
 | PATCH | Update | Cập nhật một phần | 200/204 OK |
 | DELETE | Delete | Xóa | 204 No Content |
 
+> **Cách đọc bảng này:** mỗi dòng là một method, đọc theo trật tự GET → POST → PUT → PATCH → DELETE chính là trật tự bạn gặp trong thực tế; so cột "CRUD" với "HTTP Status" để nhớ kết quả mong đợi của từng thao tác.
+
 ## Tạo Model/Entity
+
+Mục này bắt đầu dựng "khung nhà" của API: lớp Task đại diện cho một công việc trong hệ thống.
 
 ### Task.java
 
-```java
-package com.example.demo.model;
-
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "tasks")
-public class Task {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
-    private String title;
-
-    @Column(length = 1000)
-    private String description;
-
-    @Column(nullable = false)
-    private boolean completed = false;
-
-    private Integer priority; // 1 = High, 2 = Medium, 3 = Low
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    // Constructors
-    public Task() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public Task(String title, String description) {
-        this();
-        this.title = title;
-        this.description = description;
-    }
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public boolean isCompleted() { return completed; }
-    public void setCompleted(boolean completed) { this.completed = completed; }
-
-    public Integer getPriority() { return priority; }
-    public void setPriority(Integer priority) { this.priority = priority; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-task-java.java`](examples/01-task-java.java)
 
 ## Tạo DTO (Data Transfer Object)
+
+Mục này nói về lớp "quần áo của dữ liệu ra vào": Entity là nội y của database, còn DTO là bộ đồ công sở API mặc ra ngoài — không mặc nội y ra đường.
 
 DTO giúp tách biệt data mà API trả về với Entity trong database.
 
 ### TaskDTO.java
 
-```java
-package com.example.demo.dto;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-
-// DTO cho request tạo/cập nhật task
-public record TaskRequest(
-    @NotBlank(message = "Title không được để trống")
-    @Size(min = 3, max = 100, message = "Title phải từ 3-100 ký tự")
-    String title,
-    
-    @Size(max = 1000, message = "Description tối đa 1000 ký tự")
-    String description,
-    
-    Integer priority
-) {}
-
-// DTO cho response trả về
-public record TaskResponse(
-    Long id,
-    String title,
-    String description,
-    boolean completed,
-    Integer priority,
-    String createdAt,
-    String updatedAt
-) {}
-```
+> 📄 **Code ví dụ:** [`examples/02-taskdto-java.java`](examples/02-taskdto-java.java)
 
 ## Tạo Repository
 
+Mục này giới thiệu "người giao hàng giữa code và database": bạn chỉ khai báo cần gì, Spring tự sinh mã truy vấn.
+
 ### TaskRepository.java
 
-```java
-package com.example.demo.repository;
-
-import com.example.demo.model.Task;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import java.util.List;
-
-@Repository
-public interface TaskRepository extends JpaRepository<Task, Long> {
-    
-    // Tìm tất cả task chưa hoàn thành
-    List<Task> findByCompletedFalse();
-    
-    // Tìm theo priority
-    List<Task> findByPriority(Integer priority);
-    
-    // Tìm kiếm trong title hoặc description
-    List<Task> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
-        String title, String description
-    );
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-taskrepository-java.java`](examples/03-taskrepository-java.java)
 
 ## Tạo Service Layer
 
+Mục này nói về "phòng xử lý đơn": mọi nghiệp vụ (kiểm tra, biến đổi, điều phối) nằm ở tầng này, controller không tự làm việc nặng.
+
 ### TaskService.java
 
-```java
-package com.example.demo.service;
-
-import com.example.demo.dto.TaskRequest;
-import com.example.demo.dto.TaskResponse;
-import com.example.demo.model.Task;
-import com.example.demo.repository.TaskRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Service
-@Transactional
-public class TaskService {
-
-    private final TaskRepository taskRepository;
-
-    // Constructor Injection (best practice)
-    public TaskService(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-    }
-
-    // Convert Entity -> Response
-    private TaskResponse toResponse(Task task) {
-        return new TaskResponse(
-            task.getId(),
-            task.getTitle(),
-            task.getDescription(),
-            task.isCompleted(),
-            task.getPriority(),
-            task.getCreatedAt().toString(),
-            task.getUpdatedAt().toString()
-        );
-    }
-
-    // Tạo task mới
-    public TaskResponse createTask(TaskRequest request) {
-        Task task = new Task(request.title(), request.description());
-        task.setPriority(request.priority());
-        
-        Task saved = taskRepository.save(task);
-        return toResponse(saved);
-    }
-
-    // Lấy tất cả tasks
-    @Transactional(readOnly = true)
-    public List<TaskResponse> getAllTasks() {
-        return taskRepository.findAll().stream()
-            .map(this::toResponse)
-            .collect(Collectors.toList());
-    }
-
-    // Lấy task theo ID
-    @Transactional(readOnly = true)
-    public TaskResponse getTaskById(Long id) {
-        Task task = taskRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
-        return toResponse(task);
-    }
-
-    // Cập nhật task
-    public TaskResponse updateTask(Long id, TaskRequest request) {
-        Task task = taskRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
-        
-        task.setTitle(request.title());
-        task.setDescription(request.description());
-        task.setPriority(request.priority());
-        
-        Task updated = taskRepository.save(task);
-        return toResponse(updated);
-    }
-
-    // Xóa task
-    public void deleteTask(Long id) {
-        if (!taskRepository.existsById(id)) {
-            throw new RuntimeException("Task not found with id: " + id);
-        }
-        taskRepository.deleteById(id);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-taskservice-java.java`](examples/04-taskservice-java.java)
 
 ## Tạo REST Controller
 
+Mục này là nơi "gắn biển chỉ đường" cho API: ánh xạ mỗi URL + method HTTP tới một hàm Java cụ thể.
+
 ### TaskController.java
 
-```java
-package com.example.demo.controller;
-
-import com.example.demo.dto.TaskRequest;
-import com.example.demo.dto.TaskResponse;
-import com.example.demo.service.TaskService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/tasks")
-@CrossOrigin(origins = "*") // Cho phép CORS (dev only)
-public class TaskController {
-
-    private final TaskService taskService;
-
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
-
-    // ============ CREATE ============
-    @PostMapping
-    public ResponseEntity<TaskResponse> createTask(
-            @Valid @RequestBody TaskRequest request) {
-        TaskResponse response = taskService.createTask(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    // ============ READ ALL ============
-    @GetMapping
-    public ResponseEntity<List<TaskResponse>> getAllTasks() {
-        List<TaskResponse> tasks = taskService.getAllTasks();
-        return ResponseEntity.ok(tasks);
-    }
-
-    // ============ READ ONE ============
-    @GetMapping("/{id}")
-    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id) {
-        TaskResponse response = taskService.getTaskById(id);
-        return ResponseEntity.ok(response);
-    }
-
-    // ============ UPDATE ============
-    @PutMapping("/{id}")
-    public ResponseEntity<TaskResponse> updateTask(
-            @PathVariable Long id,
-            @Valid @RequestBody TaskRequest request) {
-        TaskResponse response = taskService.updateTask(id, request);
-        return ResponseEntity.ok(response);
-    }
-
-    // Cập nhật một phần (toggle completed)
-    @PatchMapping("/{id}/toggle")
-    public ResponseEntity<TaskResponse> toggleCompleted(@PathVariable Long id) {
-        // Giả lập: lấy task, toggle completed, lưu lại
-        TaskResponse current = taskService.getTaskById(id);
-        TaskRequest request = new TaskRequest(
-            current.title(),
-            current.description(),
-            current.priority()
-        );
-        TaskResponse response = taskService.updateTask(id, request);
-        return ResponseEntity.ok(response);
-    }
-
-    // ============ DELETE ============
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
-        return ResponseEntity.noContent().build();
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-taskcontroller-java.java`](examples/05-taskcontroller-java.java)
 
 ## Xử lý Exception
 
+Mục này nói về "bộ phận chăm sóc khách hàng": khi có lỗi, ai trả lời người dùng, trả cái gì, ở đâu — tập trung một chỗ thay vì mỗi handler tự xử.
+
 ### GlobalExceptionHandler.java
 
-```java
-package com.example.demo.exception;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    // Xử lý RuntimeException
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("timestamp", LocalDateTime.now().toString());
-        error.put("status", HttpStatus.NOT_FOUND.value());
-        error.put("error", "Not Found");
-        error.put("message", ex.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-    }
-
-    // Xử lý validation errors
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(
-            MethodArgumentNotValidException ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("timestamp", LocalDateTime.now().toString());
-        error.put("status", HttpStatus.BAD_REQUEST.value());
-        error.put("error", "Validation Failed");
-        
-        Map<String, String> fieldErrors = new HashMap<>();
-        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
-        }
-        error.put("errors", fieldErrors);
-        
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/06-globalexceptionhandler-java.java`](examples/06-globalexceptionhandler-java.java)
 
 ## Test REST API với curl
 
-```bash
-# Tạo task mới (POST)
-curl -X POST http://localhost:8080/api/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Học Spring Boot","description":"Học REST API","priority":1}'
+Mục này là phần "đi thử đường": dùng curl gọi từng endpoint vừa viết để xác nhận API chạy đúng như thiết kế.
 
-# Lấy tất cả tasks (GET)
-curl http://localhost:8080/api/tasks
-
-# Lấy task theo ID (GET)
-curl http://localhost:8080/api/tasks/1
-
-# Cập nhật task (PUT)
-curl -X PUT http://localhost:8080/api/tasks/1 \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Học Spring Boot Advanced","description":"Đã học REST API","priority":2}'
-
-# Xóa task (DELETE)
-curl -X DELETE http://localhost:8080/api/tasks/1
-```
+> 📄 **Code ví dụ:** [`examples/07-test-rest-api-voi-curl.sh`](examples/07-test-rest-api-voi-curl.sh)
 
 ## Các Annotation quan trọng
+
+Mục này là "từ điển mini" của REST API Spring: các annotation điều khiển URL, body, validation và CORS.
 
 | Annotation | Mô tả |
 |------------|-------|
@@ -431,7 +112,11 @@ curl -X DELETE http://localhost:8080/api/tasks/1
 | `@Valid` | Trigger Bean Validation trước khi xử lý |
 | `@CrossOrigin` | Cho phép CORS requests |
 
+> **Cách đọc bảng này:** nhóm 5 dòng giữa (Get/Put/Patch/DeleteMapping) là các biến thể của cùng một ý "map HTTP method" — hiểu một cái là hiểu cả nhóm; hai dòng cuối (`@Valid`, `@CrossOrigin`) là "phụ kiện" gắn thêm khi cần.
+
 ## Best Practices cho REST API
+
+Mục này là "nội quy giao thông" cho API: bảy thói quen giúp API của bạn dễ dùng, an toàn và sống sót khi lên production.
 
 1. **Dùng plural nouns cho resource names**: `/tasks` thay vì `/task`
 2. **Dùng HTTP status codes đúng**: 200, 201, 400, 404, 500...
@@ -440,6 +125,8 @@ curl -X DELETE http://localhost:8080/api/tasks/1
 5. **Version API**: `/api/v1/tasks`, `/api/v2/tasks`
 6. **Paginate large results**: `/tasks?page=0&size=20`
 7. **Document API**: Dùng OpenAPI/Swagger
+
+> **Tóm gọn 1 câu:** REST API tử tế là API mà người mới đọc URL cũng đoán được hành vi — danh từ số nhiều, status code đúng, input đã validate, kết quả có phân trang.
 
 ## Tài liệu tham khảo
 

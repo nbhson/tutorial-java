@@ -4,7 +4,9 @@
 
 ## 1. Collections là gì? Vì sao cần nó?
 
-**Tầng 1 — Trực giác:** Mảng (`int[]`) có kích thước **cố định**. Khai báo mảng 10 phần tử rồi cần phần tử thứ 11, bạn phải tạo mảng mới và copy toàn bộ dữ liệu. Collections giải quyết vấn đề đó: cấu trúc dữ liệu **tự giãn nở**, kèm sẵn hàng trăm phương thức hữu ích (thêm, xóa, tìm kiếm, sắp xếp...).
+Mục này mở đường cho cả bài: vì sao mảng thường không đủ dùng, Collections Framework gồm những gì, và vì sao nó bị hỏi nhiều trong phỏng vấn.
+
+**Tầng 1 — Trực giác:** Mảng (`int[]`) có kích thước **cố định**. Khai báo mảng 10 phần tử rồi cần phần tử thứ 11, bạn phải tạo mảng mới và copy toàn bộ dữ liệu — như mua hũ đựng gạo đúng 10 ký, muốn đổ thêm ký thứ 11 thì phải mua hũ mới và đổ gạo qua. Collections giải quyết vấn đề đó: cấu trúc dữ liệu **tự giãn nở**, kèm sẵn hàng trăm phương thức hữu ích (thêm, xóa, tìm kiếm, sắp xếp...).
 
 **Tầng 2 — Định nghĩa:** Collections Framework là một kiến trúc thống nhất gồm 3 phần:
 
@@ -42,76 +44,35 @@ Map (đứng riêng, KHÔNG kế thừa Collection)
 | Tra cứu key → value | `Map` | Mã nhân viên → thông tin nhân viên |
 | Xử lý theo FIFO/LIFO | `Queue`/`Deque` | Hàng đợi đơn hàng, undo/redo |
 
+> **Cách đọc bảng này:** cột **Nhu cầu** là bài toán của bạn, đọc ngang sang phải để lấy "đáp án" — chọn cấu trúc nào và ví dụ đời thực tương ứng. Đây là bảng định hướng chọn, không phải bảng học thuộc.
+
 ❌ **Pitfall:** Dùng `ArrayList` cho mọi thứ vì "quen tay". Khi cần kiểm tra "email này đã tồn tại chưa?" trên 1 triệu phần tử, `ArrayList.contains()` mất O(n) còn `HashSet.contains()` chỉ mất O(1).
 
 ✅ **Đúng:** Hãy chọn cấu trúc theo **thao tác dominant** của bài toán: đọc theo index nhiều → `ArrayList`; tra cứu nhiều → `Map`/`Set`.
 
+> **Tóm gọn 1 câu:** Collections là "hũ gạo tự giãn" thay mảng cứng nhắc — và chọn hũ nào (List/Set/Map/Queue) là tùy việc bạn tra cứu, lọc trùng hay xếp hàng.
+
 ## 2. Generics — bắt buộc phải nắm trước
+
+Mục này giải thích chữ `<...>` bạn sẽ thấy khắp nơi trong Collections: generics là "khuôn" ràng buộc kiểu phần tử ngay lúc biên dịch.
 
 Từ Java 5, Collections dùng **Generics** để ràng buộc kiểu phần tử lúc **biên dịch**:
 
-```java
-// Khong co generics: nhet gi vao cung duoc, lay ra phai ep kieu
-List list = new ArrayList();
-list.add("hello");
-list.add(42);
-String s = (String) list.get(1); // ClassCastException khi chay!
-
-// Co generics: compiler chan ngay tu buoc bien dich
-List<String> list2 = new ArrayList<>();
-list2.add("hello");
-// list2.add(42); // ← loi bien dich, catch ngay trong IDE
-String s2 = list2.get(0); // khong can ep kieu
-```
+> 📄 **Code ví dụ:** [`examples/01-2-generics-bat-buoc-phai-nam-truoc.java`](examples/01-2-generics-bat-buoc-phai-nam-truoc.java)
 
 ❌ **Pitfall:** Dùng raw type `List` (không có `<>`). Từ Java 7 trở đi hãy dùng **diamond operator**: `new ArrayList<>()`.
 
 **Vì sao?** Generics giúp phần lớn lỗi sai kiểu bị phát hiện lúc compile thay vì lúc production nổ `ClassCastException` lúc 2h sáng.
 
+> **Tóm gọn 1 câu:** Generics là "khuôn cam" cho collections: nhét trái táo vào khuôn cam là compiler chặn ngay, khỏi đợi khuôn nổ giữa đêm.
+
 ## 3. List — danh sách có thứ tự
+
+Mục này nói về cấu trúc được dùng nhiều nhất: List — giữ đúng thứ tự bạn thêm vào và cho phép phần tử trùng nhau; trọng tâm là chọn giữa `ArrayList` và `LinkedList`.
 
 ### 3.1. Các phương thức quan trọng
 
-```java
-import java.util.ArrayList;
-import java.util.List;
-
-public class ListDemo {
-    public static void main(String[] args) {
-        List<String> monAn = new ArrayList<>();
-
-        // Them phan tu
-        monAn.add("Pho");
-        monAn.add("Bun bo");
-        monAn.add("Com tam");
-
-        // Truy cap theo index - dac quyen cua List
-        System.out.println(monAn.get(0));      // Pho
-        System.out.println(monAn.size());      // 3
-        System.out.println(monAn.contains("Pho")); // true
-
-        // Chen vao giua
-        monAn.add(1, "Banh xeo");              // Pho, Banh xeo, Bun bo, Com tam
-
-        // Thay the
-        monAn.set(2, "Bun cha");               // thay Bun bo bang Bun cha
-
-        // Xoa
-        monAn.remove("Com tam");               // xoa theo gia tri
-        monAn.remove(0);                       // xoa theo index
-
-        // Duyet
-        for (String m : monAn) {
-            System.out.println(m);
-        }
-
-        // Duyet voi index
-        for (int i = 0; i < monAn.size(); i++) {
-            System.out.println(i + ": " + monAn.get(i));
-        }
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-3-1-cac-phuong-thuc-quan-trong.java`](examples/02-3-1-cac-phuong-thuc-quan-trong.java)
 
 ### 3.2. ArrayList vs LinkedList — câu hỏi phỏng vấn kinh điển
 
@@ -129,15 +90,13 @@ public class ListDemo {
 | `remove(index)` | O(n) — dồn chỗ | O(n) tìm node + O(1) gỡ |
 | Bộ nhớ | Chặt chẽ | Mỗi node tốn thêm 2 con trỏ |
 
+> **Cách đọc bảng này:** đọc ngang từng dòng là so độ nhanh giữa hai bên cho cùng một thao tác — in đậm O(1) ✅ là điểm thắng. Kết luận nằm ở dòng `get(index)` và dòng cuối (bộ nhớ): ArrayList thắng ở đọc, LinkedList tốn thêm bộ nhớ mà chẳng nhanh hơn ở thao tác phổ biến.
+
 **Tầng 3 — Vì sao ArrayList thắng gần như mọi trường hợp?**
 
 Lý do là **cache locality**: CPU đọc bộ nhớ theo từng block. Với `ArrayList`, các phần tử nằm cạnh nhau nên khi duyệt, dữ liệu đã có sẵn trong CPU cache. Với `LinkedList`, mỗi node có thể nằm ở một chỗ khác nhau trong heap → mỗi lần "nhảy" qua con trỏ là một lần cache miss.
 
-```java
-// Do thuc te: duyet 1 trieu phan tu
-// ArrayList:  ~2-5 ms
-// LinkedList: ~10-20 ms (cham hon vi cache miss lien tuc)
-```
+> 📄 **Code ví dụ:** [`examples/03-3-2-arraylist-vs-linkedlist-cau-hoi-phong.java`](examples/03-3-2-arraylist-vs-linkedlist-cau-hoi-phong.java)
 
 ✅ **Kết luận thực tế:** mặc định dùng `ArrayList`. Chỉ cân nhắc `LinkedList` khi làm queue/deque với thao tác chèn/xóa ở **đầu danh sách** liên tục — và ngay cả khi đó, `ArrayDeque` vẫn thường nhanh hơn.
 
@@ -145,51 +104,19 @@ Lý do là **cache locality**: CPU đọc bộ nhớ theo từng block. Với `A
 
 ### 3.3. ArrayList vận hành bên trong như thế nào?
 
-```java
-// Gia dinh ArrayList co 3 truong:
-// Object[] elementData; // mang luu du lieu thuc su
-// int size;             // so phan tu dang giu
-// int capacity;         // do dai hien tai cua elementData
-
-add("A")  → elementData[0] = "A", size = 1
-add("B")  → elementData[1] = "B", size = 2
-add("C")  → size == capacity?
-              - neu chua day: them binh thuong
-              - neu day: tao mang moi capacity * 1.5, copy toan bo, roi them
-```
+> 📄 **Code ví dụ:** [`examples/04-3-3-arraylist-van-hanh-ben-trong-nhu.java`](examples/04-3-3-arraylist-van-hanh-ben-trong-nhu.java)
 
 Đó là lý do `add()` ở cuối là **O(1) trung bình** (amortized) dù thỉnh thoảng tốn O(n) khi resize.
 
+> **Tóm gọn 1 câu:** List giữ thứ tự và cho trùng lặp — mặc định cứ dùng `ArrayList` (mảng động + cache-friendly), `LinkedList` chỉ xuất hiện trong câu hỏi phỏng vấn nhiều hơn trong code thật.
+
 ## 4. Set — không cho phép trùng lặp
+
+Mục này nói về cấu trúc "không nhận đồ trùng": Set từ chối phần tử đã có, và để hiểu nó từ chối thế nào bạn phải biết chút về băm (hash).
 
 ### 4.1. HashSet
 
-```java
-import java.util.HashSet;
-import java.util.Set;
-
-public class SetDemo {
-    public static void main(String[] args) {
-        Set<String> emails = new HashSet<>();
-        emails.add("an@gmail.com");
-        emails.add("binh@gmail.com");
-        emails.add("an@gmail.com");         // bi tu choi, tra ve false
-
-        System.out.println(emails.size());  // 2 - khong trung lap
-        System.out.println(emails.contains("an@gmail.com")); // true, O(1)
-
-        // Phep tap hop
-        Set<String> nhom1 = Set.of("a", "b", "c");
-        Set<String> nhom2 = new HashSet<>(Set.of("b", "c", "d"));
-
-        Set<String> giao = new HashSet<>(nhom1);   // copy de tranh sua Set.of
-        giao.retainAll(nhom2);                     // {b, c}
-
-        Set<String> hop = new HashSet<>(nhom1);
-        hop.addAll(nhom2);                         // {a, b, c, d}
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-4-1-hashset.java`](examples/05-4-1-hashset.java)
 
 ### 4.2. HashSet hoạt động bên trong — băm là gì?
 
@@ -208,97 +135,33 @@ public class SetDemo {
 
 Quy ước của Java: hai object bằng nhau theo `equals()` **phải** có cùng `hashCode()`. Nếu bạn chỉ override `equals()`, hai object "bằng nhau" có thể rơi vào hai bucket khác nhau → `contains()` trả về false dù phần tử đã được thêm.
 
-```java
-class Student {
-    String id;
-    Student(String id) { this.id = id; }
-
-    // CHI override equals - SAI
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof Student s && s.id.equals(this.id);
-    }
-    // Thieu hashCode() → hai Student cung id co the bam ra 2 bucket khac nhau
-}
-
-// ✅ dung: luon override cap doi
-@Override
-public int hashCode() {
-    return id.hashCode();
-}
-```
+> 📄 **Code ví dụ:** [`examples/06-4-2-hashset-hoat-ong-ben-trong-bam.java`](examples/06-4-2-hashset-hoat-ong-ben-trong-bam.java)
 
 ❌ **Pitfall:** Mutate một object **sau khi** đã đưa vào `HashSet` (thay đổi field tham gia vào hashCode). Object vẫn nằm trong Set nhưng bạn không thể tìm ra nó nữa vì hash đã đổi.
 
 ✅ **Fix:** Dùng object **immutable** trong Set/Map (đây cũng là lý do `String` được thiết kế immutable).
 
+> **Tóm gọn 1 câu:** Set từ chối trùng nhờ hash + equals — override `equals()` mà quên `hashCode()` là Set "nhận người mà không nhớ mặt".
+
 ### 4.3. TreeSet — có thứ tự
 
-`TreeSet` dựa trên **cây đỏ-đen**, các phần tử luôn được duyệt theo thứ tự sắp xếp (O(log n) mỗi thao tác). Dùng khi bạn cần dữ liệu **luôn có thứ tự** hoặc cần các truy vấn khoảng (`first`, `last`, `ceiling`, `floor`).
+`TreeSet` dựa trên **cây đỏ-đen**, các phần tử luôn được duyệt theo thứ tự sắp xếp (O(log n) mỗi thao tác) — như giá sách đã xếp sẵn theo alphabet. Dùng khi bạn cần dữ liệu **luôn có thứ tự** hoặc cần các truy vấn khoảng (`first`, `last`, `ceiling`, `floor`).
 
-```java
-TreeSet<Integer> diem = new TreeSet<>();
-diem.add(7); diem.add(9); diem.add(5);
-System.out.println(diem);            // [5, 7, 9]
-System.out.println(diem.first());    // 5
-System.out.println(diem.last());     // 9
-System.out.println(diem.ceiling(6)); // 7 - phan tu nho nhat >= 6
-```
+> 📄 **Code ví dụ:** [`examples/07-4-3-treeset-co-thu-tu.java`](examples/07-4-3-treeset-co-thu-tu.java)
+
+> **Tóm gọn 1 câu:** HashSet nhanh nhưng lộn xộn, TreeSet chậm hơn một chút (O(log n)) nhưng trả về dữ liệu đã xếp sẵn — đổi tốc độ lấy trật tự.
 
 ## 5. Map — cặp key → value
 
+Mục này nói về cấu trúc "cuốn từ điển": tra từ (key) là ra nghĩa (value) ngay, không cần lật từng trang.
+
 ### 5.1. HashMap cơ bản
 
-```java
-import java.util.HashMap;
-import java.util.Map;
-
-public class MapDemo {
-    public static void main(String[] args) {
-        Map<String, Integer> tuoi = new HashMap<>();
-
-        // Them / cap nhat
-        tuoi.put("An", 25);
-        tuoi.put("Binh", 30);
-        tuoi.put("An", 26);              // key trung → ghi de, tra ve 25 (gia tri cu)
-
-        // Doc
-        System.out.println(tuoi.get("An"));         // 26
-        System.out.println(tuoi.get("Chi"));        // null - khong co key nay
-
-        // Doc an toan
-        System.out.println(tuoi.getOrDefault("Chi", 0)); // 0
-        System.out.println(tuoi.containsKey("Binh"));    // true
-
-        // Cap nhat gia tri dung dang
-        tuoi.putIfAbsent("Chi", 28);     // chi them khi chua co
-        tuoi.computeIfAbsent("Dung", k -> 40); // tinh gia tri khi thieu
-
-        // Xoa
-        tuoi.remove("Binh");
-
-        // Duyet - cach chuan
-        for (Map.Entry<String, Integer> e : tuoi.entrySet()) {
-            System.out.println(e.getKey() + " → " + e.getValue());
-        }
-
-        // Duyet rieng key / rieng value
-        for (String ten : tuoi.keySet())   { System.out.println(ten); }
-        for (int t : tuoi.values())        { System.out.println(t); }
-
-        // Duyet voi forEach (Java 8+)
-        tuoi.forEach((ten, t) -> System.out.println(ten + " = " + t));
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/08-5-1-hashmap-co-ban.java`](examples/08-5-1-hashmap-co-ban.java)
 
 ❌ **Pitfall:** `get()` trả về `null` cho key không tồn tại → nếu value là primitive được autobox (`Map<String, Integer>`), unboxing `null` thành `int` gây **NullPointerException**:
 
-```java
-Map<String, Integer> diem = new HashMap<>();
-int x = diem.get("khong co");       // NPE! get tra null, unboxing no
-int y = diem.getOrDefault("khong co", 0); // ✅ an toan
-```
+> 📄 **Code ví dụ:** [`examples/09-5-1-hashmap-co-ban.java`](examples/09-5-1-hashmap-co-ban.java)
 
 ### 5.2. HashMap hoạt động bên trong (đề phỏng vấn số 1)
 
@@ -329,150 +192,54 @@ put(key, value):
 - `Hashtable` — legacy, synchronize từng phương thức, chậm;
 - ✅ `ConcurrentHashMap` — khóa theo từng bucket, song song tốt hơn nhiều.
 
+- `Hashtable` — legacy, synchronize từng phương thức, chậm;
+- ✅ `ConcurrentHashMap` — khóa theo từng bucket, song song tốt hơn nhiều.
+
+> **Tóm gọn 1 câu:** HashMap = tủ áo có ngăn: băm key ra số ngăn, tra cứu O(1) — nhưng phải override đủ `equals`/`hashCode` và đừng dùng nó cho nhiều thread.
+
 ### 5.3. LinkedHashMap & TreeMap
 
-```java
-// LinkedHashMap: giu dung thu tu chen → danh cho cache LRU don gian
-Map<String, Integer> cache = new LinkedHashMap<>(16, 0.75f, true); // true = access-order
-cache.put("a", 1);
-cache.put("b", 2);
-cache.get("a");            // "a" duoc dung → duoi len gan day
-System.out.println(cache.keySet()); // [b, a]
-
-// TreeMap: sap xep theo key, hon hop bien doi
-Map<String, Integer> diemSo = new TreeMap<>();
-diemSo.put("An", 8); diemSo.put("Binh", 9);
-System.out.println(diemSo);   // {An=8, Binh=9} - theo thu tu alphabet
-```
+> 📄 **Code ví dụ:** [`examples/10-5-3-linkedhashmap-treemap.java`](examples/10-5-3-linkedhashmap-treemap.java)
 
 ## 6. Đếm tần suất — ví dụ kinh điển
 
+Mục này đưa bạn thấy Map giải bài toán thật: đếm mỗi từ xuất hiện mấy lần — và vì sao cách gọn hơn lại an toàn hơn.
+
 Đếm số lần xuất hiện của mỗi từ là ví dụ kết hợp `Map` + các phương thức hữu ích:
 
-```java
-import java.util.*;
-
-public class WordCount {
-    public static void main(String[] args) {
-        String text = "an bun pho an com bun an";
-        String[] words = text.split(" ");
-
-        // Cach 1: du loi
-        Map<String, Integer> dem1 = new HashMap<>();
-        for (String w : words) {
-            if (dem1.containsKey(w)) {
-                dem1.put(w, dem1.get(w) + 1);
-            } else {
-                dem1.put(w, 1);
-            }
-        }
-
-        // Cach 2: gon hon - merge
-        Map<String, Integer> dem2 = new HashMap<>();
-        for (String w : words) {
-            dem2.merge(w, 1, Integer::sum); // neu co roi cong them 1, chua co thi 1
-        }
-
-        System.out.println(dem2); // {an=3, bun=2, pho=1, com=1}
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/11-6-em-tan-suat-vi-du-kinh-ien.java`](examples/11-6-em-tan-suat-vi-du-kinh-ien.java)
 
 **Vì sao cách 2 tốt hơn?** `merge()` gói gọn logic "nếu có → X, nếu không → Y" trong **một thao tác nguyên tử** — ít bug hơn, và là nền tảng để chuyển sang code song song về sau.
 
+> **Tóm gọn 1 câu:** Đếm tần suất là bài tập nhập môn của Map — và `merge()` là phiên bản "gói sẵn if-else" ít bug hơn cả.
+
 ## 7. Stream API — xử lý dữ liệu khai báo
+
+Mục này giới thiệu cách xử lý collection kiểu "mô tả kết quả mong muốn" thay vì viết vòng lặp từng bước.
 
 **Tầng 1 — Trực giác:** Thay vì viết vòng lặp "bước 1, bước 2, bước 3", bạn mô tả **dữ liệu biến đổi thành gì** — giống viết SQL hơn là viết assembly.
 
 **Tầng 2 — Cú pháp:** pipeline gồm 3 phần:
 
-```java
-source ──▶ intermediate ops ──▶ terminal op
-            (lazy, xích dài tùy ý)  (kích hoạt chạy thật)
-```
+> 📄 **Code ví dụ:** [`examples/12-7-stream-api-xu-ly-du-lieu-khai.java`](examples/12-7-stream-api-xu-ly-du-lieu-khai.java)
 
-```java
-import java.util.*;
-import java.util.stream.*;
-
-public class StreamDemo {
-    record SanPham(String ten, String loai, int gia) {}
-
-    public static void main(String[] args) {
-        List<SanPham> ds = List.of(
-            new SanPham("Laptop", "Dien tu", 20000),
-            new SanPham("Chuot", "Dien tu", 300),
-            new SanPham("Ban phim", "Dien tu", 700),
-            new SanPham("Ghe", "Noi that", 1500)
-        );
-
-        // 1. filter + map + collect: loc dien tu gia < 1000, lay ten
-        List<String> re = ds.stream()
-                .filter(p -> p.loai().equals("Dien tu"))
-                .filter(p -> p.gia() < 1000)
-                .map(SanPham::ten)
-                .toList();                          // [Chuot, Ban phim]
-
-        // 2. sorted + limit: top 2 san pham re nhat
-        List<SanPham> top2 = ds.stream()
-                .sorted(Comparator.comparingInt(SanPham::gia))
-                .limit(2)
-                .toList();
-
-        // 3. reduce: tong gia tri kho hang
-        int tong = ds.stream()
-                .mapToInt(SanPham::gia)
-                .sum();                             // IntStream co sum san
-
-        // 4. group: nhom theo loai
-        Map<String, List<SanPham>> theoLoai = ds.stream()
-                .collect(Collectors.groupingBy(SanPham::loai));
-
-        // 5. group + dem
-        Map<String, Long> soLuong = ds.stream()
-                .collect(Collectors.groupingBy(SanPham::loai, Collectors.counting()));
-
-        // 6. group + trung binh
-        Map<String, Double> giaTB = ds.stream()
-                .collect(Collectors.groupingBy(SanPham::loai,
-                         Collectors.averagingInt(SanPham::gia)));
-
-        // 7. anyMatch / allMatch / noneMatch
-        boolean coDat = ds.stream().anyMatch(p -> p.gia() > 15000);
-        boolean tatCaDuong = ds.stream().allMatch(p -> p.gia() > 0);
-
-        // 8. min / max
-        Optional<SanPham> datNhat = ds.stream()
-                .max(Comparator.comparingInt(SanPham::gia));
-
-        // 9. flatMap: lam phang danh sach cua danh sach
-        List<List<Integer>> nhomDiem = List.of(List.of(8, 9), List.of(5, 7));
-        List<Integer> tatCaDiem = nhomDiem.stream()
-                .flatMap(List::stream)
-                .toList();                          // [8, 9, 5, 7]
-
-        // 10. toMap
-        Map<String, Integer> giaTheoTen = ds.stream()
-                .collect(Collectors.toMap(SanPham::ten, SanPham::gia));
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/13-7-stream-api-xu-ly-du-lieu-khai.java`](examples/13-7-stream-api-xu-ly-du-lieu-khai.java)
 
 **Tầng 3 — Vì sao Stream "lazy"?** Các operation trung gian (`filter`, `map`, `sorted`) chỉ **ghi lại kế hoạch**. Chỉ khi gọi terminal operation (`toList`, `forEach`, `sum`) pipeline mới chạy. Nhờ đó Java có thể **gộp nhiều bước qua từng phần tử một** thay vì chạy từng bước qua cả collection, và có thể short-circuit (`anyMatch` dừng ngay khi thấy phần tử thỏa).
 
 ❌ **Pitfall 1:** Tái sử dụng stream đã tiêu:
 
-```java
-Stream<SanPham> s = ds.stream();
-s.filter(p -> p.gia() > 100).toList();
-s.count(); // IllegalStateException: stream has already been operated upon
-```
+> 📄 **Code ví dụ:** [`examples/14-7-stream-api-xu-ly-du-lieu-khai.java`](examples/14-7-stream-api-xu-ly-du-lieu-khai.java)
 
 ❌ **Pitfall 2:** Lạm dụng stream cho code có side-effect (thay đổi biến bên ngoài). Stream sinh ra để **biến đổi dữ liệu**, không phải để thay vòng lặp mutation.
 
 ✅ **Nguyên tắc chọn:** vòng lặp đơn giản 3-4 dòng → `for` dễ đọc hơn. Biến đổi nhiều tầng (lọc → biến đổi → gộp) → Stream sáng giá hơn.
 
+> **Tóm gọn 1 câu:** Stream là "viết lệnh nhà bếp kiểu đặt món" — mô tả lọc-nấu-xếp ra đĩa là xong; chạy lazy và chỉ tiêu khi bạn gọi món cuối (terminal operation).
+
 ## 8. Bảng chọn cấu trúc dữ liệu
+
+Mục này là "bảng giá" tổng của cả bài: đối chiếu tình huống thật với lựa chọn cấu trúc phù hợp.
 
 | Tình huống | Lựa chọn | Lý do |
 |------------|----------|-------|
@@ -483,6 +250,8 @@ s.count(); // IllegalStateException: stream has already been operated upon
 | Hàng đợi / stack | `ArrayDeque` | nhanh nhất cho cả 2 đầu |
 | Thread-safe | `ConcurrentHashMap`, `CopyOnWriteArrayList` | không khóa toàn cục |
 | Bất biến, truyền vào API | `List.of()`, `Map.of()` | không lo bị sửa ngoài ý muốn |
+
+> **Cách đọc bảng này:** cột **Tình huống** mô tả bài toán bạn đang có, đọc ngang sang phải để lấy cấu trúc nên dùng kèm lý do hiệu năng. Khi phân vân giữa hai lựa chọn, so cột **Lý do** của hai dòng đó.
 
 ## 9. Bài tập
 
@@ -501,3 +270,5 @@ s.count(); // IllegalStateException: stream has already been operated upon
 - `HashMap` = mảng bucket + băm + cây đỏ-đen (Java 8+); hiểu cơ chế giúp trả lời phỏng vấn và tránh bug hashcode.
 - Stream API = pipeline lazy: `filter`/`map`/`collect` + `groupingBy`, giúp code khai báo, ngắn gọn.
 - Generics luôn có, diamond operator luôn dùng, raw type là nợ kỹ thuật.
+
+> **Tóm gọn 1 câu:** Collections Framework là bộ "hũ - khuôn - từ điển" của Java: chọn hũ theo thao tác dominant, gắn khuôn bằng generics, và mặc định dùng `ArrayList` + `HashMap` cho tới khi có lý do đổi.

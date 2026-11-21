@@ -13,25 +13,15 @@
 
 **Tầng 3 — Vì sao "đảo ngược"?** Thông thường luồng gọi đi từ trên xuống (business → DB), nên người ta tưởng phụ thuộc cũng đi từ trên xuống. DIP **đảo chiều mũi tên phụ thuộc**: business logic định nghĩa interface mình cần, tầng thấp **triển khai** interface đó. Luồng gọi vẫn từ trên xuống, nhưng **luồng phụ thuộc** quay ngược về abstraction.
 
+Hãy hình dung tiệm sửa xe chỉ công bố "mình cần một thợ thay lốp biết làm chuẩn" mà không quan tâm thợ đó học ở đâu — ai đạt chuẩn đều xin việc được, và tiệm không bị dính líu khi thợ cũ nghỉ việc.
+
+> **Tóm gọn 1 câu:** DIP là "đặt chuẩn trước, cắm chi tiết sau": tầng cao và tầng thấp cùng phụ thuộc vào một abstraction chung.
+
 ## 2. Ví dụ ❌ vi phạm
 
-```java
-// ✗ business logic "cam co" vao MySQL
-class OrderService {
-    private MySQLDatabase db = new MySQLDatabase(); // tao cung, phu thuoc chi tiet
+Mục này cho bạn thấy hậu quả của việc `new` thẳng hạ tầng ngay trong business logic — lúc đổi database hay viết test là lúc "hóa đơn" tới.
 
-    void datHang(DonHang don) {
-        // ... logic dat hang ...
-        db.save(don);   // neu doi sang PostgreSQL hoac them cache? sua code nay!
-    }
-}
-
-class MySQLDatabase {
-    void save(DonHang don) {
-        System.out.println("Luu vao MySQL: " + don);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-2-vi-du-vi-pham.java`](examples/01-2-vi-du-vi-pham.java)
 
 **Hệ lụy:**
 
@@ -41,59 +31,17 @@ class MySQLDatabase {
 
 ## 3. Ví dụ ✅ tuân thủ
 
-```java
-// ✅ 1. business logic DINH NGHIA abstraction minh can
-interface DonHangRepository {
-    void save(DonHang don);
-}
+Mục này lật ngược mũi tên phụ thuộc phía trên: business logic chỉ giữ "bản mô tả chuẩn" (interface), còn chi tiết cắm vào sau.
 
-// ✅ 2. business logic chi phu thuoc abstraction
-class OrderService {
-    private final DonHangRepository repo;   // phu thuoc interface
-
-    OrderService(DonHangRepository repo) {  // 3. inject tu ngoai (constructor injection)
-        this.repo = repo;
-    }
-
-    void datHang(DonHang don) {
-        // ... logic dat hang ...
-        repo.save(don);
-    }
-}
-
-// ✅ 4. chi tiet phu thuoc abstraction (muoi ten nguoc lai)
-class MySQLDonHangRepository implements DonHangRepository {
-    public void save(DonHang don) { System.out.println("Luu vao MySQL: " + don); }
-}
-
-class MemoryDonHangRepository implements DonHangRepository { // de test
-    private final List<DonHang> daLuu = new ArrayList<>();
-    public void save(DonHang don) { daLuu.add(don); }
-    List<DonHang> daLuu() { return daLuu; }
-}
-
-// su dung
-OrderService prod = new OrderService(new MySQLDonHangRepository());
-OrderService test = new OrderService(new MemoryDonHangRepository()); // test khong can DB!
-```
+> 📄 **Code ví dụ:** [`examples/02-3-vi-du-tuan-thu.java`](examples/02-3-vi-du-tuan-thu.java)
 
 ## 4. Liên hệ với pizza-app
 
+Mục này chỉ ra chỗ pizza-app đang làm đúng DIP: tầng Store không hề biết sự tồn tại của các loại pizza cụ thể.
+
 Pizza app áp dụng DIP ở tầng **Store — Pizza**:
 
-```java
-// Store (cap cao) khong biet ton tai DNCheesePizza (chi tiet)
-public abstract class PizzaStore {
-    public void orderPizza(String type) {
-        Pizza pizza = CreatePizza(type);  // chi biet Pizza (abstraction)
-        pizza.prepare();                  // goi qua hop dong cua Pizza
-        pizza.bake();
-        pizza.cut();
-        pizza.box();
-    }
-    protected abstract Pizza CreatePizza(String type);
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-4-lien-he-voi-pizza-app.java`](examples/03-4-lien-he-voi-pizza-app.java)
 
 - `PizzaStore` chỉ phụ thuộc **abstraction** `Pizza` + factory method — không import `Pizza.DN.*` hay `Pizza.SG.*`.
 - Các lớp chi tiết (`DNPizzaStore`, `DNCheesePizza`...) phụ thuộc **ngược lại** vào `Pizza`/`PizzaStore`.
@@ -102,25 +50,17 @@ public abstract class PizzaStore {
 
 ## 5. DIP trong Spring Boot — Dependency Injection
 
+Mục này là "cây cầu" dẫn sang phần Spring Boot của khóa học: bạn sẽ thấy Spring chính là người nối dây DIP thay cho bạn.
+
 Spring Boot là DIP được **tự động hóa** ở quy mô lớn:
 
-```java
-@Service
-public class OrderService {
-    private final DonHangRepository repo;       // chi biet interface
-
-    public OrderService(DonHangRepository repo) { // Spring tu tim bean trien khai va inject
-        this.repo = repo;
-    }
-}
-
-@Repository
-public class JpaDonHangRepository implements DonHangRepository { /* JPA */ }
-```
+> 📄 **Code ví dụ:** [`examples/04-5-dip-trong-spring-boot-dependency-injection.java`](examples/04-5-dip-trong-spring-boot-dependency-injection.java)
 
 Bạn đổi từ JPA sang JDBC? Viết class mới implements cùng interface — `OrderService` không đổi. Đây chính là "chương kết" của DIP: framework đảm nhiệm phần "nối dây".
 
 ## 6. Dấu hiệu nhận biết vi phạm
+
+Mục này là bộ "kim chỉ nam chẩn đoán": thấy một trong các dấu hiệu dưới đây, business logic của bạn đang dính chặt vào hạ tầng.
 
 - 🔴 Class business `new` trực tiếp class hạ tầng (DB, HTTP, file) bên trong.
 - 🔴 Không viết được unit test cho business logic mà không dựng hạ tầng thật.
@@ -133,14 +73,20 @@ Bạn đổi từ JPA sang JDBC? Viết class mới implements cùng interface �
 
 ## 7. Bài tập
 
+Mục này để bạn luyện tay "đảo ngược mũi tên" trong code của chính mình — làm bài 1 là đi được nửa đường tới Dependency Injection của Spring.
+
 1. Cho `EmailThongBao { gui(String msg) }` được gọi trực tiếp từ `DangKyService`. Tách DIP: interface `ThongBaoGui`, hai implementer (Email, SMS), inject qua constructor. Viết test `DangKyService` với mock/fake.
 2. Trong pizza-app: `Main` đang `new` trực tiếp `HuePizzaStore`. Hãy xem đó là hợp lệ hay vi phạm DIP — lập luận (gợi ý: ai là "composition root"?).
 3. Tìm một chỗ trong dự án của bạn tạo connection/HTTP client bên trong business class. Refactor sang interface + inject.
 
 ## 8. Tóm tắt
 
+Mục này gom lại bài thành năm gạch đầu dòng để ôn nhanh.
+
 - DIP: cả tầng cao lẫn tầng thấp phụ thuộc **abstraction**; chi tiết triển khai abstraction.
 - Kỹ thuật đi kèm: constructor injection, interface tách ở tầng business.
 - Lợi ích: đổi hạ tầng không đụng business logic, unit test nhanh với fake/mock.
 - Spring Boot = DIP tự động hóa qua Dependency Injection.
 - Áp dụng DIP ở ranh giới dễ thay đổi; đừng tạo interface một-implementer cho mọi class.
+
+> **Tóm gọn 1 câu:** DIP là "đặt chuẩn chung cho cả hai tầng phụ thuộc" — và Spring Boot chính là người cầm túi nối dây cho bạn.

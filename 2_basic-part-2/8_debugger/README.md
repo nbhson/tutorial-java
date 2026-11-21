@@ -2,27 +2,39 @@
 
 ## Debug là gì?
 
+Mục này trả lời câu hỏi nền tảng: debug là gì và tại sao nó là kỹ năng bắt buộc chứ không phải "chiêu phụ".
+
 Lỗi có thể do dự đoán của bạn đã bị sai hoặc là có gì đó phát sinh khi chương trình được thực thi mà bạn không lường trước được. Đôi khi chỉ cần nhìn vào source code là bạn tìm ra ngay nguyên nhân, nhưng khi cách đó không mang lại kết quả thì lúc này bạn cần phải Debug.
 
-`Debug` (gỡ lỗi) là một kỹ năng nền tảng của lập trình viên. Mục đích chính của debug là để dò tìm lỗi (error) của chương trình, ngoài ra nó còn giúp lập trình viên hiểu rõ hơn cách chương trình hoạt động.
+`Debug` (gỡ lỗi) là một kỹ năng nền tảng của lập trình viên. Mục đích chính của debug là để dò tìm lỗi (error) của chương trình, ngoài ra nó còn giúp lập trình viên hiểu rõ hơn cách chương trình hoạt động. Hãy hình dung debug như bác sĩ soi chụp X-quang: thay vì mò mò đoán bệnh qua miêu tả, bạn nhìn thẳng vào "bên trong" đang chạy.
+
+> **Tóm gọn 1 câu:** Debug là "soi X-quang" chương trình — nhìn thẳng giá trị biến và luồng chạy thay vì đoán mò từ ngoài.
 
 ## Các phương pháp Debug
 
+Mục này điểm qua 3 cách bắt lỗi phổ biến, từ thô sơ đến chuyên nghiệp — đọc để biết khi nào nên dùng cách nào.
+
 Có nhiều phương pháp để debug, thông thường chúng ta sử dụng các phương pháp sau:
 
-`Print Console`: là cách thêm vào source code của bạn những dòng lệnh để in ra những thông tin mà bạn cần theo dõi trong quá trình thực thi. Ví dụ: System.out.println(), hay System.error.println(), … Cách này hơi phiền phức vì bạn phải thay đổi code của chương trình, những dòng code này vô nghĩa và sau khi debug bạn phải xóa khỏi source code của chương trình.
+`Print Console`: là cách thêm vào source code của bạn những dòng lệnh để in ra những thông tin mà bạn cần theo dõi trong quá trình thực thi. Ví dụ: System.out.println(), hay System.error.println(), … Cách này hơi phiền phức vì bạn phải thay đổi code của chương trình, những dòng code này vô nghĩa và sau khi debug bạn phải xóa khỏi source code của chương trình. Ví von: giống như dán giấy nhớ khắp nhà để tìm chìa khóa — tìm được rồi thì phải đi gỡ từng tờ.
 
-`Logging`: tạo ra một tập tin để ghi (log) lại những thông tin sau khi chương trình thực thi. Chúng ta sẽ dựa vào thông tin này để phân tích nguyên nhân lỗi. Kỹ thuật này thường được áp dụng trong môi trường thực, khi mà ứng dụng của bạn đang được mọi người sử dụng, bạn không thể thay đổi code hay sử dụng công cụ để dò tìm lỗi.
+`Logging`: tạo ra một tập tin để ghi (log) lại những thông tin sau khi chương trình thực thi. Chúng ta sẽ dựa vào thông tin này để phân tích nguyên nhân lỗi. Kỹ thuật này thường được áp dụng trong môi trường thực, khi mà ứng dụng của bạn đang được mọi người sử dụng, bạn không thể thay đổi code hay sử dụng công cụ để dò tìm lỗi. Giống như camera an ninh: sự việc đã xảy ra rồi, bạn xem lại băng ghi hình để truy vết.
 
-`Debugging Tool` (dùng công cụ để Debug) là phương pháp debug đi sâu vào source code nhất. Các công cụ này thông thường được tích hợp vào các IDE, ví dụ công cụ debugger của eclipse, Microsoft Visual Studio Debugger, … Cách này thường được sử dụng nhất khi bạn đang phát triển chương trình, bạn dễ dàng theo dõi, kiểm tra các giá trị, thay đổi các giá trị để kiểm tra tính đúng đắn của chương trình.
+`Debugging Tool` (dùng công cụ để Debug) là phương pháp debug đi sâu vào source code nhất. Các công cụ này thông thường được tích hợp vào các IDE, ví dụ công cụ debugger của eclipse, Microsoft Visual Studio Debugger, … Cách này thường được sử dụng nhất khi bạn đang phát triển chương trình, bạn dễ dàng theo dõi, kiểm tra các giá trị, thay đổi các giá trị để kiểm tra tính đúng đắn của chương trình. Đây là mức "phẫu thuật trực tiếp": bạn đứng ngay trong luồng chạy, bấm pause, soi từng biến.
+
+> **Tóm gọn 1 câu:** Print console là "dán giấy nhớ", logging là "camera an ninh", debugging tool là "phẫu thuật trực tiếp" — càng về sau càng nhìn sâu và càng ít phải dọn dẹp.
 
 ## Debug code Java trong Eclipse
 
+Mục này chuyển từ lý thuyết sang thực hành: cách debugger của Eclipse hoạt động và khái niệm quan trọng nhất — BreakPoint.
+
 `Debug` code Java trong `Eclipse` cũng giống như việc chạy một ứng dụng Java. Khi debug chúng ta có thể tạm ngưng (pause) chương trình để xem giá trị của các biến, từ đó biết được luồng chạy của chương trình, thậm chí là thay đổi giá trị của các biến. Đặc biệt debug được sử dụng để tìm kiếm bug, đây là một việc quan trọng trong phát triển phần mềm.
 
-`BreakPoint` (điểm ngắt): một `BreakPoint` trong mã nguồn xác định nơi thực thi của chương trình nên dừng lại trong quá trình gỡ lỗi. Một khi chương trình đã dừng, bạn có thể kiểm tra giá trị các biến, thay đổi nội dung, …
+`BreakPoint` (điểm ngắt): một `BreakPoint` trong mã nguồn xác định nơi thực thi của chương trình nên dừng lại trong quá trình gỡ lỗi. Một khi chương trình đã dừng, bạn có thể kiểm tra giá trị các biến, thay đổi nội dung, … Hãy tưởng tượng BreakPoint như cột mốc dừng xe trên đường đua: xe (chương trình) chạy tới đó là phải dừng lại cho bạn kiểm tra.
 
 ## Các bước debug code Java trong Eclipse
+
+Mục này tóm gọn quy trình debug thành 3 bước — làm đúng trình tự thì không bao giờ "lạc" trong debugger.
 
 Các bước thực hiện debug code trong Java:
 
@@ -32,30 +44,7 @@ Các bước thực hiện debug code trong Java:
 
 ## Code minh họa
 
-```java
-package com.gpcoder;
- 
-public class MainApp {
- 
-    public static void main(String[] args) {
-        Student student = new Student(1, "GP Coder");
-        String hello = sayHello(student);
-        System.out.println(hello);
-    }
- 
-    public static String sayHello(Student student) {
-        return "Hello " + student.getName();
-    }
- 
-    public static void checkStudent(Integer id) {
-        if (id != null) {
-            System.out.printf("Valid");
-        } else {
-            System.out.printf("Invalid");
-        }
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-code-minh-hoa.java`](examples/01-code-minh-hoa.java)
 
 ### Tạo BreakPoint
 
@@ -92,6 +81,8 @@ Khung nhìn BreakPoint gồm có 5 cửa sổ nhỏ:
 
 ### Các phím tắt để Debug Java project trong Eclipse
 
+Mục này là "bàn điều khiển" của debugger: mỗi phím tương ứng một hành động di chuyển trong luồng chạy.
+
 ![alt text](image-3.png)
 
 Eclipse cung cấp các nút trên thanh công cụ để kiểm soát việc thực hiện chương trình mà bạn đang debug. Bạn có thể sử dụng cho phép sử dụng phím tắt tương ứng để kiểm soát việc thực hiện này.
@@ -103,6 +94,8 @@ Eclipse cung cấp các nút trên thanh công cụ để kiểm soát việc th
 - `Ctrl` + F2 (Terminate): kết thúc chế độ debug.
 - `Ctrl` + Shift + B: đánh dấu/ hủy BreakPoint
 - `Ctrl` + Shift + I: mở popup hiển thị thông tin giá trị biến được chọn.
+
+Mẹo nhớ nhanh: F5 "đi sâu vào trong", F6 "đi ngang qua dòng kế", F7 "bật ra ngoài", F8 "chạy thẳng tới mốc dừng kế tiếp" — như đi tham quan tòa nhà: vào phòng, đi tiếp hành lang, thang máy xuống, hoặc chạy thẳng tới điểm check-in sau.
 
 ### Xem giá trị các biến trong khung debugger
 
@@ -128,6 +121,8 @@ Lưu ý: sau khi thực hiện debug xong, bạn có thể chuyển lại khung 
 
 ### Thay đổi/ gán giá trị biến trong lúc debug
 
+Đây là "siêu năng lực" của debugger: chương trình đang dừng giữa đường mà bạn vẫn sửa được giá trị biến để thử các tình huống khác nhau, không cần dừng chạy rồi sửa code.
+
 Ví dụ thực hiện debug chương trình trên đến dòng code số 8, khi đó giá trị hello tại cửa sổ Variables của khung nhìn Debug như sau:
 
 ![alt text](image-8.png)
@@ -142,11 +137,15 @@ Nhấn phím F8 để chương trình thực thi tiếp phần còn lại. Tại
 
 ### Xóa các BreakPoint hoặc hủy kích hoạt BreakPoint
 
+Mục này nói về "dọn dẹp sau kiểm tra": tắt hoặc gỡ các điểm ngắt khi debug xong để chương trình chạy bình thường trở lại.
+
 Khung nhìn Breakpoints cho phép bạn xóa và hủy kích hoạt các BreakPoint. Để hủy kích hoạt một điểm ngắt, loại bỏ hộp kiểm tương ứng trong khung nhìn Breakpoints. Để xóa nó, bạn có thể sử dụng các nút tương ứng trong thanh công cụ.
 
 Mở khung nhìn BreakPoint: Trên menu chính, chọn Window -> Show view -> Others -> BreakPoints
 
 ![alt text](image-11.png)
+
+> **Tóm gọn 1 câu:** Debug trong Eclipse = cột mốc dừng (BreakPoint) + bàn điều khiển (F5–F8) + cửa sổ soi biến — đủ để bạn "đứng trong" chương trình và sửa giá trị ngay tại chỗ.
 
 ## Tham khao
 

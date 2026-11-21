@@ -20,67 +20,21 @@
 | CPU-bound (tính toán) | Số thread ≈ số lõi | Nhiều hơn không nhanh hơn |
 | I/O-bound (mạng, file) | Nhiều thread hơn số lõi | Mỗi platform thread tốn ~1MB stack |
 
+> **Cách đọc bảng này:** cột **Loại tác vụ** chia bài toán làm hai thế giới (tính toán vs chờ đợi), đọc ngang để thấy mục tiêu và giới hạn của mỗi thế giới — đây là bảng định hướng "bao nhiêu thread là đủ".
+
+> **Tóm gọn 1 câu:** Thread là đầu bếp trong nhà hàng chung bếp — thêm đầu bếp để nấu song song, nhưng chỉ có ích khi việc của họ đúng "món" (CPU hay I/O).
+
 ## 2. Tạo Thread — 2 cách cơ bản
+
+Mục này cho thấy hai cách "tuyển đầu bếp": kế thừa sẵn người làm (extends Thread) hay đăng ký dịch vụ (implements Runnable) — và vì sao cách 2 được khuyên dùng.
 
 ### Cách 1: extends Thread
 
-```java
-public class DownloadTask extends Thread {
-    private final String fileName;
-
-    public DownloadTask(String fileName) {
-        this.fileName = fileName;
-    }
-
-    @Override
-    public void run() {
-        // code trong run() chay tren thread moi
-        for (int i = 1; i <= 3; i++) {
-            System.out.println(fileName + " - da tai " + (i * 30)
-                    + "% - " + Thread.currentThread().getName());
-            try {
-                Thread.sleep(100); // gia lap thoi gian tai
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        DownloadTask t1 = new DownloadTask("video.mp4");
-        DownloadTask t2 = new DownloadTask("music.mp3");
-
-        t1.start(); // KHONG goi run() truc tiep!
-        t2.start();
-
-        System.out.println("Main tiep tuc chay trong khi download dang xay ra");
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-1-extends-thread.java`](examples/01-cach-1-extends-thread.java)
 
 ### Cách 2: implements Runnable ✅ (khuyên dùng)
 
-```java
-public class DownloadTask implements Runnable {
-    private final String fileName;
-
-    public DownloadTask(String fileName) {
-        this.fileName = fileName;
-    }
-
-    @Override
-    public void run() {
-        System.out.println("Dang tai: " + fileName);
-    }
-}
-
-// Java 8+ co the dung lambda
-Runnable task = () -> System.out.println("Cong viec nhe");
-Thread t = new Thread(task);
-t.start();
-```
+> 📄 **Code ví dụ:** [`examples/02-cach-2-implements-runnable-khuyen-dung.java`](examples/02-cach-2-implements-runnable-khuyen-dung.java)
 
 **Vì sao `Runnable` tốt hơn?**
 - Java chỉ **đơn kế thừa** — dùng hết `extends Thread` thì không extends lớp khác được nữa.
@@ -89,38 +43,17 @@ t.start();
 
 ❌ **Pitfall số 1 của người mới:** gọi `t.run()` thay vì `t.start()`:
 
-```java
-t.run();   // ✗ chay NGAY TRONG main thread, khong ton tai thread moi!
-t.start(); // ✅ tao thread moi, JVM goi run() tren thread do
-```
+> 📄 **Code ví dụ:** [`examples/03-cach-2-implements-runnable-khuyen-dung.java`](examples/03-cach-2-implements-runnable-khuyen-dung.java)
 
 ### Cách 3: Callable + Future — khi cần kết quả
 
-```java
-import java.util.concurrent.*;
+> 📄 **Code ví dụ:** [`examples/04-cach-3-callable-future-khi-can-ket-qua.java`](examples/04-cach-3-callable-future-khi-can-ket-qua.java)
 
-public class CallableDemo {
-    public static void main(String[] args) throws Exception {
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-
-        Callable<Integer> tinhTong = () -> {
-            Thread.sleep(500); // gia lap tinh toan nang
-            return 1 + 2 + 3;
-        };
-
-        Future<Integer> future = executor.submit(tinhTong);
-
-        // ... lam viec khac trong khi cho ...
-
-        Integer ketQua = future.get(); // BLOCK cho den khi co ket qua
-        System.out.println(ketQua);    // 6
-
-        executor.shutdown();
-    }
-}
-```
+> **Tóm gọn 1 câu:** Dùng `Runnable` thay vì `extends Thread`, khởi động bằng `start()` chứ không phải `run()` — nhớ hai chữ đó là tránh được bẫy phổ biến nhất của người mới.
 
 ## 3. Vòng đời của Thread
+
+Mục này vẽ "trạng thái tâm lý" của một thread: từ lúc sinh (NEW) đến lúc về hưu (TERMINATED), đi qua mấy giấc ngủ chờ nào.
 
 ```
         start()                chay xong run()
@@ -142,78 +75,23 @@ NEW ──────────▶ RUNNABLE ───────────
 | `TIMED_WAITING` | Chờ có thời hạn (`sleep(1000)`, `wait(1000)`) |
 | `TERMINATED` | `run()` đã kết thúc |
 
-```java
-// cac thao tac dieu khien co ban
-Thread t = new Thread(task);
-t.start();          // khoi dong
-t.join();           // main cho t chay xong
-t.join(3000);       // cho toi da 3 giay
-t.interrupt();      // bao huy (khong bat buoc dung ngay!)
-t.setDaemon(true);  // thread phu, JVM thoat khong cho no
-t.isAlive();        // kiem tra con song khong
-```
+> **Cách đọc bảng này:** mỗi dòng là một "trạng thái tâm sự" của thread, đọc theo thứ tự từ NEW xuống TERMINATED là đi hết vòng đời; cột **Ý nghĩa** nói rõ thread đang chờ điều gì khi rơi vào trạng thái đó.
+
+> 📄 **Code ví dụ:** [`examples/05-3-vong-oi-cua-thread.java`](examples/05-3-vong-oi-cua-thread.java)
 
 ❌ **Pitfall:** `Thread.stop()`, `Thread.suspend()` đã bị **deprecated** vì có thể làm hỏng trạng thái dữ liệu giữa chừng. Hủy thread đúng cách = dùng cờ hoặc interrupt:
 
-```java
-// ✅ huy thread an toan bang co
-volatile boolean running = true; // volatile: cac thread thay thay doi ngay
+> 📄 **Code ví dụ:** [`examples/06-3-vong-oi-cua-thread.java`](examples/06-3-vong-oi-cua-thread.java)
 
-public void run() {
-    while (running) {
-        // lam viec...
-    }
-}
-
-public void stopTask() { running = false; }
-
-// hoac voi interrupt:
-public void run() {
-    while (!Thread.currentThread().isInterrupted()) {
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // giu trang thai interrupt
-            return; // thoat
-        }
-    }
-}
-```
+> **Tóm gọn 1 câu:** Thread sinh ra ở NEW, sống ở RUNNABLE, thỉnh thoảng ngủ (WAITING/BLOCKED), chết ở TERMINATED — và cách duy nhất để "cho nghỉ việc" đúng luật là interrupt, không phải `stop()`.
 
 ## 4. Vấn đề lớn: race condition
 
+Mục này dựng lên "hiện tượng" trước khi bài 5_synchronization đưa ra "phương thuốc": nhiều thread cùng sửa một dữ liệu thì kết quả sai kiểu nào.
+
 Chia sẻ dữ liệu giữa các thread mà không bảo vệ → kết quả sai không đoán được:
 
-```java
-// ✗ code loi kinh dien
-public class Counter {
-    private int count = 0;
-
-    public void increment() {
-        count++; // KHONG nguyen tu! = doc → +1 → ghi lai (3 buoc)
-    }
-
-    public int get() { return count; }
-}
-
-public class Main {
-    public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-
-        Thread t1 = new Thread(() -> {
-            for (int i = 0; i < 10_000; i++) counter.increment();
-        });
-        Thread t2 = new Thread(() -> {
-            for (int i = 0; i < 10_000; i++) counter.increment();
-        });
-
-        t1.start(); t2.start();
-        t1.join();  t2.join();
-
-        System.out.println(counter.get()); // khong phai 20000! vi du: 17342
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-4-van-e-lon-race-condition.java`](examples/07-4-van-e-lon-race-condition.java)
 
 **Tầng 3 — Vì sao sai?** Hai thread cùng đọc `count = 5`, cùng cộng thành 6, cùng ghi 6 → mất một lần tăng. Chạy đủ 20.000 lần thì nhiều khả năng bị "dẫm chân". Cách sửa bằng `synchronized`, `AtomicInteger`, `Lock` xem chi tiết ở bài **5_synchronization**.
 
@@ -223,29 +101,7 @@ public class Main {
 
 **Tầng 2 — Cách dùng:**
 
-```java
-import java.util.concurrent.*;
-
-public class ExecutorDemo {
-    public static void main(String[] args) throws Exception {
-        // 1. pool co dinh 4 thread
-        ExecutorService pool = Executors.newFixedThreadPool(4);
-
-        // 2. noi cac cong viec vao
-        for (int i = 1; i <= 10; i++) {
-            int jobId = i;
-            pool.submit(() -> {
-                System.out.println("Job " + jobId + " chay tren "
-                        + Thread.currentThread().getName());
-            });
-        }
-
-        // 3. tat pool dung cach
-        pool.shutdown();
-        pool.awaitTermination(30, TimeUnit.SECONDS);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/08-5-executor-framework-quan-ly-thread-chuyen-nghiep.java`](examples/08-5-executor-framework-quan-ly-thread-chuyen-nghiep.java)
 
 ### 4 loại pool phổ biến
 
@@ -256,57 +112,23 @@ public class ExecutorDemo {
 | `newSingleThreadExecutor` | 1 thread, chạy tuần tự | Cần đảm bảo thứ tự |
 | `newScheduledThreadPool(n)` | Chạy theo lịch / lặp lại | Cron job, heartbeat |
 
+> **Cách đọc bảng này:** cột **Loại** là 4 phương thức dựng sẵn của `Executors`, đọc ngang để biết tính cách từng loại pool và tình huống nào nên cài nó; hầu hết service thật dùng `newFixedThreadPool` hoặc tự cấu hình như mục dưới.
+
 ### Cấu hình thủ công với ThreadPoolExecutor
 
-```java
-// ✅ trong production nen tu cau hinh thay vi dung Executors factory
-ExecutorService pool = new ThreadPoolExecutor(
-    4,                        // corePoolSize: so thread giu lai
-    16,                       // maximumPoolSize: gioi han toi da
-    60L, TimeUnit.SECONDS,    // thread du thua ton tai 60s roi bi gom
-    new ArrayBlockingQueue<>(100),       // hang doi gioi han 100 viec
-    new ThreadPoolExecutor.AbortPolicy() // queue day → nem RejectedExecutionException
-);
-```
+> 📄 **Code ví dụ:** [`examples/09-cau-hinh-thu-cong-voi-threadpoolexecutor.java`](examples/09-cau-hinh-thu-cong-voi-threadpoolexecutor.java)
 
 ❌ **Pitfall:** `newFixedThreadPool` dùng **hàng đợi vô hạn** (`LinkedBlockingQueue`) — nếu tác vụ đến nhanh hơn xử lý, queue phình to → **OutOfMemoryError**. Trong service thật, luôn giới hạn queue và định nghĩa chính sách từ chối rõ ràng.
 
+> **Tóm gọn 1 câu:** Đừng tự mua xe mỗi lần đi chợ — dùng Executor (bãi taxi có đội xe sẵn), và nhớ pool nào cũng phải có giới hạn queue nếu không OOM chờ sẵn.
+
 ## 6. CompletableFuture — bất đồng bộ hiện đại
+
+Mục này nói về cách xâu chuỗi các việc bất đồng bộ thành "dây chuyền có cam kết trả kết quả" thay vì ngồi chờ từng việc một.
 
 Java 8 giới thiệu `CompletableFuture` — cho phép **xâu chuỗi** các bước bất đồng bộ, giống Promise trong JavaScript:
 
-```java
-import java.util.concurrent.CompletableFuture;
-
-public class AsyncDemo {
-    public static void main(String[] args) {
-        // chay bat dong bo, roi bien doi ket qua
-        CompletableFuture
-            .supplyAsync(() -> "du lieu thoi")   // chay tren pool ForkJoin
-            .thenApply(String::toUpperCase)      // bien doi ket qua
-            .thenApply(s -> s + "!")
-            .thenAccept(System.out::println);    // tieu thu ket qua
-
-        // ket hop 2 bat dong bo doc lap
-        CompletableFuture<Integer> giaGoc = CompletableFuture.supplyAsync(() -> 100);
-        CompletableFuture<Integer> thue = CompletableFuture.supplyAsync(() -> 10);
-
-        CompletableFuture<Integer> tong = giaGoc.thenCombine(thue, Integer::sum);
-        System.out.println(tong.join()); // 110
-
-        // dung 3 request song song, cho tat ca xong
-        CompletableFuture.allOf(
-            CompletableFuture.runAsync(AsyncDemo::goiApiA),
-            CompletableFuture.runAsync(AsyncDemo::goiApiB),
-            CompletableFuture.runAsync(AsyncDemo::goiApiC)
-        ).join();
-    }
-
-    static void goiApiA() { /* ... */ }
-    static void goiApiB() { /* ... */ }
-    static void goiApiC() { /* ... */ }
-}
-```
+> 📄 **Code ví dụ:** [`examples/10-6-completablefuture-bat-ong-bo-hien-ai.java`](examples/10-6-completablefuture-bat-ong-bo-hien-ai.java)
 
 | Phương thức | Ý nghĩa |
 |-------------|---------|
@@ -318,36 +140,21 @@ public class AsyncDemo {
 | `exceptionally` / `handle` | Xử lý lỗi trong chuỗi |
 | `allOf` / `anyOf` | Chờ tất cả / bất kỳ |
 
+> **Cách đọc bảng này:** cột **Phương thức** là các mắt xích trong dây chuyền CompletableFuture, đọc từ trên xuống theo trình tự một pipeline điển hình: khởi động → biến đổi → gộp → xử lý lỗi → chờ kết quả.
+
 ❌ **Pitfall:** `thenApply` chạy trên **thread nào hoàn thành tác vụ trước đó** (có thể là main thread). Muốn ép chạy trên pool riêng: `thenApplyAsync(fn, executor)`.
 
+> **Tóm gọn 1 câu:** CompletableFuture là "biên lai cam kết" của việc bất đồng bộ — xâu chuỗi được, gộp được, bắt lỗi được, nhưng cẩn thận nó chạy trên thread nào.
+
 ## 7. Virtual Threads — bước nhảy vọt của Java 21
+
+Mục này nói về "nhân viên thời vụ" phiên bản mới của Java: thuê hàng triệu cái mà không lo nhà kho (stack) đầy — giới hạn duy nhất là bạn phải biết khi nào chúng có ích.
 
 **Tầng 1 — Trực giác:** Platform thread truyền thống đắt đỏ: mỗi cái chiếm ~1MB stack và ánh xạ 1:1 với thread của OS → chỉ có thể có vài nghìn. Virtual thread là thread do **JVM tự quản**: hàng **triệu** thread vẫn chạy thoải mái, vì khi thread "ngủ" chờ I/O, JVM giải phóng thread nền để chạy việc khác.
 
 **Tầng 2 — Cách tạo:**
 
-```java
-// Java 21+
-// Cach 1: tao va chay ngay
-Thread.startVirtualThread(() -> System.out.println("Xin chao tu virtual thread"));
-
-// Cach 2: dung builder
-Thread vThread = Thread.ofVirtual().name("vt-1").start(() -> {
-    System.out.println(Thread.currentThread().getName());
-});
-
-// Cach 3: executor — thay the cho thread pool truyen thong
-try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    for (int i = 0; i < 10_000; i++) {
-        int id = i;
-        executor.submit(() -> {
-            Thread.sleep(1000); // cho I/O - khong ton platform thread
-            System.out.println("Task " + id + " xong");
-            return null;
-        });
-    }
-} // try-with-resources tu dong shutdown va cho
-```
+> 📄 **Code ví dụ:** [`examples/11-7-virtual-threads-buoc-nhay-vot-cua-java.java`](examples/11-7-virtual-threads-buoc-nhay-vot-cua-java.java)
 
 **Tầng 3 — So sánh trực diện:**
 
@@ -358,12 +165,11 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 | Khi bị block I/O | Giữ nguyên tài nguyên | JVM trả platform thread về pool |
 | Nên dùng cho | Tác vụ CPU-bound | Tác vụ I/O-bound (API, DB, file) |
 
+> **Cách đọc bảng này:** so sánh hai cột platform vs virtual theo từng tiêu chí — đọc cột phải (virtual) sẽ thấy toàn bộ ưu điểm chỉ phát huy ở tác vụ I/O-bound, đúng theo dòng cuối bảng.
+
 **Vì sao đây là cuộc cách mạng?** Trước đây, để phục vụ 100.000 kết nối đồng thời với I/O-bound workload, bạn phải viết code **bất đồng bộ** kiểu `CompletableFuture` — khó đọc, khó debug ("callback hell"). Với virtual thread, bạn viết code **đồng bộ thường thường** (`Thread.sleep`, `socket.read()`) mà vẫn scale như code bất đồng bộ. Spring Boot 3.2+ bật virtual threads cho web server chỉ bằng một dòng cấu hình:
 
-```properties
-# application.properties - Spring Boot 3.2+
-spring.threads.virtual.enabled=true
-```
+> 📄 **Code ví dụ:** [`examples/12-7-virtual-threads-buoc-nhay-vot-cua-java.properties`](examples/12-7-virtual-threads-buoc-nhay-vot-cua-java.properties)
 
 ❌ **Pitfall:** Virtual thread KHÔNG giúp tác vụ CPU-bound nhanh hơn — bạn vẫn chỉ có số lõi CPU là bao nhiêu. Virtual threads chỉ giải quyết bài toán **đợi** (waiting).
 
@@ -371,36 +177,19 @@ spring.threads.virtual.enabled=true
 
 ✅ **Quy tắc vàng:** *Cần nhiều virtual thread mới có ích.* Virtual thread chạy đúng 1 tác vụ dài → vô dụng. Số lượng chính là sức mạnh.
 
+> **Tóm gọn 1 câu:** Virtual thread = thuê hàng triệu "nhân viên thời vụ" rẻ bèo để đứng chờ I/O — nhưng chỉ có giá trị khi bạn thuê cả đội, thuê một đứa thì phí.
+
 ## 8. Synchronous collections trong đa luồng
 
-```java
-import java.util.concurrent.*;
+Mục này nhanh gọn giới thiệu các collection "an toàn cho nhiều người cùng đụng vào".
 
-// Hang doi giua producer va consumer — khong can tu viet wait/notify
-BlockingQueue<String> hangDoi = new ArrayBlockingQueue<>(100);
+> 📄 **Code ví dụ:** [`examples/13-8-synchronous-collections-trong-a-luong.java`](examples/13-8-synchronous-collections-trong-a-luong.java)
 
-new Thread(() -> {           // producer
-    try {
-        hangDoi.put("don hang 1"); // block neu queue day
-    } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-}).start();
-
-new Thread(() -> {           // consumer
-    try {
-        String don = hangDoi.take(); // block neu queue trong
-        System.out.println("Xu ly: " + don);
-    } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-}).start();
-
-// Collection thread-safe:
-ConcurrentHashMap<String, Integer> dem = new ConcurrentHashMap<>();
-dem.merge("an", 1, Integer::sum);  // nguyen tu, an toan giua cac thread
-
-CopyOnWriteArrayList<String> listeners = new CopyOnWriteArrayList<>();
-listeners.add("a"); // moi lan ghi tao ban sao — tot cho doc nhieu ghi it
-```
+> **Tóm gọn 1 câu:** Khi nhiều thread cùng dùng một collection, đừng dùng bản thường + tự khóa — hãy lấy bản "an toàn sẵn" như `ConcurrentHashMap` hay `BlockingQueue`.
 
 ## 9. Chiến lược chọn công cụ
+
+Mục này là "sơ đồ chỉ đường" cuối bài: nghe bài toán, đi theo nhánh, chọn đúng công cụ.
 
 ```
 Cần chạy song song một nhóm tác vụ I/O?
@@ -434,3 +223,5 @@ Vẫn dùng Thread trực tiếp?
 - `CompletableFuture` = chuỗi bất đồng bộ có thể compose, xử lý lỗi, gộp kết quả.
 - **Virtual threads (Java 21+)** = thread nhẹ hàng triệu cái, viết code đồng bộ mà scale bất đồng bộ; chỉ có lợi cho I/O-bound.
 - Đừng quên `shutdown()` executor và xử lý `InterruptedException` đúng cách (restore interrupt flag).
+
+> **Tóm gọn 1 câu:** Đa luồng là thuê thêm đầu bếp cho nhà hàng: chọn đúng loại nhân công (platform/virtual), quản bằng Executor, và xử lý dứt điểm chuyện dẫm chân bằng bài synchronization kế tiếp.

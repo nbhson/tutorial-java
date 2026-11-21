@@ -1,0 +1,3 @@
+# Kiem tra da cai chua
+java -version    # java version "25" ...
+javac -version   # javac 25

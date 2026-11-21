@@ -14,11 +14,19 @@
 
 ## Giới thiệu Spring Data JPA
 
+Mục này trả lời câu hỏi "tại sao cần JPA" trước khi code: làm sao để class Java và bảng SQL nói chuyện được với nhau.
+
 **Spring Data JPA** là phần của Spring Data ecosystem, giúp đơn giản hóa việc truy cập database. Thay vì viết boilerplate code JDBC hay Hibernate XML mappings, JPA (Java Persistence API) cho phép bạn ánh xạ Java objects sang database tables một cách tự động (ORM - Object-Relational Mapping).
+
+Hãy hình dung ORM như **phiên dịch viên song ngữ**: bên này nói tiếng Java (object), bên kia nói tiếng SQL (bảng) — bạn nói chuyện với phiên dịch viên bằng ngôn ngữ của mình, không cần học lại tiếng của đối phương.
 
 > **Lưu ý phiên bản**: Hướng dẫn này dùng Spring Data JPA 2026.x, Spring Boot 4.x, Java 17+. Database: H2 (in-memory) cho dev.
 
+> **Tóm gọn 1 câu:** Spring Data JPA là phiên dịch viên tự động giữa object Java và bảng SQL — bạn mô tả quan hệ, nó lo phần SQL.
+
 ## ORM là gì?
+
+Mục này vẽ trực quan "bản đồ dịch thuật": object Java tương ứng với dòng bảng nào, field nào tương ứng với cột nào.
 
 ```
 ┌─────────────────┐         ┌─────────────────┐
@@ -34,57 +42,19 @@
 
 ## Cấu hình Database
 
+Mục này là bước "chuyển nhà": khai báo cho JPA biết database ở đâu, dùng driver gì, và nạp dependencies cần thiết vào pom.
+
 ### application.yml
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  
-  jpa:
-    hibernate:
-      ddl-auto: create-drop  # Tạo schema tự động (dev)
-    show-sql: true           # In SQL ra console (dev)
-    properties:
-      hibernate:
-        format_sql: true     # Format SQL đẹp hơn
-    open-in-view: false      # Tránh lazy loading issues
-
-  h2:
-    console:
-      enabled: true          # Mở H2 Console: http://localhost:8080/h2-console
-      path: /h2-console
-```
+> 📄 **Code ví dụ:** [`examples/01-application-yml.yaml`](examples/01-application-yml.yaml)
 
 ### pom.xml - Thêm dependencies
 
-```xml
-<dependencies>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-    
-    <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
-        <scope>runtime</scope>
-    </dependency>
-    
-    <!-- Thay H2 bằng MySQL/PostgreSQL khi deploy -->
-    <!--
-    <dependency>
-        <groupId>com.mysql</groupId>
-        <artifactId>mysql-connector-j</artifactId>
-    </dependency>
-    -->
-</dependencies>
-```
+> 📄 **Code ví dụ:** [`examples/02-pom-xml-them-dependencies.xml`](examples/02-pom-xml-them-dependencies.xml)
 
 ## Entity Mapping
+
+Mục này là "đăng ký hộ khẩu" cho class Java: bằng vài annotation, class của bạn trở thành một bảng chính thức trong database.
 
 ### Annotation quan trọng
 
@@ -98,383 +68,77 @@ spring:
 | `@Transient` | Không lưu vào database |
 | `@Temporal` | Cho kiểu Date/Time (legacy, nên dùng java.time) |
 
+> **Cách đọc bảng này:** đọc theo trật tự từng dòng chính là trật tự bạn khai báo một Entity hoàn chỉnh — từ tên class, tên bảng, đến khóa chính và từng cột; `@Transient` là ngoại lệ đáng nhớ nhất (trường "không đăng ký hộ khẩu").
+
 ### Task Entity (Hoàn chỉnh)
 
-```java
-package com.example.demo.model;
-
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "tasks", indexes = {
-    @Index(name = "idx_title", columnList = "title"),
-    @Index(name = "idx_completed", columnList = "completed")
-})
-public class Task {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, length = 200)
-    private String title;
-
-    @Column(length = 2000)
-    private String description;
-
-    @Column(nullable = false)
-    private Boolean completed = false;
-
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private Priority priority = Priority.MEDIUM;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    public enum Priority {
-        HIGH, MEDIUM, LOW
-    }
-
-    // Lifecycle Callbacks
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    // Constructors
-    public Task() {}
-
-    public Task(String title, String description, Priority priority) {
-        this.title = title;
-        this.description = description;
-        this.priority = priority;
-    }
-
-    // Getters, Setters...
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-task-entity-hoan-chinh.java`](examples/03-task-entity-hoan-chinh.java)
 
 ## Mối quan hệ (Relationships)
 
+Mục này nói về "quan hệ gia đình" giữa các bảng: một người có nhiều việc, một việc gắn nhiều nhãn — JPA mô hình hóa chúng như các trường tham chiếu trong object.
+
 ### One-to-Many: User có nhiều Tasks
 
-```java
-// User.java
-@Entity
-public class User {
+> 📄 **Code ví dụ:** [`examples/04-one-to-many-user-co-nhieu-tasks.java`](examples/04-one-to-many-user-co-nhieu-tasks.java)
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
-    private String name;
-
-    @Column(unique = true, nullable = false)
-    private String email;
-
-    // CascadeType.ALL: Khi xóa User, xóa luôn Tasks
-    // orphanRemoval: Xóa Task khỏi list cũng xóa trong DB
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("createdAt DESC")
-    private List<Task> tasks = new ArrayList<>();
-
-    // Helper method để thêm task
-    public void addTask(Task task) {
-        tasks.add(task);
-        task.setUser(this);
-    }
-
-    public void removeTask(Task task) {
-        tasks.remove(task);
-        task.setUser(null);
-    }
-}
-```
-
-```java
-// Task.java - Thêm field user
-@Entity
-public class Task {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    // Trong class Task, có getter:
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-one-to-many-user-co-nhieu-tasks.java`](examples/05-one-to-many-user-co-nhieu-tasks.java)
 
 ### Many-to-Many: Task có nhiều Tags
 
-```java
-// Tag.java
-@Entity
-public class Tag {
+> 📄 **Code ví dụ:** [`examples/06-many-to-many-task-co-nhieu-tags.java`](examples/06-many-to-many-task-co-nhieu-tags.java)
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(unique = true, nullable = false)
-    private String name;
-
-    @ManyToMany(mappedBy = "tags")
-    private Set<Task> tasks = new HashSet<>();
-}
-```
-
-```java
-// Task.java - Cập nhật
-@Entity
-public class Task {
-
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "task_tags",
-        joinColumns = @JoinColumn(name = "task_id"),
-        inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private Set<Tag> tags = new HashSet<>();
-
-    public void addTag(Tag tag) {
-        tags.add(tag);
-        tag.getTasks().add(this);
-    }
-
-    public void removeTag(Tag tag) {
-        tags.remove(tag);
-        tag.getTasks().remove(this);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-many-to-many-task-co-nhieu-tags.java`](examples/07-many-to-many-task-co-nhieu-tags.java)
 
 ## Repository Interfaces
 
-Spring Data JPA tự động tạo implementation dựa trên method name.
+Mục này là "phép thuật" hấp dẫn nhất của Spring Data: chỉ viết đúng tên method, framework tự sinh SQL cho bạn.
+
+Spring Data JPA tự động tạo implementation dựa trên method name. Giống như gọi nhân viên chuyển tiếp bằng đúng cú pháp quy định — "cho tôi tờ hóa đơn số 7" — bạn nói đúng ngữ pháp, hệ thống hiểu và đi lấy.
 
 ### TaskRepository.java
 
-```java
-package com.example.demo.repository;
-
-import com.example.demo.model.Task;
-import com.example.demo.model.User;
-import org.springframework.data.domain.Page;        // Phân trang
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query; // Custom query
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
-
-@Repository
-public interface TaskRepository extends JpaRepository<Task, Long> {
-
-    // ============ Derived Queries (Tự động generate SQL) ============
-
-    // SELECT * FROM tasks WHERE completed = false
-    List<Task> findByCompletedFalse();
-
-    // SELECT * FROM tasks WHERE priority = ?
-    List<Task> findByPriority(Task.Priority priority);
-
-    // SELECT * FROM tasks WHERE title LIKE '%keyword%'
-    List<Task> findByTitleContaining(String keyword);
-
-    // SELECT * FROM tasks WHERE user_id = ?
-    List<Task> findByUserId(Long userId);
-
-    // ============ Custom Queries với @Query ============
-
-    @Query("SELECT t FROM Task t WHERE t.completed = false AND t.priority = :priority ORDER BY t.createdAt DESC")
-    List<Task> findIncompleteTasksByPriority(@Param("priority") Task.Priority priority);
-
-    @Query("SELECT COUNT(t) FROM Task t WHERE t.user.id = :userId AND t.completed = true")
-    long countCompletedTasksByUser(@Param("userId") Long userId);
-
-    // ============ Pagination ============
-
-    Page<Task> findByUser(User user, Pageable pageable);
-
-    Page<Task> findByCompleted(boolean completed, Pageable pageable);
-
-    // ============ Optional Queries ============
-
-    Optional<Task> findByTitle(String title);
-}
-```
+> 📄 **Code ví dụ:** [`examples/08-taskrepository-java.java`](examples/08-taskrepository-java.java)
 
 ## Phân Trang và Sắp xếp
 
+Mục này giải quyết bài toán "một triệu dòng dữ liệu thì hiển thị sao": trả về từng trang nhỏ, sắp theo trật tự chỉ định.
+
 ### PaginatedTaskController.java
 
-```java
-@RestController
-@RequestMapping("/api/tasks")
-public class TaskController {
-
-    private final TaskRepository taskRepository;
-
-    public TaskController(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-    }
-
-    @GetMapping
-    public ResponseEntity<Page<Task>> getTasks(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
-
-        // Tạo Pageable object
-        Sort sort = direction.equalsIgnoreCase("asc")
-            ? Sort.by(sortBy).ascending()
-            : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        // Lấy dữ liệu phân trang
-        Page<Task> tasks = taskRepository.findAll(pageable);
-
-        return ResponseEntity.ok(tasks);
-    }
-
-    // Response ví dụ:
-    // {
-    //   "content": [...],           // Danh sách tasks
-    //   "totalElements": 100,        // Tổng số records
-    //   "totalPages": 10,           // Tổng số pages
-    //   "size": 10,                 // Kích thước page
-    //   "number": 0,                // Page hiện tại (0-indexed)
-    //   "first": true,              // Là page đầu tiên?
-    //   "last": false               // Là page cuối cùng?
-    // }
-}
-```
+> 📄 **Code ví dụ:** [`examples/09-paginatedtaskcontroller-java.java`](examples/09-paginatedtaskcontroller-java.java)
 
 ## Custom Repository Implementation
 
+Mục này nói về "khu vực tự do": khi method-name magic không đủ sức với truy vấn phức tạp, bạn tự viết SQL nhưng vẫn giữ được cấu trúc repository.
+
 ### TaskRepositoryCustom.java
 
-```java
-// Interface cho custom methods
-public interface TaskRepositoryCustom {
-    List<Task> searchTasks(String keyword, Task.Priority priority, Boolean completed);
-}
-```
+> 📄 **Code ví dụ:** [`examples/10-taskrepositorycustom-java.java`](examples/10-taskrepositorycustom-java.java)
 
 ### TaskRepositoryCustomImpl.java
 
-```java
-public class TaskRepositoryCustomImpl implements TaskRepositoryCustom {
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    @Override
-    public List<Task> searchTasks(String keyword, Task.Priority priority, Boolean completed) {
-        StringBuilder jpql = new StringBuilder("SELECT t FROM Task t WHERE 1=1");
-
-        if (keyword != null) {
-            jpql.append(" AND (t.title LIKE :keyword OR t.description LIKE :keyword)");
-        }
-        if (priority != null) {
-            jpql.append(" AND t.priority = :priority");
-        }
-        if (completed != null) {
-            jpql.append(" AND t.completed = :completed");
-        }
-
-        TypedQuery<Task> query = entityManager.createQuery(jpql.toString(), Task.class);
-
-        if (keyword != null) {
-            query.setParameter("keyword", "%" + keyword + "%");
-        }
-        if (priority != null) {
-            query.setParameter("priority", priority);
-        }
-        if (completed != null) {
-            query.setParameter("completed", completed);
-        }
-
-        return query.getResultList();
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/11-taskrepositorycustomimpl-java.java`](examples/11-taskrepositorycustomimpl-java.java)
 
 ### Kết hợp trong TaskRepository
 
-```java
-@Repository
-public interface TaskRepository extends JpaRepository<Task, Long>, TaskRepositoryCustom {
-    // Có cả methods của JpaRepository và TaskRepositoryCustom
-}
-```
+> 📄 **Code ví dụ:** [`examples/12-ket-hop-trong-taskrepository.java`](examples/12-ket-hop-trong-taskrepository.java)
 
 ## Auditing (Tự động điền thông tin)
 
+Mục này nói về "dấu thời gian tự động": ai tạo, khi nào tạo, ai sửa, khi nào sửa — Spring điền hộ, bạn không phải viết tay từng entity.
+
 ### Enable Auditing
 
-```java
-@SpringBootApplication
-@EnableJpaAuditing
-public class DemoApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(DemoApplication.class, args);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/13-enable-auditing.java`](examples/13-enable-auditing.java)
 
 ### Sử dụng @CreatedDate, @LastModifiedDate
 
-```java
-@Entity
-@EntityListeners(AuditingEntityListener.class)
-public class Task {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedBy
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by")
-    private String updatedBy;
-}
-```
+> 📄 **Code ví dụ:** [`examples/14-su-dung-createddate-lastmodifieddate.java`](examples/14-su-dung-createddate-lastmodifieddate.java)
 
 ## Best Practices
+
+Mục này là "nội quy sử dụng JPA": sáu thói quen giúp tránh những vụ sập kinh điển như N+1 query hay lộ dữ liệu nhạy cảm.
 
 1. **Dùng DTOs**: Không return Entity trực tiếp từ API (security risk)
 2. **Fetch Strategy**: Dùng `LAZY` cho relationships, `EAGER` chỉ khi cần thiết
@@ -482,6 +146,8 @@ public class Task {
 4. **Transactions**: Đánh dấu `@Transactional` cho tất cả methods modify data
 5. **Indexes**: Tạo index cho các cột thường xuyên query
 6. **N+1 Problem**: Tránh bằng `JOIN FETCH` trong JPQL hoặc `@EntityGraph`
+
+> **Tóm gọn 1 câu:** JPA là phiên dịch viên tiện nhưng phải biết cách dùng — LAZY, DTO, batch và JOIN FETCH là bốn "mẹo giữ chớp điện" cho ứng dụng lớn.
 
 ## Tài liệu tham khảo
 

@@ -1,0 +1,3 @@
+jwt:
+  secret: my-very-long-secret-key-at-least-32-characters-for-hs256
+  expiration: 86400000  # 24 hours in milliseconds

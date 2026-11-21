@@ -1,6 +1,10 @@
 # Lớp Boolean
 
+Vậy khi cần số boolean "khoác áo đối tượng" — để lưu vào collection hay generic — thì dùng gì? Lớp `Boolean` là câu trả lời. Mục này nói về cách tạo và các method của nó.
+
 - Lớp `Boolean` trong Java bọc giá trị kiểu nguyên thủy `boolean` trong một đối tượng. Một đối tượng `Boolean` chứa duy nhất một field kiểu `boolean`.
+
+Ví von: nếu `boolean` là **công tắc điện** (chỉ bật/tắt), thì `Boolean` là **công tắc được đóng vỏ hộp đẹp** — vẫn chỉ hai trạng thái, nhưng có thể để vào kệ (collection), dán nhãn (generic), chuyển qua lại giữa các tầng API.
 
 ## Các constructor của lớp Boolean
 
@@ -8,6 +12,8 @@
 |---|-------------|-------|
 | 1 | `Boolean(boolean value)` | Tạo đối tượng `Boolean` biểu diễn giá trị `value` |
 | 2 | `Boolean(String s)` | Tạo đối tượng `Boolean` mang giá trị `true` nếu chuỗi không phải `null` và bằng `"true"` (không phân biệt hoa thường); ngược lại là `false` |
+
+Dòng 2 đáng chú ý nhất: mọi chuỗi khác `"true"` — kể cả `"TRUE  "`, `"yes"`, hay chuỗi rác — đều cho `false` âm thầm, không báo lỗi. Giống như **máy đọc chỉ nhận đúng mật khẩu "true"**, gõ sai phát nào cũng bị từ chối mà không giải thích.
 
 ## Các phương thức của lớp Boolean
 
@@ -28,38 +34,12 @@
 | 13 | `static Boolean valueOf(boolean b)` | Trả về thể hiện `Boolean` biểu diễn giá trị `boolean` chỉ định |
 | 14 | `static Boolean valueOf(String s)` | Trả về `Boolean` có giá trị biểu diễn bởi chuỗi chỉ định |
 
+> **Cách đọc bảng này:** chia theo nhóm — dòng 1-2 là **mở hộp** (lấy boolean gốc ra), dòng 3-5 so sánh và băm, dòng 7-9 là ba phép logic `AND/OR/XOR` dạng tiện ích, dòng 10-14 là các **đóng hộp** từ chuỗi hoặc giá trị. Cần thao tác gì, tra đúng nhóm đó.
+
 ## Ví dụ
 
-```java
-package com.tutorialspoint;
-public class BooleanDemo {
-   public static void main(String[] args) {
-
-      // create 2 Boolean objects b1, b2
-      Boolean b1, b2;
-
-      // assign values to b1, b2
-      b1 = Boolean.valueOf(true);
-      b2 = Boolean.valueOf(false);
-
-      // create an int res
-      int res;
-
-      // compare b1 with b2
-      res = b1.compareTo(b2);
-
-      String str1 = "Both values are equal ";
-      String str2 = "Object value is true";
-      String str3 = "Argument value is true";
-      if( res == 0 ) {
-      	System.out.println( str1 );
-      } else if( res > 0 ) {
-         System.out.println( str2 );
-      } else if( res < 0 ) {
-         System.out.println( str3 );
-      }
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-vi-du.java`](examples/01-vi-du.java)
 
 Kết quả: vì `true` so sánh với `false` cho giá trị dương, chương trình in ra `Object value is true`.
+
+> **Tóm gọn 1 câu:** `Boolean` là "công tắc đóng hộp" — bản chất vẫn true/false, nhưng mang được vào collection, generic và kèm theo bộ tiện ích parse/compare/logic.

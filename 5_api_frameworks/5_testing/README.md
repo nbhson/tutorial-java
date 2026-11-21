@@ -13,11 +13,17 @@
 
 ## Giới thiệu
 
+Mục này nói về vì sao test không phải "việc thêm sau" mà là cơ chế an toàn của cả project: bạn sẽ biết Spring Boot trang bị sẵn những gì.
+
 Testing là một phần quan trọng trong phát triển phần mềm. Spring Boot cung cấp hệ sinh thái testing mạnh mẽ với JUnit 5, Mockito, và nhiều utility classes giúp viết test dễ dàng.
+
+Hãy hình dung test như **bảng kiểm tra trước khi cất cánh của phi công**: mỗi lần sửa code là một lần "cất cánh" — không chạy qua bảng kiểm, bạn đang bay bằng niềm tin.
 
 > **Phiên bản**: JUnit 5.13.4 (July 2025), Mockito 5.x, Spring Boot 4.x, Java 17+
 
 ## Các loại Test trong Spring Boot
+
+Mục này phân loại "thang đo" của test: từ nhanh-nhỏ-cô lập tới chậm-lớn-thật, để bạn biết loại nào dùng cho tình huống nào.
 
 ```
 ┌────────────────────────────────────────────────┐
@@ -39,408 +45,55 @@ Testing là một phần quan trọng trong phát triển phần mềm. Spring B
 | Web Layer Test | Controller | 🚗 Trung bình | @WebMvcTest, MockMvc |
 | Full App Test | Toàn bộ | 🐢 Chậm | @SpringBootTest |
 
+> **Cách đọc bảng này:** đọc từ trên xuống theo trật tự phạm vi tăng dần — càng xuống dưới càng "thật" nhưng càng chậm; khi test chậm khiến bạn ngại chạy, hãy đẩy thử nghiệm lên các dòng trên.
+
 ## JUnit 5 cơ bản
+
+Mục này là "bảng chữ cái" của testing: cấu trúc một test và các hàm khẳng định (assert) bạn sẽ dùng hằng ngày.
 
 ### Cấu trúc cơ bản
 
-```java
-package com.example.demo.service;
-
-import org.junit.jupiter.api.*;
-import static org.junit.jupiter.api.Assertions.*;
-
-@DisplayName("TaskService Tests")
-class TaskServiceTest {
-
-    private TaskService taskService;
-
-    @BeforeAll
-    static void setupClass() {
-        // Chạy 1 lần trước tất cả tests
-        System.out.println("Setup class");
-    }
-
-    @BeforeEach
-    void setUp() {
-        // Chạy trước mỗi test
-        taskService = new TaskService();
-    }
-
-    @AfterEach
-    void tearDown() {
-        // Chạy sau mỗi test
-        System.out.println("Cleanup");
-    }
-
-    @AfterAll
-    static void tearDownClass() {
-        // Chạy 1 lần sau tất cả tests
-    }
-
-    @Test
-    @DisplayName("Nên tạo task thành công với title hợp lệ")
-    void shouldCreateTaskWithValidTitle() {
-        // Arrange (Chuẩn bị)
-        String title = "Học Spring Boot";
-
-        // Act (Thực hiện)
-        Task task = taskService.createTask(title, "Mô tả");
-
-        // Assert (Kiểm tra)
-        assertNotNull(task);
-        assertEquals(title, task.getTitle());
-        assertFalse(task.isCompleted());
-    }
-
-    @Test
-    @DisplayName("Ném exception khi title rỗng")
-    void shouldThrowExceptionWhenTitleIsBlank() {
-        // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> taskService.createTask("", "Mô tả")
-        );
-        assertEquals("Title không được để trống", exception.getMessage());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"Java", "Spring Boot", "JPA"})
-    @DisplayName("Test với nhiều input khác nhau")
-    void shouldAcceptVariousTitles(String title) {
-        Task task = taskService.createTask(title, "");
-        assertEquals(title, task.getTitle());
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-cau-truc-co-ban.java`](examples/01-cau-truc-co-ban.java)
 
 ### Các Assertions phổ biến
 
-```java
-@Test
-void testAssertions() {
-    // = (equals)
-    assertEquals(5, 2 + 3);
-    assertEquals("Hello", "Hel" + "lo");
-
-    // So sánh object
-    Task expected = new Task("Title", "Desc");
-    Task actual = new Task("Title", "Desc");
-    assertEquals(expected, actual);  // Dùng equals()
-
-    // Null checks
-    assertNull(getNullValue());
-    assertNotNull(getNonNullValue());
-
-    // Boolean checks
-    assertTrue(isValid());
-    assertFalse(isInvalid());
-
-    // Exception
-    assertThrows(IllegalArgumentException.class, () -> {
-        throw new IllegalArgumentException("error");
-    });
-
-    // Multiple assertions (tất cả chạy dù có lỗi)
-    assertAll("Task properties",
-        () -> assertEquals("Title", task.getTitle()),
-        () -> assertEquals("Desc", task.getDescription()),
-        () -> assertFalse(task.isCompleted())
-    );
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-cac-assertions-pho-bien.java`](examples/02-cac-assertions-pho-bien.java)
 
 ## Mockito - Mocking Framework
 
+Mục này nói về nghệ thuật "diễn viên đóng thế": thay dependencies thật bằng giả để test chỉ kiểm đúng một thứ.
+
 ### Mockito là gì?
 
-**Mockito** giúp tạo mock objects (đối tượng giả) thay thế các dependencies thật, giúp test cô lập (isolated).
+**Mockito** giúp tạo mock objects (đối tượng giả) thay thế các dependencies thật, giúp test cô lập (isolated). Ví von dễ hiểu: thay vì mời cả dàn nhạc thật để tập vai hát chính, bạn dùng bản nhạc thu sẵn — muốn nó phát đoạn nào, nó phát đúng đoạn đó.
 
 ### Ví dụ: Mock Repository trong Service Test
 
-```java
-package com.example.demo.service;
-
-import com.example.demo.model.Task;
-import com.example.demo.repository.TaskRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
-
-@ExtendWith(MockitoExtension.class)
-@DisplayName("TaskService với Mock Repository")
-class TaskServiceMockTest {
-
-    @Mock
-    private TaskRepository taskRepository;
-
-    @InjectMocks
-    private TaskService taskService;
-
-    @Test
-    @DisplayName("Lấy task theo ID thành công")
-    void shouldGetTaskById() {
-        // Arrange
-        Task task = new Task("Học Java", "Mô tả");
-        task.setId(1L);
-        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
-
-        // Act
-        Task result = taskService.getTaskById(1L);
-
-        // Assert
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getTitle()).isEqualTo("Học Java");
-        verify(taskRepository, times(1)).findById(1L);
-    }
-
-    @Test
-    @DisplayName("Ném exception khi task không tồn tại")
-    void shouldThrowExceptionWhenTaskNotFound() {
-        // Arrange
-        when(taskRepository.findById(99L)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThatThrownBy(() -> taskService.getTaskById(99L))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("Task not found");
-    }
-
-    @Test
-    @DisplayName("Lấy tất cả tasks")
-    void shouldGetAllTasks() {
-        // Arrange
-        List<Task> tasks = Arrays.asList(
-            new Task("Task 1", "Desc 1"),
-            new Task("Task 2", "Desc 2")
-        );
-        when(taskRepository.findAll()).thenReturn(tasks);
-
-        // Act
-        List<Task> result = taskService.getAllTasks();
-
-        // Assert
-        assertThat(result).hasSize(2);
-        assertThat(result).extracting(Task::getTitle)
-            .containsExactly("Task 1", "Task 2");
-    }
-
-    @Test
-    @DisplayName("Xóa task thành công")
-    void shouldDeleteTask() {
-        // Arrange
-        when(taskRepository.existsById(1L)).thenReturn(true);
-
-        // Act
-        taskService.deleteTask(1L);
-
-        // Verify
-        verify(taskRepository, times(1)).deleteById(1L);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-mock-repository-trong-service-test.java`](examples/03-vi-du-mock-repository-trong-service-test.java)
 
 ### Các Mockito Methods quan trọng
 
-```java
-// ============ WHEN/THEN - Cấu hình mock ============
-when(mock.method()).thenReturn(value);          // Trả về giá trị
-when(mock.method()).thenThrow(exception);        // Ném exception
-when(mock.method(anyString())).thenReturn(v);    // Với any parameter
-
-// ============ VERIFY - Kiểm tra mock được gọi ============
-verify(mock, times(1)).method();       // Được gọi 1 lần
-verify(mock, never()).method();        // Không bao giờ được gọi
-verify(mock, atLeastOnce()).method();  // Ít nhất 1 lần
-verify(mock).method(argThat(x -> x > 5));  // Với điều kiện
-
-// ============ Argument Matchers ============
-any()           // Any object
-anyString()     // Any String
-anyLong()       // Any Long
-eq(value)       // Exact value
-anyInt()
-```
+> 📄 **Code ví dụ:** [`examples/04-cac-mockito-methods-quan-trong.java`](examples/04-cac-mockito-methods-quan-trong.java)
 
 ## Integration Testing với Spring Boot
 
+Mục này là phần "cho các diễn viên thật lên sân khấu": test nhiều tầng cùng nhau với đúng cấu hình Spring, thay vì mock tất cả.
+
 ### @SpringBootTest - Test toàn bộ ứng dụng
 
-```java
-package com.example.demo.integration;
-
-import com.example.demo.model.Task;
-import com.example.demo.repository.TaskRepository;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-
-@SpringBootTest
-@ActiveProfiles("test")  // Dùng application-test.yml
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class TaskIntegrationTest {
-
-    @Autowired
-    private TaskRepository taskRepository;
-
-    @BeforeEach
-    void setUp() {
-        taskRepository.deleteAll();
-    }
-
-    @Test
-    @Order(1)
-    @DisplayName("Tạo và truy xuất task từ database")
-    void shouldCreateAndRetrieveTask() {
-        // Arrange
-        Task task = new Task("Integration Test", "Test với H2");
-
-        // Act
-        Task saved = taskRepository.save(task);
-        Optional<Task> found = taskRepository.findById(saved.getId());
-
-        // Assert
-        assertThat(found).isPresent();
-        assertThat(found.get().getTitle()).isEqualTo("Integration Test");
-    }
-
-    @Test
-    @Order(2)
-    @DisplayName("Tìm tasks theo completed status")
-    void shouldFindTasksByCompleted() {
-        // Arrange
-        Task task1 = new Task("Task 1", "Desc");
-        Task task2 = new Task("Task 2", "Desc");
-        task2.setCompleted(true);
-        taskRepository.saveAll(List.of(task1, task2));
-
-        // Act
-        List<Task> incomplete = taskRepository.findByCompletedFalse();
-
-        // Assert
-        assertThat(incomplete).hasSize(1);
-        assertThat(incomplete.get(0).getTitle()).isEqualTo("Task 1");
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-springboottest-test-toan-bo-ung-dung.java`](examples/05-springboottest-test-toan-bo-ung-dung.java)
 
 ### @WebMvcTest - Test Controller Layer
 
-```java
-package com.example.demo.controller;
-
-import com.example.demo.service.TaskService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-@WebMvcTest(TaskController.class)
-@DisplayName("TaskController Tests")
-class TaskControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
-    private TaskService taskService;
-
-    @Test
-    @DisplayName("GET /api/tasks trả về 200 OK")
-    void shouldReturnAllTasks() throws Exception {
-        // Arrange
-        when(taskService.getAllTasks()).thenReturn(List.of());
-
-        // Act & Assert
-        mockMvc.perform(get("/api/tasks"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    @DisplayName("POST /api/tasks trả về 201 Created")
-    void shouldCreateTask() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post("/api/tasks")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                        "title": "New Task",
-                        "description": "Test",
-                        "priority": 1
-                    }
-                    """))
-            .andExpect(status().isCreated());
-    }
-
-    @Test
-    @DisplayName("POST với title rỗng trả về 400 Bad Request")
-    void shouldRejectInvalidTask() throws Exception {
-        mockMvc.perform(post("/api/tasks")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                        "title": "",
-                        "priority": 1
-                    }
-                    """))
-            .andExpect(status().isBadRequest());
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/06-webmvctest-test-controller-layer.java`](examples/06-webmvctest-test-controller-layer.java)
 
 ### @DataJpaTest - Test Repository Layer
 
-```java
-@DataJpaTest
-@DisplayName("TaskRepository Tests")
-class TaskRepositoryTest {
-
-    @Autowired
-    private TaskRepository taskRepository;
-
-    @Test
-    @DisplayName("Tìm tasks theo priority")
-    void shouldFindTasksByPriority() {
-        // Arrange
-        Task highPriority = new Task("High", "Desc", Task.Priority.HIGH);
-        Task lowPriority = new Task("Low", "Desc", Task.Priority.LOW);
-        taskRepository.saveAll(List.of(highPriority, lowPriority));
-
-        // Act
-        List<Task> result = taskRepository.findByPriority(Task.Priority.HIGH);
-
-        // Assert
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getPriority()).isEqualTo(Task.Priority.HIGH);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-datajpatest-test-repository-layer.java`](examples/07-datajpatest-test-repository-layer.java)
 
 ## Test Pyramid và Coverage
+
+Mục này trả lời câu hỏi "nên đầu tư test loại nào bao nhiêu": kim tự tháp dưới đây là phân bổ đúc kết của cả ngành.
 
 ```
         /\
@@ -454,27 +107,17 @@ class TaskRepositoryTest {
 
 **Quy tắc chung**: 70% Unit Tests, 20% Integration Tests, 10% E2E Tests.
 
+> **Tóm gọn 1 câu:** Test càng ở đáy kim tự tháp càng rẻ và nhanh — đầu tư đông đảo vào unit test, giữ số ít cho E2E.
+
 ## Chạy Tests với Maven
 
-```bash
-# Chạy tất cả tests
-./mvnw test
+Mục này nói về cách "lên sân khấu" mọi test từ dòng lệnh — chỗ CI/CD sẽ gọi khi mỗi lần bạn push code.
 
-# Chạy test cụ thể
-./mvnw test -Dtest=TaskServiceTest
-
-# Chạy nhiều tests
-./mvnw test -Dtest="TaskServiceTest,TaskRepositoryTest"
-
-# Bỏ qua tests khi build
-./mvnw clean package -DskipTests
-
-# Generate coverage report (cần JaCoCo plugin)
-./mvnw clean test jacoco:report
-# Report tại: target/site/jacoco/index.html
-```
+> 📄 **Code ví dụ:** [`examples/08-chay-tests-voi-maven.sh`](examples/08-chay-tests-voi-maven.sh)
 
 ## Best Practices
+
+Mục này là "bảy bài học xương máu" khi viết test: mỗi gạch đầu dòng là một lỗi phổ biến mà người mới hay mắc.
 
 1. **AAA Pattern**: Arrange - Act - Assert rõ ràng
 2. **Một test một mục đích**: Không test nhiều thứ trong 1 test method

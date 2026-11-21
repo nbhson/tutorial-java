@@ -2,13 +2,19 @@
 
 > Trừu tượng là việc xử lý các ý tưởng hơn là các sự kiện. 
 
-Ví dụ, khi bạn xem xét trường hợp của e-mail, các chi tiết phức tạp như những gì xảy ra ngay khi bạn gửi e-mail, **giao thức mà máy chủ e-mail của bạn sử dụng được ẩn khỏi người dùng.** Do đó, để gửi e-mail, bạn chỉ cần nhập nội dung, đề cập đến địa chỉ của người nhận và nhấp vào gửi.
+Ví dụ, khi bạn xem xét trường hợp của e-mail, các chi tiết phức tạp như những gì xảy ra ngay khi bạn gửi e-mail, **giao thức mà máy chủ e-mail của bạn sử dụng được ẩn khỏi người dùng.** Do đó, để gửi e-mail, bạn chỉ cần nhập nội dung, đề cập đến địa chỉ của người nhận và nhấp vào gửi. Bạn không cần biết phía sau "cỗ máy" làm gì — đó chính là tinh thần của abstraction.
 
 ## Java Abstraction
 
-`Abstraction` là quá trình ẩn các chi tiết triển khai khỏi người dùng, chỉ cung cấp chức năng cho người dùng. Nói cách khác, người dùng sẽ có thông tin về những gì đối tượng thực hiện thay vì cách thức thực hiện. Trong lập trình Java,  abstraction is achieved using `Abstract classes` and `interfaces.`
+Mục này định nghĩa abstraction trong Java và chỉ ra 2 công cụ để đạt được nó: abstract class và interface — nền tảng để hiểu DI và Spring Boot về sau.
+
+`Abstraction` là quá trình ẩn các chi tiết triển khai khỏi người dùng, chỉ cung cấp chức năng cho người dùng. Nói cách khác, người dùng sẽ có thông tin về những gì đối tượng thực hiện thay vì cách thức thực hiện. Trong lập trình Java,  abstraction is achieved using `Abstract classes` and `interfaces.` Ví von: abstraction giống như lái xe — bạn chỉ cần biết vô lăng, chân ga, chân phanh, còn hộp số, xăng chảy thế nào là chuyện của thợ máy.
+
+> **Tóm gọn 1 câu:** Abstraction là "điều khiển từ xa" — bạn bấm nút để nhận kết quả, còn mạch điện bên trong thì được che đi.
 
 ## Java Abstract Classes
+
+Mục này nói về abstract class: "bản thiết kế dang dở" — có thể có sẵn vài phần làm rồi, nhưng buộc lớp con phải hoàn thiện phần còn lại. Đọc để nắm 5 quy tắc quan trọng của nó.
 
 - Các lớp trừu tượng Java có thể chứa hoặc không chứa các phương thức trừu tượng, tức là các phương thức không có phần thân (public void get(); )
 - Tuy nhiên, nếu một lớp có ít nhất một phương thức trừu tượng thì lớp đó **phải được khai báo là trừu tượng.**
@@ -16,244 +22,37 @@ Ví dụ, khi bạn xem xét trường hợp của e-mail, các chi tiết phứ
 - Để sử dụng một abstract class, bạn phải kế thừa nó từ một lớp khác, cung cấp các implementations cho các phương thức trừu tượng trong đó.
 - Nếu bạn kế thừa một lớp trừu tượng, bạn phải cung cấp các triển khai cho tất cả các phương thức trừu tượng trong đó.
 
+Ví von: abstract class giống một căn nhà thô — đã có tường, có mái, nhưng bắt buộc thợ (lớp con) mới hoàn thiện được; bạn không thể "vào ở" (khởi tạo) một căn nhà thô.
+
 ## Example: Java Abstract Class
 
-```java
-/* File name : Employee.java */
-public abstract class Employee {
-   private String name;
-   private String address;
-   private int number;
-
-   public Employee(String name, String address, int number) {
-      System.out.println("Constructing an Employee");
-      this.name = name;
-      this.address = address;
-      this.number = number;
-   }
-   
-   public double computePay() {
-     System.out.println("Inside Employee computePay");
-     return 0.0;
-   }
-   
-   public void mailCheck() {
-      System.out.println("Mailing a check to " + this.name + " " + this.address);
-   }
-
-   public String toString() {
-      return name + " " + address + " " + number;
-   }
-
-   public String getName() {
-      return name;
-   }
- 
-   public String getAddress() {
-      return address;
-   }
-   
-   public void setAddress(String newAddress) {
-      address = newAddress;
-   }
- 
-   public int getNumber() {
-      return number;
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-example-java-abstract-class.java`](examples/01-example-java-abstract-class.java)
 
 Bạn có thể thấy rằng ngoại trừ các phương thức trừu tượng, lớp Employee giống với lớp bình thường trong Java. Lớp này hiện là trừu tượng, nhưng vẫn có ba trường, bảy phương thức và một hàm tạo.
 
 Now you can try to instantiate the Employee class in the following way −
 
-```java
-/* File name : AbstractDemo.java */
-public class AbstractDemo {
-
-   public static void main(String [] args) {
-      /* Following is not allowed and would raise error */
-      Employee e = new Employee("George W.", "Houston, TX", 43);
-      System.out.println("\n Call mailCheck using Employee reference--");
-      e.mailCheck();
-   }
-}
-
-abstract class Employee {
-   private String name;
-   private String address;
-   private int number;
-
-   public Employee(String name, String address, int number) {
-      System.out.println("Constructing an Employee");
-      this.name = name;
-      this.address = address;
-      this.number = number;
-   }
-   
-   public double computePay() {
-     System.out.println("Inside Employee computePay");
-     return 0.0;
-   }
-   
-   public void mailCheck() {
-      System.out.println("Mailing a check to " + this.name + " " + this.address);
-   }
-
-   public String toString() {
-      return name + " " + address + " " + number;
-   }
-
-   public String getName() {
-      return name;
-   }
- 
-   public String getAddress() {
-      return address;
-   }
-   
-   public void setAddress(String newAddress) {
-      address = newAddress;
-   }
- 
-   public int getNumber() {
-      return number;
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-example-java-abstract-class.java`](examples/02-example-java-abstract-class.java)
 
 When you compile the above class, it gives you the following error −
 
-```bash
-Employee.java:46: Employee is abstract; cannot be instantiated
-      Employee e = new Employee("George W.", "Houston, TX", 43);
-                   ^
-1 error
-```
+> 📄 **Code ví dụ:** [`examples/03-example-java-abstract-class.sh`](examples/03-example-java-abstract-class.sh)
 
 ## Inheriting the Java Abstract Class
 
+Mục này cho thấy lối ra duy nhất để dùng được abstract class: xây một lớp con cụ thể "hoàn thiện căn nhà thô", rồi khởi tạo lớp con đó.
+
 We can inherit the properties of Employee class just like concrete class in the following way −
 
-```java
-/* File name : Salary.java */
-public class Salary extends Employee {
-   private double salary;   // Annual salary
-   
-   public Salary(String name, String address, int number, double salary) {
-      super(name, address, number);
-      setSalary(salary);
-   }
-   
-   public void mailCheck() {
-      System.out.println("Within mailCheck of Salary class ");
-      System.out.println("Mailing check to " + getName() + " with salary " + salary);
-   }
- 
-   public double getSalary() {
-      return salary;
-   }
-   
-   public void setSalary(double newSalary) {
-      if(newSalary >= 0.0) {
-         salary = newSalary;
-      }
-   }
-   
-   public double computePay() {
-      System.out.println("Computing salary pay for " + getName());
-      return salary/52;
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-inheriting-the-java-abstract-class.java`](examples/04-inheriting-the-java-abstract-class.java)
 
 Tại đây, bạn không thể khởi tạo lớp Employee, nhưng bạn có thể khởi tạo lớp Salary và sử dụng phiên bản này, bạn có thể truy cập tất cả ba trường và bảy phương thức của lớp Employee như được hiển thị bên dưới.
 
-```java
-/* File name : AbstractDemo.java */
-public class AbstractDemo {
-
-   public static void main(String [] args) {
-      Salary s = new Salary("Mohd Mohtashim", "Ambehta, UP", 3, 3600.00);
-      Employee e = new Salary("John Adams", "Boston, MA", 2, 2400.00);
-      System.out.println("Call mailCheck using Salary reference --");
-      s.mailCheck();
-      System.out.println("\n Call mailCheck using Employee reference--");
-      e.mailCheck();
-   }
-}
-abstract class Employee {
-   private String name;
-   private String address;
-   private int number;
-
-   public Employee(String name, String address, int number) {
-      System.out.println("Constructing an Employee");
-      this.name = name;
-      this.address = address;
-      this.number = number;
-   }
-   
-   public double computePay() {
-     System.out.println("Inside Employee computePay");
-     return 0.0;
-   }
-   
-   public void mailCheck() {
-      System.out.println("Mailing a check to " + this.name + " " + this.address);
-   }
-
-   public String toString() {
-      return name + " " + address + " " + number;
-   }
-
-   public String getName() {
-      return name;
-   }
- 
-   public String getAddress() {
-      return address;
-   }
-   
-   public void setAddress(String newAddress) {
-      address = newAddress;
-   }
- 
-   public int getNumber() {
-      return number;
-   }
-}
-class Salary extends Employee {
-   private double salary;   // Annual salary
-   
-   public Salary(String name, String address, int number, double salary) {
-      super(name, address, number);
-      setSalary(salary);
-   }
-   
-   public void mailCheck() {
-      System.out.println("Within mailCheck of Salary class ");
-      System.out.println("Mailing check to " + getName() + " with salary " + salary);
-   }
- 
-   public double getSalary() {
-      return salary;
-   }
-   
-   public void setSalary(double newSalary) {
-      if(newSalary >= 0.0) {
-         salary = newSalary;
-      }
-   }
-   
-   public double computePay() {
-      System.out.println("Computing salary pay for " + getName());
-      return salary/52;
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-inheriting-the-java-abstract-class.java`](examples/05-inheriting-the-java-abstract-class.java)
 
 ## Java Abstract Methods
+
+Mục này nói về "hợp đồng bắt buộc" mà lớp cha ký: phương thức trừu tượng chỉ có chữ ký, không có thân — lớp con nào nhận hợp đồng thì phải hoàn thành.
 
 Nếu bạn muốn một lớp chứa một phương thức cụ thể nhưng muốn việc triển khai thực tế của phương thức đó được xác định bởi các lớp con, bạn có thể khai báo phương thức đó trong lớp cha dưới dạng trừu tượng.
 
@@ -264,101 +63,22 @@ Nếu bạn muốn một lớp chứa một phương thức cụ thể nhưng mu
 
 ### Example 1: Implementing Abstract Method in Java
 
-```java
-public abstract class Employee {
-   private String name;
-   private String address;
-   private int number;
-   
-   public abstract double computePay();
-   // Remainder of class definition
-}
-```
+> 📄 **Code ví dụ:** [`examples/06-example-1-implementing-abstract-method-in-java.java`](examples/06-example-1-implementing-abstract-method-in-java.java)
 
 Việc khai báo một phương thức là trừu tượng có hai hậu quả −
 
 - Lớp chứa nó phải được khai báo là trừu tượng.
 - Bất kỳ lớp nào kế thừa lớp hiện tại đều phải ghi đè phương thức trừu tượng hoặc tự khai báo là trừu tượng.
 
-Lưu ý − Cuối cùng, lớp con phải triển khai phương thức trừu tượng; nếu không, bạn sẽ có một hệ thống phân cấp các lớp trừu tượng không thể khởi tạo được.
+Lưu ý − Cuối cùng, lớp con phải triển khai phương thức trừu tượng; nếu không, bạn sẽ có một hệ thống phân cấp các lớp trừu tượng không thể khởi tạo được — giống như chuỗi người nhận ủy nhiệm cứ chuyển tiếp hợp đồng cho nhau mà không ai chịu làm việc, cuối cùng chẳng ai có kết quả để giao.
 
 
 Giả sử lớp Salary kế thừa lớp Employee, thì nó phải triển khai phương thức computePay() như được hiển thị bên dưới −
 
-```java
-/* File name : Salary.java */
-public class Salary extends Employee {
-   private double salary;   // Annual salary
-  
-   public double computePay() {
-      System.out.println("Computing salary pay for " + getName());
-      return salary/52;
-   }
-   // Remainder of class definition
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-example-1-implementing-abstract-method-in-java.java`](examples/07-example-1-implementing-abstract-method-in-java.java)
 
 ### Example 2: Implementing Abstract Method in Java 
 
-```java
-/* File name : AbstractDemo.java */
-public class AbstractDemo {
-   public static void main(String [] args) {
-      Salary s = new Salary("Mohd Mohtashim", "Ambehta, UP", 3, 3600.00);
-      System.out.println("salary: " + s.computePay());
-   }
-}
-abstract class Employee {
-   private String name;
-   private String address;
-   private int number;
+> 📄 **Code ví dụ:** [`examples/08-example-2-implementing-abstract-method-in-java.java`](examples/08-example-2-implementing-abstract-method-in-java.java)
 
-   public Employee(String name, String address, int number) {
-      System.out.println("Constructing an Employee");
-      this.name = name;
-      this.address = address;
-      this.number = number;
-   }
-
-   public abstract double computePay();
-      // Remainder of class definition
-
-   public String getName() {
-      return name;
-   }
-
-   public void setName(String name) {
-      this.name = name;
-   }
-
-   public String getAddress() {
-      return address;
-   }
-
-   public void setAddress(String address) {
-      this.address = address;
-   }
-
-   public int getNumber() {
-      return number;
-   }
-
-   public void setNumber(int number) {
-      this.number = number;
-   }
-}
-class Salary extends Employee {
-   private double salary;   // Annual salary
-
-   public Salary(String name, String address, int number, double salary) {
-      super(name, address, number);
-      this.salary = salary;
-   }
-
-   public double computePay() {
-      System.out.println("Computing salary pay for " + getName());
-      return salary/52;
-   }
-   // Remainder of class definition
-}
-```
+> **Tóm gọn 1 câu:** Abstract class là "căn nhà thô bắt buộc hoàn thiện" — có sẵn một phần, nhưng lớp con phải lấp nốt các phương thức trừu tượng trước khi dùng được.

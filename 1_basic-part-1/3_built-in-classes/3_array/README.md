@@ -1,129 +1,72 @@
 # Mảng (Arrays)
 
+Vậy khi cần lưu 100 điểm thi, bạn phải khai báo 100 biến riêng sao? Không — có **mảng (array)**: một "tủ ngăn kéo" chứa nhiều ô cùng loại, đánh số thứ tự. Mục này nói về cách mở tủ, xếp đồ và lấy đồ ra.
+
 ## Mảng trong Java là gì?
 
 - Java cung cấp một cấu trúc dữ liệu gọi là **mảng (array)** — lưu trữ một tập hợp **cố định số phần tử**, tuần tự, cùng một kiểu dữ liệu. Mảng dùng để lưu tập hợp dữ liệu, nhưng thường hữu ích hơn nếu bạn hình dung nó như một tập các biến cùng kiểu.
 
 - Thay vì khai báo từng biến riêng lẻ như `number0`, `number1`, ..., `number99`, bạn khai báo **một** biến mảng như `numbers` rồi dùng `numbers[0]`, `numbers[1]`, ..., `numbers[99]` để truy cập từng phần tử.
 
+Ví von: mảng là **tủ locker có ngăn được đánh số từ 0** — một tủ duy nhất nhưng 100 ngăn, lấy đồ chỉ cần báo số ngăn. Lưu ý ngăn đầu tiên là số **0**, không phải 1 — như tầng trệt được gọi là tầng 0.
+
 ## Khai báo biến mảng
+
+Mục này nói về bước "đăng ký tủ": khai báo biến tham chiếu và kiểu dữ liệu của tủ trước khi đặt mua.
 
 Để dùng mảng, bạn phải khai báo một biến tham chiếu tới mảng và chỉ định kiểu dữ liệu của mảng:
 
 ### Cú pháp
 
-```java
-dataType[] arrayRefVar;   // preferred way.
-or
-dataType arrayRefVar[];  // works but not preferred way.
-```
+> 📄 **Code ví dụ:** [`examples/01-cu-phap.java`](examples/01-cu-phap.java)
 
 ### Ví dụ
 
-```java
-double[] myList;   // preferred way.
-or
-double myList[];   // works but not preferred way.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du.java`](examples/02-vi-du.java)
 
-Cách đầu tiên (`double[] myList;`) được khuyến khích vì kiểu dữ liệu đứng rõ ràng trước tên biến.
+Cách đầu tiên (`double[] myList;`) được khuyến khích vì kiểu dữ liệu đứng rõ ràng trước tên biến — đọc "double-array tên là myList" liền một mạch, như đọc nhãn dán trên tủ.
 
 ## Tạo mảng
 
+Mục này là bước "đặt mua và ghi rõ số ngăn": khai báo xong mới chỉ có nhãn, phải `new` với số phần tử thì tủ mới thực sự tồn tại.
+
 ### Cú pháp
 
-```java
-arrayRefVar = new dataType[arraySize];
-
-dataType[] arrayRefVar = new dataType[arraySize];
-
-dataType[] arrayRefVar = {value0, value1, ..., valuek};
-```
+> 📄 **Code ví dụ:** [`examples/03-cu-phap.java`](examples/03-cu-phap.java)
 
 ### Ví dụ
 
-```java
-double[] myList = new double[10]; // 10 is size of myList
-```
+> 📄 **Code ví dụ:** [`examples/04-vi-du.java`](examples/04-vi-du.java)
 
 ![alt text](image.png)
 
 ## Xử lý mảng
 
+Mục này nói về cách "đi qua từng ngăn tủ" để làm việc với dữ liệu — bằng vòng lặp for/foreach. Đọc để thấy vì sao mảng và vòng lặp là cặp bài trùng.
+
 - Khi làm việc với các phần tử của mảng, ta thường dùng vòng lặp `for` hoặc `foreach`, vì tất cả phần tử cùng kiểu và kích thước mảng đã biết trước.
 
-```java
-public class TestArray {
-
-   public static void main(String[] args) {
-      double[] myList = {1.9, 2.9, 3.4, 3.5};
-
-      // Print all the array elements
-      for (int i = 0; i < myList.length; i++) {
-         System.out.println(myList[i] + " ");
-      }
-     
-      // Summing all elements
-      double total = 0;
-      for (int i = 0; i < myList.length; i++) {
-         total += myList[i];
-      }
-      System.out.println("Total is " + total);
-      
-      // Finding the largest element
-      double max = myList[0];
-      for (int i = 1; i < myList.length; i++) {
-         if (myList[i] > max) max = myList[i];
-      }
-      System.out.println("Max is " + max);  
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-xu-ly-mang.java`](examples/05-xu-ly-mang.java)
 
 ### Vòng lặp foreach với mảng
 
-```java
-public class TestArray {
-
-   public static void main(String[] args) {
-      double[] myList = {1.9, 2.9, 3.4, 3.5};
-
-      // Print all the array elements
-      for (double element: myList) {
-         System.out.println(element);
-      }
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/06-vong-lap-foreach-voi-mang.java`](examples/06-vong-lap-foreach-voi-mang.java)
 
 ### Truyền mảng vào phương thức
 
-```java
-public static void printArray(int[] array) {
-   for (int i = 0; i < array.length; i++) {
-      System.out.print(array[i] + " ");
-   }
-}
-
-printArray(new int[]{3, 1, 2, 6, 4, 2});
-```
+> 📄 **Code ví dụ:** [`examples/07-truyen-mang-vao-phuong-thuc.java`](examples/07-truyen-mang-vao-phuong-thuc.java)
 
 ### Trả về mảng từ phương thức
 
-```java
-public static int[] reverse(int[] list) {
-   int[] result = new int[list.length];
-
-   for (int i = 0, j = result.length - 1; i < list.length; i++, j--) {
-      result[j] = list[i];
-   }
-   return result;
-}
-```
+> 📄 **Code ví dụ:** [`examples/08-tra-ve-mang-tu-phuong-thuc.java`](examples/08-tra-ve-mang-tu-phuong-thuc.java)
 
 ## Lớp Arrays (java.util)
 
+Mục này mở "hộp công cụ có sẵn" của Java cho mảng: tìm kiếm, so sánh, đổ đầy, sắp xếp — không phải tự viết tay những thao tác quen thuộc này.
+
 Lớp `java.util.Arrays` cung cấp sẵn nhiều phương thức tĩnh để làm việc với mảng:
+
+Cách đọc nhanh danh sách dưới đây: nhóm theo việc cần làm — **tìm** (binarySearch), **so sánh** (equals), **đổ giá trị** (fill), **sắp xếp** (sort); mỗi mục ghi rõ điều kiện dùng, ví dụ binarySearch chỉ đúng khi mảng **đã sắp xếp trước**.
 
 **1	public static int binarySearch(Object[] a, Object key)**
 
@@ -140,3 +83,5 @@ Gán giá trị `val` cho **mọi** phần tử của mảng. Cũng dùng đư�
 **4	public static void sort(Object[] a)**
 
 Sắp xếp mảng theo thứ tự tăng dần theo thứ tự tự nhiên của phần tử. Cũng dùng được cho các kiểu nguyên thủy khác.
+
+> **Tóm gọn 1 câu:** Mảng là "tủ locker đánh số từ 0" — khai báo nhãn, `new` số ngăn, rồi for/foreach đi từng ngăn; việc nhàm chán nào cũng có sẵn trong lớp `Arrays`.

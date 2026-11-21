@@ -1,0 +1,20 @@
+# application.yml cho API Gateway
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://USER-SERVICE         # lb = load balanced
+          predicates:
+            - Path=/api/users/**
+        - id: task-service
+          uri: lb://TASK-SERVICE
+          predicates:
+            - Path=/api/tasks/**
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin

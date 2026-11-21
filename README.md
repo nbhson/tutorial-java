@@ -2,7 +2,13 @@
 
 > Chào bạn! Đây là kho tài liệu học **Java** từ cơ bản đến nâng cao, được viết bằng **tiếng Việt** với code mẫu rõ ràng, bài tập thực hành và minh họa trực quan. Dù bạn mới bắt đầu hay đã có kinh nghiệm, bạn sẽ tìm được lộ trình phù hợp để nâng cấp kỹ năng Java của mình.
 
+Hãy hình dung khóa học này như một **khóa học lái xe**: Phần 0 là học lý thuyết giao thông, Phần 1-2 là tập lái trong sân, Phần 3-4 là lái ngoài đường thực (OOP, thiết kế), Phần 5 là chạy xe thật trong thành phố (Spring Boot), và Phần 6 là đua đường trường (nâng cao).
+
+> **Tóm gọn 1 câu:** Đây là lộ trình Java 7 phần — từ cài máy đến Spring Boot 4.x và JVM nâng cao — đọc xuống dưới, code theo tay.
+
 ## ⚡ Công nghệ phiên bản hiện tại (cập nhật 28/10/2026)
+
+Mục này là "bảng niêm yết giá" của hệ sinh thái tại thời điểm cập nhật — đối chiếu khi project của bạn báo lỗi version.
 
 | Công nghệ | Phiên bản | Ghi chú |
 |-----------|-----------|---------|
@@ -15,9 +21,13 @@
 | Servlet | **6.1** | Tomcat 11 / Jetty 12.1+ |
 | Maven / Gradle | Cập nhật mới nhất | Build tool hiện đại |
 
+> **Cách đọc bảng này:** cột "Phiên bản" là con số chuẩn của toàn khóa học — khi cài đặt hay fix lỗi tương thích, đối chiếu project của bạn với cột này trước tiên; cột "Ghi chú" nói nhanh bối cảnh của từng dòng.
+
 ---
 
 ## 📚 Cấu trúc toàn khóa học
+
+Mục này là "bản đồ tuyến đường" cả khóa học: 7 phần nối tiếp nhau, đọc theo thứ tự để kiến thức móc vào nhau tự nhiên.
 
 Khoá học chia thành **7 phần chính**, đọc theo thứ tự từ trên xuống dưới:
 
@@ -171,6 +181,8 @@ Các chủ đề nâng cao dành cho lập trình viên muốn đào sâu:
 
 ## 🗺️ Đọc theo lộ trình học đề xuất
 
+Mục này là "chỉ dẫn của huấn luyện viên": gợi ý thứ tự và cách luyện để mỗi bước học đều chắc trước khi sang bước sau.
+
 ```
 Bước 1:  0_setup          → Cài đặt JDK, IDE
 Bước 2:  1_basic-part-1   → Cú pháp cơ bản
@@ -181,11 +193,13 @@ Bước 6:  5_api_frameworks → Xây ứng dụng thực tế với Spring Boot
 Bước 7:  6_advanced       → Những thứ chỉ senior mới hỏi
 ```
 
-Mỗi bài đều có **README.md** (lý thuyết) và **code mẫu** chạy trực tiếp được. Đọc lý thuyết → chạy code → thử thay đổi → so sánh kết quả.
+Mỗi bài đều có **README.md** (lý thuyết) và **code mẫu** chạy trực tiếp được. Đọc lý thuyết → chạy code → thử thay đổi → so sánh kết quả. Đây chính là "vòng lặp luyện tập" — giống tập gym: xem clip không tăng cơ, phải nâng tạ thật.
 
 ---
 
 ## 🔗 Nguồn tham khảo chính thức
+
+Mục này là "sổ địa chỉ tin cậy" khi bạn cần tra sâu hơn kho tài liệu này.
 
 - [Oracle Java Documentation](https://docs.oracle.com/en/java/)
 - [Spring Boot Reference](https://docs.spring.io/spring-boot/index.html)

@@ -2,9 +2,15 @@
 
 ## Exception trong Java là gì?
 
+Vậy làm sao chương trình "gặp sự cố" và ta ứng phó ra sao? Đó chính là chủ đề exception của bài này — đọc xong bạn sẽ biết exception là gì, chia làm mấy nhóm, và Java cho ta những công cụ nào để xử lý.
+
 `Exception` (ngoại lệ) là một sự cố phát sinh **trong quá trình chạy chương trình**. Khi exception xảy ra, luồng thực thi bình thường bị gián đoạn và chương trình có thể kết thúc bất thường — điều này không được khuyến khích, vì vậy bạn cần **xử lý (handle)** chúng.
 
+Hãy hình dung exception giống như xe đang chạy đột nhiên gặp gạch chắn đường: nếu không có lối tắt, cả chuyến xe (chương trình) dừng ngay tại chỗ. Xử lý exception chính là bố trí sẵn lối vòng để xe chạy tiếp.
+
 ## Vì sao exception xảy ra?
+
+Mục này liệt kê mấy tình huống đời thường hay sinh ra exception — đọc để có trực giác trước khi vào phân loại kỹ thuật bên dưới.
 
 Exception có thể xảy ra vì nhiều lý do khác nhau. Một số tình huống điển hình:
 
@@ -16,32 +22,21 @@ Exception có thể xảy ra vì nhiều lý do khác nhau. Một số tình hu�
 
 ## Các nhóm exception trong Java
 
+Mục này nói về cách Java phân loại exception thành 3 nhóm — đọc để biết nhóm nào compiler "ép" xử lý, nhóm nào không, vì cách đối phó mỗi nhóm là khác nhau.
+
 Java chia exception thành 3 nhóm chính:
 
 - **Checked exceptions**
 - **Unchecked exceptions**
 - **Errors**
 
+Ví von: checked exception là "lời nhắc trước deadline" (compiler nhắc trước khi chạy), unchecked là "chấn thương ngoài sân" (xảy ra lúc chạy mới biết), còn Error là "động đất" — không phải lỗi của bạn và cũng không có gì để sửa.
+
 ### Checked Exceptions
 
-`Checked exception` là exception được **compiler kiểm tra ngay lúc biên dịch** (nên còn gọi là compile-time exception). **Bạn không thể bỏ qua chúng — bắt buộc phải bắt (try/catch) hoặc khai báo ném ra (throws).**
+`Checked exception` là exception được **compiler kiểm tra ngay lúc biên dịch** (nên còn gọi là compile-time exception). **Bạn không thể bỏ qua chúng — bắt buộc phải bắt (try/catch) hoặc khai báo ném ra (throws).** Giống như nhà xe bắt buộc bạn mua vé trước khi vào: không mua là không cho qua.
 
-```java
-import java.io.File;
-import java.io.FileReader;
-
-public class FilenotFound_Demo {
-
-   public static void main(String args[]) {		
-      File file = new File("E://file.txt");
-      FileReader fr = new FileReader(file); 
-   }
-}
-
-// C:\>javac FilenotFound_Demo.java
-// FilenotFound_Demo.java:8: error: unreported exception FileNotFoundException; must be caught or declared to be thrown
-//       FileReader fr = new FileReader(file);
-```
+> 📄 **Code ví dụ:** [`examples/01-checked-exceptions.java`](examples/01-checked-exceptions.java)
 
 Compiler báo lỗi vì `FileReader` có thể ném `FileNotFoundException` mà bạn chưa xử lý.
 
@@ -49,21 +44,15 @@ Compiler báo lỗi vì `FileReader` có thể ném `FileNotFoundException` mà 
 
 - `Unchecked exception` là exception xảy ra tại **thời điểm chạy (runtime)**.
 - Thường do lỗi lập trình: sai logic, dùng API không đúng cách.
-- **Compiler bỏ qua, không ép bạn xử lý.**
+- **Compiler bỏ qua, không ép bạn xử lý.** Compiler tin bạn "tự biết đường" — như cha mẹ không nhắc bạn thở, nhưng bạn quên thở thì vẫn ngất.
 
-```java
-public class Unchecked_Demo {
-   
-   public static void main(String args[]) {
-      int num[] = {1, 2, 3, 4};
-      System.out.println(num[5]);   // ArrayIndexOutOfBoundsException lúc chạy
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-unchecked-exceptions.java`](examples/02-unchecked-exceptions.java)
+
+> **Tóm gọn 1 câu:** Checked là compiler nhắc trước, unchecked là lúc chạy mới "tai nạn", Error là sự cố ngoài tầm với — hiểu nhóm nào bạn mới biết cách phòng.
 
 ### Errors
 
-Đây **không phải exception** mà là những vấn đề phát sinh ngoài tầm kiểm soát của người dùng hoặc lập trình viên (ví dụ: `StackOverflowError`, `OutOfMemoryError`). Lỗi thường bị bỏ qua trong mã của bạn vì bạn hiếm khi có thể làm gì khi chúng xảy ra. Chúng cũng chỉ bộc lộ lúc chạy chương trình, không bị compiler kiểm tra.
+Đây **không phải exception** mà là những vấn đề phát sinh ngoài tầm kiểm soát của người dùng hoặc lập trình viên (ví dụ: `StackOverflowError`, `OutOfMemoryError`) — kiểu mất điện cả khu phố, bạn không thể "catch" cho có điện. Lỗi thường bị bỏ qua trong mã của bạn vì bạn hiếm khi có thể làm gì khi chúng xảy ra. Chúng cũng chỉ bộc lộ lúc chạy chương trình, không bị compiler kiểm tra.
 
 > Trong Java, quá trình **biên dịch (compilation)** chạy trước quá trình **thực thi (execution)**: mã nguồn được dịch thành bytecode, sau đó JVM thực thi bytecode đó.
 
@@ -71,121 +60,40 @@ public class Unchecked_Demo {
 
 ## Xử lý exception trong Java
 
+Mục này giới thiệu hộp công cụ xử lý exception của Java: try/catch để bắt, try-with-resources để tự đóng tài nguyên, và throw/throws để ném — đọc để định hướng trước khi đi sâu từng bài riêng.
+
 ### Try/catch
 
-Bạn bắt exception bằng cặp từ khóa `try` và `catch`. Khối try/catch đặt **bao quanh đoạn code có thể gây exception** — đoạn code này được gọi là *protected code*:
+Bạn bắt exception bằng cặp từ khóa `try` và `catch`. Hãy nghĩ như đội cứu hộ đứng canh: `try` là khu vực "nếu có sự cố cứ hô", còn `catch` là đội được cử đến xử lý. Khối try/catch đặt **bao quanh đoạn code có thể gây exception** — đoạn code này được gọi là *protected code*:
 
-```java
-try {
-   // Protected code
-} catch (ExceptionName e1) {
-   // Catch block
-}
-
-// Multiple Catch Blocks
-try {
-   // Protected code
-} catch (ExceptionType1 e1) {
-   // Catch block
-} catch (ExceptionType2 e2) {
-   // Catch block
-} catch (ExceptionType3 e3) {
-   // Catch block
-} finally {
-   // The finally block always executes.
-}
-
-// example
-int a[] = new int[2];
-try {
-   System.out.println("Access element three :" + a[3]);
-} catch (ArrayIndexOutOfBoundsException e) {
-   System.out.println("Exception thrown  :" + e);
-} finally {
-   a[0] = 6;
-   System.out.println("First element value: " + a[0]);
-   System.out.println("The finally statement is executed");
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-try-catch.java`](examples/03-try-catch.java)
 
 Chi tiết từng dạng bạn xem ở các bài riêng: `2_try-catch-block`, `4_multiple-catch-blocks`, `6_finally-block`.
 
 ### Try-with-resources
 
-Thông thường, khi dùng tài nguyên như stream, connection..., bạn phải đóng chúng một cách tường minh trong khối `finally`. Trong chương trình sau, chúng ta đọc dữ liệu từ file bằng `FileReader` rồi đóng nó trong `finally`:
+Thông thường, khi dùng tài nguyên như stream, connection..., bạn phải đóng chúng một cách tường minh trong khối `finally` — giống như nhớ khóa cửa mỗi lần ra khỏi nhà. Trong chương trình sau, chúng ta đọc dữ liệu từ file bằng `FileReader` rồi đóng nó trong `finally`:
 
-```java
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+> 📄 **Code ví dụ:** [`examples/04-try-with-resources.java`](examples/04-try-with-resources.java)
 
-public class ReadData_Demo {
+Từ Java 7, cú pháp **try-with-resources** cho phép tự động đóng tài nguyên khi ra khỏi khối `try` — như cửa tự động khóa sau khi bạn bước ra, không cần nhớ gì cả:
 
-   public static void main(String args[]) {
-      FileReader fr = null;		
-      try {
-         File file = new File("file.txt");
-         fr = new FileReader(file); char [] a = new char[50];
-         fr.read(a);   // reads the content to the array
-         for(char c : a)
-         System.out.print(c);   // prints the characters one by one
-      } catch (IOException e) {
-         e.printStackTrace();
-      }finally {
-         try {
-            fr.close();
-         } catch (IOException ex) {		
-            ex.printStackTrace();
-         }
-      }
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-try-with-resources.java`](examples/05-try-with-resources.java)
 
-Từ Java 7, cú pháp **try-with-resources** cho phép tự động đóng tài nguyên khi ra khỏi khối `try`:
+> 📄 **Code ví dụ:** [`examples/06-try-with-resources.java`](examples/06-try-with-resources.java)
 
-```java
-try(FileReader fr = new FileReader("file path")) {
-   // use the resource
-   } catch (IOException e) {
-      // body of catch 
-   }
-```
-
-```java
-import java.io.FileReader;
-import java.io.IOException;
-
-public class Try_withDemo {
-
-   public static void main(String args[]) {
-      try(FileReader fr = new FileReader("E://file.txt")) {
-         char [] a = new char[50];
-         fr.read(a);   // reads the contentto the array
-         for(char c : a)
-         System.out.print(c);   // prints the characters one by one
-      } catch (IOException e) {
-         e.printStackTrace();
-      }
-   }
-}
-```
+> **Tóm gọn 1 câu:** Java cho 3 công cụ xử lý exception: try/catch là đội cứu hộ, try-with-resources là cửa tự khóa, còn throw/throws là còi báo động bạn chủ động gióng lên.
 
 ### Throws / Throw
 
-- `throw` — ném một exception cụ thể ra khỏi phương thức.
-- `throws` — khai báo rằng phương thức này có thể ném loại exception đó, đẩy việc xử lý cho nơi gọi.
+- `throw` — ném một exception cụ thể ra khỏi phương thức, giống bấm chuông báo cháy khi phát hiện sự cố.
+- `throws` — khai báo rằng phương thức này có thể ném loại exception đó, đẩy việc xử lý cho nơi gọi — như dán biển "khu vực này có thể cháy" để ai vào thì tự chuẩn bị bình chữa cháy.
 
-```java
-public void divideNumbers(int a, int b) throws ArithmeticException {
-    if (b == 0) {
-        throw new ArithmeticException("Không thể chia cho 0");
-    }
-    int result = a / b;
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-throws-throw.java`](examples/07-throws-throw.java)
 
 ## Các phương thức quan trọng của lớp Exception
+
+Mục này liệt kê các phương thức bạn dùng để "hỏi chuyện" một exception: nó nói gì, do đâu, và nó đi qua những đâu. Quen thuộc nhất là `getMessage()` khi in log lỗi.
 
 | # | Phương thức | Mô tả |
 |---|-------------|-------|
@@ -196,10 +104,21 @@ public void divideNumbers(int a, int b) throws ArithmeticException {
 | 5 | `public StackTraceElement[] getStackTrace()` | Trả về mảng các phần tử trong stack trace (phần tử 0 là đỉnh ngăn xếp gọi hàm) |
 | 6 | `public Throwable fillInStackTrace()` | Ghi đè stack trace của đối tượng này bằng stack trace hiện tại |
 
+> **Cách đọc bảng này:** mỗi dòng là một phương thức của đối tượng exception; cột **Mô tả** cho biết "hỏi được gì". Lúc debug, hãy đọc theo thứ tự nhu cầu: muốn biết lỗi là gì → dòng 1, muốn biết do đâu → dòng 2, muốn biết lỗi đi qua những hàm nào → dòng 4–5.
+
+> **Tóm gọn 1 câu:** Đối tượng exception là "hộp đen" của sự cố — `getMessage`, `getCause` và `printStackTrace` là ba nút ghi âm bạn mở lên để điều tra.
+
 ## Tóm tắt
+
+Mục này gom cả bài thành một bảng 3 dòng để ôn nhanh trước khi sang các bài chi tiết.
 
 | Nhóm | Thời điểm phát hiện | Bắt buộc xử lý? | Ví dụ |
 |------|--------------------|-----------------|-------|
 | Checked | Lúc biên dịch | ✅ Có (`try/catch` hoặc `throws`) | `IOException`, `SQLException` |
 | Unchecked | Lúc chạy | ❌ Không ép | `NullPointerException`, `ArithmeticException` |
 | Error | Lúc chạy | Không xử lý được | `StackOverflowError`, `OutOfMemoryError` |
+
+> **Cách đọc bảng này:** đọc theo từng dòng là một nhóm exception, so sánh cột "Thời điểm phát hiện" và "Bắt buộc xử lý?" giữa các dòng để thấy khác biệt cốt lõi: chỉ có Checked là compiler ép xử lý.
+
+> **Tóm gọn 1 câu:** Exception là sự cố giữa chừng — checked phải xử lý trước, unchecked nổ lúc chạy, Error thì đành chịu; việc của bạn là bắt bằng try/catch hoặc khai báo bằng throws.
+

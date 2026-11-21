@@ -1,0 +1,8 @@
+# application.yml cho Eureka Server
+server:
+  port: 8761
+
+eureka:
+  client:
+    register-with-eureka: false   # Server không tự đăng ký
+    fetch-registry: false          # Server không cần fetch registry

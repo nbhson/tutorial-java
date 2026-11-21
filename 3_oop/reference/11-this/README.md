@@ -2,86 +2,23 @@
 
 ## this Keyword in Java Class Methods
 
+Mục này giải thích từ khóa `this` — "tự xưng danh" của object: cách object tự nhắc tên chính mình trong phương thức để phân biệt với các biến trùng tên.
+
 `this` is a keyword in Java which is used as a reference to the object of the current class, with in an instance method or a constructor. Using `this` you can refer the members of a class such as constructors, variables and methods.
+
+Ví von: trong một phòng họp có hai người cùng tên "Hùng", thì người đang trình bày phải nói "Tôi, Hùng, thuộc phòng A" để mọi người biết đang nói đến ai — `this` chính là chữ "tôi" trong code.
 
 > Note − The keyword this is used only within instance methods or constructors
 
 In general, the keyword this is used to:
 - Phân biệt các biến thể hiện với các biến cục bộ nếu chúng có cùng tên, trong một hàm tạo hoặc một phương thức.
 
-```java
-class Student {
-   int age;   
-   Student(int age) {
-      this.age = age;	
-   }
-}
-```
-- Gọi một kiểu constructor (constructor có tham số hoặc default) from other in a class. Nó được gọi là lệnh gọi constructor rõ ràng.
-```java
-class Student {
-   int age
-   Student() {
-      this(20);
-   }
-   
-   Student(int age) {
-      this.age = age;	
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-this-keyword-in-java-class-methods.java`](examples/01-this-keyword-in-java-class-methods.java)
+- Gọi một kiểu constructor (constructor có tham số hoặc default) from other in a class. Nó được gọi là lệnh gọi constructor rõ ràng. Ví von: như nhân viên mới ghi "hồ sơ của tôi xin copy nguyên bản hồ sơ đã lập hôm qua" — constructor này nhờ constructor kia lập sẵn dữ liệu thay vì làm lại.
+> 📄 **Code ví dụ:** [`examples/02-this-keyword-in-java-class-methods.java`](examples/02-this-keyword-in-java-class-methods.java)
 
 Example: Using this Keyword in Java Class Methods
 
-```java
-package com.tutorialspoint;
+> 📄 **Code ví dụ:** [`examples/03-this-keyword-in-java-class-methods.java`](examples/03-this-keyword-in-java-class-methods.java)
 
-public class Tester {
-   // Instance variable num
-   int num = 10;
-	
-   Tester() {
-      System.out.println("This is an example program on keyword this");	
-   }
-
-   Tester(int num) {
-      // Invoking the default constructor
-      this();
-      
-      // Assigning the local variable num to the instance variable num
-      this.num = num;	   
-   }
-   
-   public void greet() {
-      System.out.println("Hi Welcome to Tutorialspoint");
-   }
-      
-   public void print() {
-      // Local variable num
-      int num = 20;
-      
-      // Printing the local variable
-      System.out.println("value of local variable num is : "+num);
-      
-      // Printing the instance variable
-      System.out.println("value of instance variable num is : "+this.num);
-      
-      // Invoking the greet method of a class
-      this.greet();     
-   }
-   
-   public static void main(String[] args) {
-      // Instantiating the class
-      Tester obj1 = new Tester();
-      
-      // Invoking the print method
-      obj1.print();
-	  
-      // Passing a new value to the num variable through parametrized constructor
-      Tester obj2 = new Tester(30);
-      
-      // Invoking the print method again
-      obj2.print(); 
-   }
-}
-```
+> **Tóm gọn 1 câu:** `this` là chữ "tôi" của object — dùng để tự phân biệt khi trùng tên, hoặc để nhờ constructor khác "làm thay" một phần việc.

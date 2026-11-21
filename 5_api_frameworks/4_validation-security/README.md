@@ -18,16 +18,15 @@
 
 Validation là quá trình kiểm tra dữ liệu đầu vào có hợp lệ hay không trước khi xử lý. Spring Boot tích hợp **Jakarta Bean Validation 3.x** (JSR 380) để validate dữ liệu một cách khai báo (declarative) qua annotations.
 
+Hãy hình dung validation như **cửa kiểm soát hành lý ở sân bay**: vali (dữ liệu) phải qua bàn soi trước khi lên máy bay (xử lý nghiệp vụ) — đồ cấm (email sai, tuổi âm) bị chặn ngay cửa, không để bay được nữa mới phát hiện.
+
 > **Phiên bản**: Jakarta Bean Validation 3.1 (đi kèm Spring Boot 4.x), yêu cầu Java 17+.
+
+> **Tóm gọn 1 câu:** Validation là "chốt cửa từ bên ngoài": dữ liệu bẩn bị chặn trước khi vào logic nghiệp vụ, và bạn khai báo luật bằng annotation thay vì if-else.
 
 ### Thêm Dependency
 
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-validation</artifactId>
-</dependency>
-```
+> 📄 **Code ví dụ:** [`examples/01-them-dependency.xml`](examples/01-them-dependency.xml)
 
 ### Các Annotation Validation phổ biến
 
@@ -44,106 +43,25 @@ Validation là quá trình kiểm tra dữ liệu đầu vào có hợp lệ hay
 | `@Past` / `@Future` | Thời gian quá khứ/tương lai | `@Past` |
 | `@AssertTrue` | Phải là true | `@AssertTrue` |
 
+> **Cách đọc bảng này:** đây là "menu món ăn" của validation — đọc cột "Mô tả" để chọn món, cột "Ví dụ" là cách gọi đúng cú pháp; ba dòng đầu (`@NotNull`/`@NotBlank`/`@NotEmpty`) dễ nhầm nhất, phân biệt bằng chỗ áp dụng (mọi kiểu / chỉ String / String + Collection).
+
 ### Ví dụ: DTO với Validation
 
-```java
-package com.example.demo.dto;
-
-import jakarta.validation.constraints.*;
-import java.time.LocalDate;
-
-public record RegisterRequest(
-    @NotBlank(message = "Tên không được để trống")
-    @Size(min = 3, max = 50, message = "Tên phải từ 3 đến 50 ký tự")
-    String name,
-
-    @NotBlank(message = "Email không được để trống")
-    @Email(message = "Email không đúng định dạng")
-    String email,
-
-    @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 8, message = "Mật khẩu tối thiểu 8 ký tự")
-    @Pattern(
-        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$",
-        message = "Mật khẩu phải chứa chữ thường, chữ hoa và số"
-    )
-    String password,
-
-    @NotNull(message = "Ngày sinh không được để trống")
-    @Past(message = "Ngày sinh phải trong quá khứ")
-    LocalDate birthDate,
-
-    @Min(value = 18, message = "Tuổi tối thiểu 18")
-    @Max(value = 100, message = "Tuổi tối đa 100")
-    Integer age,
-
-    @Pattern(
-        regexp = "^[0-9]{10,11}$",
-        message = "Số điện thoại phải có 10-11 chữ số"
-    )
-    String phone
-) {}
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-dto-voi-validation.java`](examples/02-vi-du-dto-voi-validation.java)
 
 ### Áp dụng Validation trong Controller
 
-```java
-@RestController
-@RequestMapping("/api/auth")
-public class AuthController {
-
-    @PostMapping("/register")
-    public ResponseEntity<String> register(
-            @Valid @RequestBody RegisterRequest request) {
-        // Nếu validation fail, MethodArgumentNotValidException sẽ được throw
-        // và GlobalExceptionHandler sẽ xử lý
-        return ResponseEntity.ok("Đăng ký thành công: " + request.email());
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-ap-dung-validation-trong-controller.java`](examples/03-ap-dung-validation-trong-controller.java)
 
 ### Custom Validation
 
-```java
-// Tạo annotation tùy chỉnh
-package com.example.demo.validation;
+> 📄 **Code ví dụ:** [`examples/04-custom-validation.java`](examples/04-custom-validation.java)
 
-import jakarta.validation.Constraint;
-import jakarta.validation.Payload;
-import java.lang.annotation.*;
-
-@Documented
-@Constraint(validatedBy = StrongPasswordValidator.class)
-@Target({ElementType.FIELD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface StrongPassword {
-    String message() default "Mật khẩu không đủ mạnh";
-    Class<?>[] groups() default {};
-    Class<? extends Payload>[] payload() default {};
-}
-```
-
-```java
-// Implement Validator
-package com.example.demo.validation;
-
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
-
-public class StrongPasswordValidator implements ConstraintValidator<StrongPassword, String> {
-
-    @Override
-    public boolean isValid(String password, ConstraintValidatorContext context) {
-        if (password == null || password.isEmpty()) {
-            return false;
-        }
-        // Mật khẩu phải có ít nhất 8 ký tự, 1 chữ hoa, 1 chữ thường, 1 số, 1 ký tự đặc biệt
-        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-custom-validation.java`](examples/05-custom-validation.java)
 
 ## Phần 2: Spring Security và JWT
+
+Mục này chuyển sang "hệ thống an ninh tòa nhà": ai được vào (xác thực), vào rồi được lên tầng nào (phân quyền), và vé điện tử JWT giữ cửa ra vào.
 
 ### Spring Security là gì?
 
@@ -155,6 +73,8 @@ public class StrongPasswordValidator implements ConstraintValidator<StrongPasswo
 > **Phiên bản**: Spring Security 7.x (đi kèm Spring Boot 4.x)
 
 ### Cơ chế JWT (JSON Web Token)
+
+Sơ đồ dưới đây mô tả cả "hai hồi kịch" của JWT: hồi một là login lấy vé, hồi hai là xưng danh bằng vé không cần tra database lại.
 
 ```
 ┌─────────────┐      ┌──────────────┐      ┌─────────────┐
@@ -182,295 +102,31 @@ public class StrongPasswordValidator implements ConstraintValidator<StrongPasswo
 
 ### Thêm Dependencies
 
-```xml
-<dependencies>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-    
-    <!-- JWT -->
-    <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt-api</artifactId>
-        <version>0.12.6</version>
-    </dependency>
-    <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt-impl</artifactId>
-        <version>0.12.6</version>
-        <scope>runtime</scope>
-    </dependency>
-    <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt-jackson</artifactId>
-        <version>0.12.6</version>
-        <scope>runtime</scope>
-    </dependency>
-</dependencies>
-```
+> 📄 **Code ví dụ:** [`examples/06-them-dependencies.xml`](examples/06-them-dependencies.xml)
 
 ### Cấu hình Security Filter Chain
 
-```java
-package com.example.demo.config;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig {
-
-    private final JwtAuthenticationFilter jwtAuthFilter;
-
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())  // Disable CSRF (chỉ dùng với REST API + JWT)
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()      // Public endpoints
-                .requestMatchers("/h2-console/**").permitAll()    // H2 Console
-                .requestMatchers("/api/admin/**").hasRole("ADMIN") // Chỉ ADMIN
-                .anyRequest().authenticated()                     // Còn lại phải đăng nhập
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // Không dùng session
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/07-cau-hinh-security-filter-chain.java`](examples/07-cau-hinh-security-filter-chain.java)
 
 ### Tạo JWT Service
 
-```java
-package com.example.demo.security;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
-@Service
-public class JwtService {
-
-    @Value("${jwt.secret}")           // Tự cấu hình trong application.yml
-    private String secretKey;
-
-    @Value("${jwt.expiration:86400000}")  // 24 hours in ms
-    private long jwtExpiration;
-
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes());
-    }
-
-    // ============ Generate Token ============
-    public String generateToken(String email, String role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role);
-
-        return Jwts.builder()
-            .claims(claims)
-            .subject(email)
-            .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
-            .signWith(getSigningKey())
-            .compact();
-    }
-
-    // ============ Extract Data from Token ============
-    public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public String extractRole(String token) {
-        return extractClaim(token, claims -> claims.get("role", String.class));
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-            .verifyWith(getSigningKey())
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
-    }
-
-    // ============ Validate Token ============
-    public boolean isTokenValid(String token, String email) {
-        final String tokenEmail = extractEmail(token);
-        return tokenEmail.equals(email) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/08-tao-jwt-service.java`](examples/08-tao-jwt-service.java)
 
 ### JWT Authentication Filter
 
-```java
-package com.example.demo.security;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.List;
-
-@Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
-    private final JwtService jwtService;
-
-    public JwtAuthenticationFilter(JwtService jwtService) {
-        this.jwtService = jwtService;
-    }
-
-    @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
-
-        final String authHeader = request.getHeader("Authorization");
-
-        // Không có token hoặc sai format → pass through
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        try {
-            final String jwt = authHeader.substring(7);  // Bỏ "Bearer "
-            final String email = jwtService.extractEmail(jwt);
-            final String role = jwtService.extractRole(jwt);
-
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                if (!jwtService.isTokenValid(jwt, email)) {
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-
-                List<SimpleGrantedAuthority> authorities = 
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role));
-
-                UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(email, null, authorities);
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
-        } catch (Exception e) {
-            // Token invalid - tiếp tục filter chain (không set authentication)
-            logger.error("JWT validation error: " + e.getMessage());
-        }
-
-        filterChain.doFilter(request, response);
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/09-jwt-authentication-filter.java`](examples/09-jwt-authentication-filter.java)
 
 ### Auth Controller (Login/Register)
 
-```java
-package com.example.demo.controller;
-
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.security.JwtService;
-import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
-
-@RestController
-@RequestMapping("/api/auth")
-public class AuthController {
-
-    private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
-
-    public AuthController(JwtService jwtService, PasswordEncoder passwordEncoder) {
-        this.jwtService = jwtService;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(
-            @RequestBody Map<String, String> loginRequest) {
-        String email = loginRequest.get("email");
-        String password = loginRequest.get("password");
-
-        // Trong thực tế: query user từ database và so sánh password
-        // Ví dụ đơn giản:
-        if ("user@example.com".equals(email) && "Password123".equals(password)) {
-            String token = jwtService.generateToken(email, "USER");
-            return ResponseEntity.ok(Map.of("token", token));
-        }
-
-        return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
-        // Hash password trước khi lưu
-        String hashedPassword = passwordEncoder.encode(request.password());
-        // Lưu user vào database...
-        return ResponseEntity.ok("Đăng ký thành công");
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/10-auth-controller-login-register.java`](examples/10-auth-controller-login-register.java)
 
 ### application.yml cho JWT
 
-```yaml
-jwt:
-  secret: my-very-long-secret-key-at-least-32-characters-for-hs256
-  expiration: 86400000  # 24 hours in milliseconds
-```
+> 📄 **Code ví dụ:** [`examples/11-application-yml-cho-jwt.yaml`](examples/11-application-yml-cho-jwt.yaml)
 
 ## Best Practices
+
+Mục này là "nội quy an ninh": vài thói quen sống còn để validation và security không thành hình thức.
 
 ### Validation
 1. **Validate ở cả 2 tầng**: Client-side (UX) và Server-side (security)
@@ -485,6 +141,8 @@ jwt:
 4. **Token expiration ngắn** (15 phút - 1 giờ) + Refresh Token
 5. **Rate limiting** để chống brute-force attacks
 6. **Validate role/permission** ở cả Controller và Service layer
+
+> **Tóm gọn 1 câu:** Security là "két sắt nhiều lớp": hash mật khẩu, vé JWT ngắn hạn, HTTPS, giới hạn tốc độ — thiếu một lớp là cả tòa nhà rủi ro.
 
 ## Tài liệu tham khảo
 

@@ -1,122 +1,54 @@
 # Java - Files and I/O
 
-Gói java.io chứa hầu như mọi lớp bạn có thể cần để thực hiện nhập và xuất (I/O) trong Java.
+Gói java.io chứa hầu như mọi lớp bạn có thể cần để thực hiện nhập và xuất (I/O) trong Java. Hãy hình dung I/O như hệ thống ống nước của chương trình: nước (dữ liệu) chảy từ đâu vào, chảy ra đâu — và bài này giới thiệu từng loại "ống".
 
 ## Stream
 
+Mục này định nghĩa khái niệm nền của cả bài: stream — dòng dữ liệu chảy qua chương trình của bạn.
+
 Một luồng có thể được định nghĩa là một chuỗi dữ liệu. Có hai loại Luồng
-- `InPutStream` − được sử dụng để đọc dữ liệu từ một nguồn. 
+- `InPutStream` − được sử dụng để đọc dữ liệu từ một nguồn.
 - `OutPutStream` − được sử dụng để ghi dữ liệu vào một đích.
+
+Ví von: stream chính là ống nước — `InputStream` là ống nước chảy **vào** nhà (đọc), `OutPutStream` là ống thải ra ngoài (ghi). Đứng ở góc nhìn chương trình: nguồn bên ngoài chảy vào, hoặc chương trình đẩy ra.
 
 ![alt text](image.png)
 
 ## FileInputStream/FileOutputStream (Byte Streams)
 
+Mục này nói về loại ống chuyên chở **byte thô** — đọc/ghi từng khối 8 bit, phù hợp dữ liệu nhị phân như ảnh, âm thanh.
+
 `Java Byte Streams` được sử dụng để thực hiện nhập và xuất các byte 8 bit. Mặc dù có nhiều lớp liên quan đến Byte Streams nhưng các lớp được sử dụng thường xuyên nhất là `FileInputStream` và `FileOutputStream`. Sau đây là một ví dụ sử dụng hai lớp này để sao chép tệp đầu vào vào tệp đầu ra −
 
-```java
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-public class CopyFile {
-
-   public static void main(String args[]) throws IOException {  
-      FileInputStream in = null;
-      FileOutputStream out = null;
-
-      try {
-         in = new FileInputStream("input.txt");
-         out = new FileOutputStream("output.txt");
-         
-         int c;
-         while ((c = in.read()) != -1) {
-            out.write(c);
-         }
-      }finally {
-         if (in != null) {
-            in.close();
-         }
-         if (out != null) {
-            out.close();
-         }
-      }
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-fileinputstream-fileoutputstream-byte-streams.java`](examples/01-fileinputstream-fileoutputstream-byte-streams.java)
 
 ## FileReader/FileWriter (Character Streams)
+
+Mục này nói về loại ống chuyên chở **ký tự** — hiểu bảng mã Unicode nên đọc ghi tiếng Việt, tiếng Nhật không bị "vỡ chữ".
 
 Java` Byte streams` are used to perform input and output of **8-bit** bytes, whereas Java `Character streams` are used to perform input and output for **16-bit unicode**.
 
 Though there are many classes related to character streams but the most frequently used classes are, `FileReader` and `FileWriter`.
 
-```java
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+Nói ngắn gọn: byte stream chở "thùng hàng không hỏi nội dung", character stream chở "đúng từng ký tự đã giải mã" — đọc file chữ thì dùng character stream để không phải tự xử lý encoding.
 
-public class CopyFile {
+> 📄 **Code ví dụ:** [`examples/02-filereader-filewriter-character-streams.java`](examples/02-filereader-filewriter-character-streams.java)
 
-   public static void main(String args[]) throws IOException {
-      FileReader in = null;
-      FileWriter out = null;
+> **Tóm gọn 1 câu:** Byte stream chở 8-bit thô cho dữ liệu nhị phân, character stream chở 16-bit Unicode cho văn bản — chọn ống theo "đơn hàng" bạn vận chuyển.
 
-      try {
-         in = new FileReader("input.txt");
-         out = new FileWriter("output.txt");
-         
-         int c;
-         while ((c = in.read()) != -1) {
-            out.write(c);
-         }
-      }finally {
-         if (in != null) {
-            in.close();
-         }
-         if (out != null) {
-            out.close();
-         }
-      }
-   }
-}
-```
+## BufferedInputStream / BufferedOutputStream
 
-
-## BufferedInputStream / BufferedOutputStream 
+Mục này nói về "ống có bể chứa trung gian" — mẹo tăng tốc quen thuộc khi đọc ghi dữ liệu lớn.
 
 là hai lớp trong Java được sử dụng để cải thiện hiệu suất đọc và ghi dữ liệu từ và đến các luồng (streams) như `FileInputStream` và `FileOutputStream` bằng cách sử dụng bộ đệm (buffer).
 
-```java
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+Ví von: thay vì múc nước từng cốc một từ giếng (mỗi lần múc là một lần đi xuống giếng), bạn đặt một cái xô trung gian — múc đầy xô một lần, rồi múc từ xô ra cốc thoải mái. Buffer chính là cái xô đó: giảm số lần "xuống giếng" (tác vụ đĩa tốn kém).
 
-public class FileCopy {
-    public static void main(String[] args) {
-        String sourceFile = "source.txt";
-        String destinationFile = "destination.txt";
-
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
-             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destinationFile))) {
-
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = bis.read(buffer)) != -1) {
-                bos.write(buffer, 0, bytesRead);
-            }
-
-            System.out.println("File copied successfully.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-bufferedinputstream-bufferedoutputstream.java`](examples/03-bufferedinputstream-bufferedoutputstream.java)
 
 ## Standard Streams
+
+Mục này giới thiệu ba ống đặc biệt có sẵn từ khi chương trình khởi động: bàn phím, màn hình và kênh báo lỗi.
 
 Tất cả các ngôn ngữ lập trình đều cung cấp hỗ trợ cho chuẩn I/O, trong đó chương trình của người dùng có thể lấy dữ liệu đầu vào từ bàn phím rồi tạo ra đầu ra trên màn hình máy tính.
 
@@ -124,25 +56,8 @@ Tất cả các ngôn ngữ lập trình đều cung cấp hỗ trợ cho chuẩ
 - `Standard Output` − This is used to output the data produced by the user's program and usually a computer screen is used for standard output stream and represented as **System.out**.
 - `Standard Error` − This is used to output the error data produced by the user's program and usually a computer screen is used for standard error stream and represented as System.err.
 
-```java
-import java.io.InputStreamReader;
-public class ReadConsole {
-   public static void main(String args[]) throws IOException {
-      InputStreamReader cin = null;
+Ví von: ba ống chuẩn như ba lối đi cố định của một quán ăn — cửa vào khách (System.in), cửa ra món (System.out), và lối thoát hiểm riêng cho sự cố (System.err) để lỗi không lẫn vào đĩa món chính.
 
-      try {
-         cin = new InputStreamReader(System.in);
-         System.out.println("Enter characters, 'q' to quit.");
-         char c;
-         do {
-            c = (char) cin.read();
-            System.out.print(c);
-         } while(c != 'q');
-      }finally {
-         if (cin != null) {
-            cin.close();
-         }
-      }
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-standard-streams.java`](examples/04-standard-streams.java)
+
+> **Tóm gọn 1 câu:** java.io cho bạn các "ống nước": byte/character stream nối tới file, buffered stream tăng tốc bằng bể chứa, còn System.in/out/err là ba ống chuẩn gắn sẵn từ lúc khởi động.

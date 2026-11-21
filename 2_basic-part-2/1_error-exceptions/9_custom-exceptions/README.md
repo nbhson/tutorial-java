@@ -14,83 +14,38 @@ Lý do exception xảy ra có thể là:
 
 ## Custom Exception là gì?
 
+Mục này trả lời vì sao exception có sẵn chưa đủ mà phải tự tạo — ngắn gọn: để lỗi nghiệp vụ của bạn "có tên riêng" thay vì loanh quanh với `RuntimeException("...")`.
+
 `Custom Exception` (ngoại lệ tự định nghĩa) là việc bạn **tạo ra lớp exception của riêng mình** để mô tả đúng lỗi của bài toán. Các exception tùy chỉnh thường kế thừa từ lớp `Exception`.
+
+Ví von: exception có sẵn như các nút báo chung trong tòa nhà (cháy, trộm), còn custom exception là hệ thống báo hiệu riêng của ngân hàng — "quầy hết tiền", "sai mã PIN" — đúng ngữ cảnh của chính mình, ai nghe cũng hiểu ngay vấn đề là gì.
 
 ## Khi nào cần custom exception?
 
 > - Để **phân loại exception** theo từng loại lỗi riêng trong dự án của bạn.
 > - Để cho phép **xử lý exception ở cấp ứng dụng** (bắt đúng loại lỗi nghiệp vụ, ví dụ "tài khoản không đủ tiền").
 
+> **Tóm gọn 1 câu:** Custom exception là "đặt tên riêng cho lỗi của bài toán bạn" — bắt được chính xác ở cấp ứng dụng thay vì đoán mò qua message.
+
 ## Tạo custom exception trong Java
+
+Mục này là phần kỹ thuật chính: extends lớp nào để ra loại exception nào, kèm hai ví dụ đối chiếu checked vs unchecked.
 
 ### Cú pháp
 
 Chỉ cần `extends` lớp `Exception` có sẵn để tạo exception của riêng bạn. **Đây được coi là checked exception.**
 
-```java
-class MyException extends Exception {
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-cu-phap.java`](examples/01-cu-phap.java)
 
 ### Quy tắc tạo custom exception
 
 - Mọi exception phải là con (trực tiếp hoặc gián tiếp) của `Throwable`.
-- Nếu muốn tạo **checked exception** (bắt buộc phải `handle` hoặc `declare` theo Handle-or-Declare Rule), hãy kế thừa lớp `Exception`.
+- Nếu muốn tạo **checked exception** (bắt buộc phải `handle` hoặc `declare` theo Handle-or-Declare Rule), hãy kế thừa lớp `Exception` — compiler sẽ "nhắc trước deadline" như checked thông thường.
 - Nếu muốn tạo **runtime exception** (không bị compiler ép xử lý), hãy kế thừa lớp `RuntimeException`.
 
 ### Ví dụ 1 — kế thừa `Exception` (checked, theo quy tắc Handle-or-Declare)
 
-```java
-package list;
-
-public class Main {
-	public static void main(String args[]) {
-		CheckingAccount c = new CheckingAccount();
-		System.out.println("Depositing $500...");
-		c.deposit(500.00);
-
-		try { // question - different between Exception & Runtime
-			System.out.println("\nWithdrawing $100...");
-			c.withdraw(100.00);
-			System.out.println("\nWithdrawing $600...");
-			c.withdraw(600.00);
-		} catch (InsufficientFundsException e) {
-			System.out.println("Sorry, but you are short $" + e.getAmount());
-			e.printStackTrace();
-		}
-	}
-
-}
-
-class CheckingAccount {
-	private double balance;
-
-	public void deposit(double amount) {
-		balance += amount;
-	}
-
-	public void withdraw(double amount) throws InsufficientFundsException {
-		if (amount <= balance) {
-			balance -= amount;
-		} else {
-			double needs = amount - balance;
-			throw new InsufficientFundsException(needs);
-		}
-	}
-}
-
-class InsufficientFundsException extends Exception {
-	private double amount;
-
-	public InsufficientFundsException(double amount) {
-		this.amount = amount;
-	}
-
-	public double getAmount() {
-		return amount;
-	}
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-1-ke-thua-exception-checked-theo.java`](examples/02-vi-du-1-ke-thua-exception-checked-theo.java)
 
 Trong ví dụ này:
 
@@ -99,72 +54,20 @@ Trong ví dụ này:
 
 ### Ví dụ 2 — kế thừa `RuntimeException` (unchecked)
 
-```java
-package com.tutorialspoint;
-
-public class BankDemo {
-
-   public static void main(String [] args) {
-      CheckingAccount c = new CheckingAccount(101); // question - different between Exception & Runtime
-      System.out.println("Depositing $500...");
-      c.deposit(500.00);
-      
-      System.out.println("\nWithdrawing $100...");
-      c.withdraw(100.00);
-      System.out.println("\nWithdrawing $600...");
-
-   }
-}
-
-class CheckingAccount {
-   private double balance;
-   private int number;
-   
-   public CheckingAccount(int number) {
-      this.number = number;
-   }
-   
-   public void deposit(double amount) {
-      balance += amount;
-   }
-   
-   public void withdraw(double amount) {
-      if(amount <= balance) {
-         balance -= amount;
-      }else {
-         double needs = amount - balance;
-         throw new InsufficientFundsException(needs);
-      }
-   }
-   
-   public double getBalance() {
-      return balance;
-   }
-   
-   public int getNumber() {
-      return number;
-   }
-}
-
-class InsufficientFundsException extends RuntimeException {
-   private double amount;
-   
-   public InsufficientFundsException(double amount) {
-      this.amount = amount;
-   }
-   
-   public double getAmount() {
-      return amount;
-   }
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-2-ke-thua-runtimeexception-unchecked.java`](examples/03-vi-du-2-ke-thua-runtimeexception-unchecked.java)
 
 Ở đây `InsufficientFundsException` kế thừa `RuntimeException`, nên `withdraw()` **không cần khai báo `throws`** và nơi gọi cũng không bắt buộc phải `try/catch`. Compiler không kiểm tra — nhưng chương trình vẫn dừng nếu exception không được bắt.
 
 ## So sánh hai cách
+
+Mục này đặt hai ví dụ cạnh nhau trên một bảng — đọc để chọn hướng kế thừa cho custom exception của bạn.
 
 | Tiêu chí | `extends Exception` | `extends RuntimeException` |
 |----------|--------------------|---------------------------|
 | Loại | Checked | Unchecked |
 | Compiler ép xử lý? | ✅ Bắt buộc `try/catch` hoặc `throws` | ❌ Không |
 | Phù hợp khi | Lỗi nghiệp vụ mà nơi gọi nên/không thể bỏ qua | Lỗi lập trình hoặc lỗi không mong muốn lúc chạy |
+
+> **Cách đọc bảng này:** đọc theo cột để so sánh hai "con đường" kế thừa — chọn cột nào tùy thuộc bạn muốn lỗi này có bị compiler ép xử lý hay không; cột **Phù hợp khi** là chìa khóa quyết định.
+
+> **Tóm gọn 1 câu:** `extends Exception` cho lỗi nghiệp vụ cần được xử lý nghiêm túc, `extends RuntimeException` cho lỗi không ai xử lý nổi lúc code — chọn đường nào, compiler đối xử với bạn theo đường đó.
